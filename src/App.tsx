@@ -12,6 +12,7 @@ import ConfirmationPage from "./pages/ConfirmationPage";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import ShoppingCart from "./components/ShoppingCart";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>
+        <ShoppingCart />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

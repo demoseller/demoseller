@@ -1,67 +1,18 @@
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
 import { Eye, Phone, MapPin, Package, Calendar } from 'lucide-react';
-
-interface Order {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  wilaya: string;
-  commune: string;
-  fullAddress: string;
-  productName: string;
-  size: string;
-  color: string;
-  totalPrice: number;
-  status: 'pending' | 'confirmed';
-  createdAt: string;
-}
+import { useOrders } from '../../hooks/useAppStore';
+import { appStore } from '../../store/appStore';
 
 const OrdersTab = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
-
-  useEffect(() => {
-    // Mock data - replace with actual API call
-    const mockOrders: Order[] = [
-      {
-        id: '1',
-        customerName: 'Ahmed Benali',
-        customerPhone: '+213 555 123 456',
-        wilaya: 'Algiers',
-        commune: 'Bab Ezzouar',
-        fullAddress: '123 Rue de la Liberté, Bab Ezzouar, Algiers',
-        productName: 'Premium T-Shirt',
-        size: 'L',
-        color: 'Blue',
-        totalPrice: 2500,
-        status: 'pending',
-        createdAt: '2024-01-15T10:30:00Z'
-      },
-      {
-        id: '2',
-        customerName: 'Fatima Zahra',
-        customerPhone: '+213 666 789 012',
-        wilaya: 'Oran',
-        commune: 'Es Senia',
-        fullAddress: '45 Boulevard Mohamed V, Es Senia, Oran',
-        productName: 'Designer Hoodie',
-        size: 'M',
-        color: 'Black',
-        totalPrice: 4200,
-        status: 'confirmed',
-        createdAt: '2024-01-14T14:20:00Z'
-      }
-    ];
-    setOrders(mockOrders);
-  }, []);
+  const orders = useOrders();
 
   const toggleOrderStatus = (orderId: string) => {
-    setOrders(orders.map(order => 
-      order.id === orderId 
-        ? { ...order, status: order.status === 'pending' ? 'confirmed' : 'pending' }
-        : order
-    ));
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      const newStatus = order.status === 'pending' ? 'confirmed' : 'pending';
+      appStore.updateOrderStatus(orderId, newStatus);
+    }
   };
 
   const formatDate = (dateString: string) => {

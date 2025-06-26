@@ -1,7 +1,8 @@
-
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, Package, Edit, Trash2, Upload } from 'lucide-react';
+import { useProductTypes } from '../../hooks/useAppStore';
+import { appStore } from '../../store/appStore';
 
 interface ProductType {
   id: string;
@@ -24,21 +25,10 @@ interface Product {
 }
 
 const ProductsTab = () => {
-  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const productTypes = useProductTypes();
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [selectedTypeId, setSelectedTypeId] = useState<string>('');
-
-  useEffect(() => {
-    // Mock data - replace with actual API calls
-    const mockProductTypes: ProductType[] = [
-      { id: '1', name: 'T-Shirts', imageUrl: '/placeholder.svg', productCount: 5 },
-      { id: '2', name: 'Hoodies', imageUrl: '/placeholder.svg', productCount: 3 },
-      { id: '3', name: 'Jackets', imageUrl: '/placeholder.svg', productCount: 2 },
-    ];
-    setProductTypes(mockProductTypes);
-  }, []);
 
   const AddProductTypeModal = () => {
     const [typeName, setTypeName] = useState('');
@@ -46,14 +36,11 @@ const ProductsTab = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      // Add new product type logic here
-      const newType: ProductType = {
-        id: Date.now().toString(),
+      appStore.addProductType({
         name: typeName,
         imageUrl: '/placeholder.svg', // In real app, upload image first
         productCount: 0
-      };
-      setProductTypes([...productTypes, newType]);
+      });
       setShowAddTypeModal(false);
       setTypeName('');
       setImageFile(null);
@@ -131,7 +118,17 @@ const ProductsTab = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      // Add new product logic here
+      appStore.addProduct({
+        name: productData.name,
+        description: productData.description,
+        basePrice: productData.basePrice,
+        images: ['/placeholder.svg'],
+        productTypeId: selectedTypeId,
+        options: {
+          sizes: productData.sizes,
+          colors: productData.colors
+        }
+      });
       setShowAddProductModal(false);
       setSelectedTypeId('');
     };

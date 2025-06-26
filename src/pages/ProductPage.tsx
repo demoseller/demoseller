@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { appStore } from '../store/appStore';
 
 // Mock product data
 const mockProduct = {
@@ -144,13 +145,27 @@ const ProductPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
+    // Add order to the store
+    appStore.addOrder({
+      customerName: fullName,
+      customerPhone: phoneNumber,
+      wilaya: selectedWilaya,
+      commune: '', // You might want to add commune selection
+      fullAddress: `${selectedWilaya}`, // Basic address for now
+      productName: mockProduct.name,
+      size: selectedSize,
+      color: selectedColor,
+      totalPrice: calculateTotalPrice(),
+      status: 'pending'
+    });
+    
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Navigate to confirmation page
     navigate('/confirmation', { 
       state: { 
-        fromProductType: 't-shirts' // This would be dynamic based on the product
+        fromProductType: 't-shirts'
       }
     });
   };
@@ -270,11 +285,11 @@ const ProductPage = () => {
                 {/* Product Options */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Size</label>
+                    <label className="block text-sm font-medium mb-2 text-foreground">Size</label>
                     <select
                       value={selectedSize}
                       onChange={(e) => setSelectedSize(e.target.value)}
-                      className="w-full glass-effect rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 outline-none"
+                      className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                       required
                     >
                       <option value="">Select Size</option>
@@ -287,11 +302,11 @@ const ProductPage = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2">Color</label>
+                    <label className="block text-sm font-medium mb-2 text-foreground">Color</label>
                     <select
                       value={selectedColor}
                       onChange={(e) => setSelectedColor(e.target.value)}
-                      className="w-full glass-effect rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 outline-none"
+                      className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                       required
                     >
                       <option value="">Select Color</option>
@@ -306,39 +321,39 @@ const ProductPage = () => {
 
                 {/* Customer Information */}
                 <div className="space-y-4">
-                  <h3 className="text-xl font-semibold">Shipping Information</h3>
+                  <h3 className="text-xl font-semibold text-foreground">Shipping Information</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Full Name *</label>
+                      <label className="block text-sm font-medium mb-2 text-foreground">Full Name *</label>
                       <input
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full glass-effect rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 outline-none"
+                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                         required
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium mb-2">Phone Number *</label>
+                      <label className="block text-sm font-medium mb-2 text-foreground">Phone Number *</label>
                       <input
                         type="tel"
                         placeholder="0555 123 456"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full glass-effect rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 outline-none"
+                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                         required
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2">Wilaya *</label>
+                    <label className="block text-sm font-medium mb-2 text-foreground">Wilaya *</label>
                     <select
                       value={selectedWilaya}
                       onChange={(e) => setSelectedWilaya(e.target.value)}
-                      className="w-full glass-effect rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 outline-none"
+                      className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                       required
                     >
                       <option value="">Select Wilaya</option>
