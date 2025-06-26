@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";
 import ProductsPage from "./pages/ProductsPage";
+import ProductPage from "./pages/ProductPage";
+import ConfirmationPage from "./pages/ConfirmationPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +23,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/products/:type" element={<ProductsPage />} />
+            <Route path="/product/:id" element={<ProductPage />} />
+            <Route path="/confirmation" element={<ConfirmationPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

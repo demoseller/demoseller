@@ -41,6 +41,22 @@ const mockProducts = {
       price: 79.99,
       imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop'
     }
+  ],
+  'accessories': [
+    {
+      id: '6',
+      name: 'Classic Watch',
+      price: 149.99,
+      imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&h=600&fit=crop'
+    }
+  ],
+  'electronics': [
+    {
+      id: '7',
+      name: 'Wireless Headphones',
+      price: 199.99,
+      imageUrl: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&h=600&fit=crop'
+    }
   ]
 };
 

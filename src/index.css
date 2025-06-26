@@ -115,4 +115,13 @@
   .card-hover {
     @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-2;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
