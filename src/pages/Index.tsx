@@ -1,8 +1,8 @@
 
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import ProductTypeCard from '../components/ProductTypeCard';
+import FullScreenSection from '../components/FullScreenSection';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 // Mock data for product types
@@ -10,32 +10,51 @@ const mockProductTypes = [
   {
     id: 't-shirts',
     name: 'T-Shirts',
-    imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=600&fit=crop'
+    imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1920&h=1080&fit=crop'
   },
   {
     id: 'hoodies',
     name: 'Hoodies',
-    imageUrl: 'https://images.unsplash.com/photo-1556821840-3a9c6aa6a6ad?w=800&h=600&fit=crop'
+    imageUrl: 'https://images.unsplash.com/photo-1556821840-3a9c6aa6a6ad?w=1920&h=1080&fit=crop'
   },
   {
     id: 'accessories',
     name: 'Accessories',
-    imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&h=600&fit=crop'
+    imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1920&h=1080&fit=crop'
   },
   {
     id: 'electronics',
     name: 'Electronics',
-    imageUrl: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&h=600&fit=crop'
+    imageUrl: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1920&h=1080&fit=crop'
   }
 ];
 
 const Index = () => {
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Simulate loading
     const timer = setTimeout(() => setLoading(false), 1500);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      
+      const scrollTop = containerRef.current.scrollTop;
+      const sectionHeight = window.innerHeight;
+      const currentSection = Math.round(scrollTop / sectionHeight);
+      
+      setActiveSection(currentSection);
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
   }, []);
 
   if (loading) {
@@ -43,95 +62,90 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="relative">
       <Navbar />
       
-      {/* Hero Section */}
-      <motion.section 
-        className="pt-32 pb-20 px-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
+      <div 
+        ref={containerRef}
+        className="h-screen overflow-y-auto snap-y snap-mandatory"
+        style={{ scrollBehavior: 'smooth' }}
       >
-        <div className="container mx-auto text-center">
-          <motion.h1
-            className="text-6xl md:text-8xl font-bold mb-6 gradient-text"
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            SpectraCommerce
-          </motion.h1>
-          
-          <motion.p
-            className="text-xl md:text-2xl mb-12 text-muted-foreground max-w-3xl mx-auto"
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            Experience the future of e-commerce with stunning visuals, fluid animations, and seamless interactions
-          </motion.p>
-          
+        {/* Hero Section */}
+        <section className="relative w-full h-screen flex items-center justify-center overflow-hidden snap-start">
           <motion.div
-            className="inline-block"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.6, type: "spring", stiffness: 200 }}
+            className="absolute inset-0 w-full h-full"
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1.2 }}
+            transition={{ duration: 20, ease: "linear", repeat: Infinity, repeatType: "reverse" }}
           >
-            <div className="btn-gradient">
-              Explore Collections
-            </div>
+            <img
+              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&h=1080&fit=crop"
+              alt="SpectraCommerce Hero"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
           </motion.div>
-        </div>
-      </motion.section>
-      
-      {/* Product Types Grid */}
-      <motion.section 
-        className="py-20 px-4"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto">
-          <motion.h2
-            className="text-4xl md:text-5xl font-bold text-center mb-16 gradient-text"
-            initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            Discover Our Collections
-          </motion.h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {mockProductTypes.map((type, index) => (
-              <ProductTypeCard
-                key={type.id}
-                id={type.id}
-                name={type.name}
-                imageUrl={type.imageUrl}
-                index={index}
-              />
-            ))}
+
+          <div className="relative z-10 text-center px-8">
+            <motion.h1
+              className="text-6xl md:text-9xl font-bold text-white mb-8 drop-shadow-2xl"
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+            >
+              SpectraCommerce
+            </motion.h1>
+            
+            <motion.p
+              className="text-xl md:text-3xl text-white/90 mb-12 max-w-4xl mx-auto drop-shadow-lg"
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
+            >
+              Experience the future of e-commerce with stunning visuals and seamless interactions
+            </motion.p>
+            
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 1.2, type: "spring", stiffness: 200 }}
+            >
+              <div className="bg-white/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-white/30 transition-all duration-300 cursor-pointer">
+                Scroll to Explore
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </motion.section>
-      
-      {/* Footer */}
-      <motion.footer
-        className="py-12 px-4 mt-20 glass-effect"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto text-center">
-          <p className="text-muted-foreground">
-            © 2024 SpectraCommerce. The Zenith of Interactive E-commerce.
-          </p>
-        </div>
-      </motion.footer>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2, duration: 0.5 }}
+          >
+            <motion.div
+              className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center"
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <div className="w-1 h-3 bg-white/70 rounded-full mt-2" />
+            </motion.div>
+          </motion.div>
+        </section>
+
+        {/* Product Type Sections */}
+        {mockProductTypes.map((type, index) => (
+          <FullScreenSection
+            key={type.id}
+            id={type.id}
+            name={type.name}
+            imageUrl={type.imageUrl}
+            index={index + 1}
+            isActive={activeSection === index + 1}
+            linkTo={`/products/${type.id}`}
+          />
+        ))}
+      </div>
     </div>
   );
 };
