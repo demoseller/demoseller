@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, X, Plus, Minus, Trash2 } from 'lucide-react';
+import { ShoppingCart as ShoppingCartIcon, X, Plus, Minus, Trash2 } from 'lucide-react';
 
 interface CartItem {
   id: string;
@@ -58,7 +58,7 @@ const ShoppingCart = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >
-        <ShoppingCart className="w-6 h-6" />
+        <ShoppingCartIcon className="w-6 h-6" />
         {getTotalItems() > 0 && (
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
             {getTotalItems()}
@@ -96,7 +96,7 @@ const ShoppingCart = () => {
             <div className="p-6 space-y-4">
               {cartItems.length === 0 ? (
                 <div className="text-center py-12">
-                  <ShoppingCart className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                  <ShoppingCartIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">Your cart is empty</p>
                 </div>
               ) : (
