@@ -5,26 +5,20 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
-import ImageLightbox from '../components/ImageLightbox';
-import ImageGalleryPagination from '../components/ImageGalleryPagination';
-import StarRating from '../components/StarRating';
 import { appStore } from '../store/appStore';
 
-// Mock product data with reviews
+// Mock product data
 const mockProduct = {
   id: '1',
   name: 'Premium Cotton T-Shirt',
   description: 'Experience ultimate comfort with our premium cotton t-shirt. Made from 100% organic cotton with a perfect fit.',
-  basePrice: 100.00, // Changed to show discount
-  originalPrice: 130.00, // Added original price
+  basePrice: 29.99,
   images: [
     'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1200&h=800&fit=crop',
     'https://images.unsplash.com/photo-1583743814133-5c9e2c78bb93?w=1200&h=800&fit=crop',
     'https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=1200&h=800&fit=crop',
     'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=1200&h=800&fit=crop'
   ],
-  averageRating: 4.2,
-  totalReviews: 47,
   sizes: [
     { name: 'Small', modifier: 0 },
     { name: 'Medium', modifier: 0 },
@@ -111,10 +105,7 @@ const ProductPage = () => {
   const [selectedWilaya, setSelectedWilaya] = useState('');
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [shipToHome, setShipToHome] = useState(false);
-  const [selectedCommune, setSelectedCommune] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
   
   const galleryRef = useRef<HTMLDivElement>(null);
 
@@ -137,19 +128,16 @@ const ProductPage = () => {
     }
     
     if (selectedWilaya) {
-      const baseShipping = shippingCosts[selectedWilaya as keyof typeof shippingCosts] || 0;
-      const shippingCost = shipToHome ? baseShipping * 1.3 : baseShipping;
-      total += shippingCost;
+      total += shippingCosts[selectedWilaya as keyof typeof shippingCosts] || 0;
     }
     
     return total;
   };
 
-  const handleImageDotClick = (index: number) => {
-    setCurrentImageIndex(index);
+  const handleHorizontalScroll = (e: React.WheelEvent) => {
+    e.preventDefault();
     if (galleryRef.current) {
-      const targetScroll = index * (galleryRef.current.clientWidth * 0.8);
-      galleryRef.current.scrollTo({ left: targetScroll, behavior: 'smooth' });
+      galleryRef.current.scrollLeft += e.deltaY;
     }
   };
 
@@ -162,8 +150,8 @@ const ProductPage = () => {
       customerName: fullName,
       customerPhone: phoneNumber,
       wilaya: selectedWilaya,
-      commune: selectedCommune,
-      fullAddress: `${selectedCommune}, ${selectedWilaya}`,
+      commune: '', // You might want to add commune selection
+      fullAddress: `${selectedWilaya}`, // Basic address for now
       productName: mockProduct.name,
       size: selectedSize,
       color: selectedColor,
@@ -174,13 +162,10 @@ const ProductPage = () => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Navigate to confirmation page with product data
+    // Navigate to confirmation page
     navigate('/confirmation', { 
       state: { 
-        fromProductType: 't-shirts',
-        productId: id,
-        productName: mockProduct.name,
-        productImage: mockProduct.images[0]
+        fromProductType: 't-shirts'
       }
     });
   };
@@ -220,7 +205,7 @@ const ProductPage = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Enhanced Image Gallery */}
+            {/* Horizontal Scroll Image Gallery */}
             <motion.div
               className="relative"
               initial={{ x: -100, opacity: 0 }}
@@ -230,18 +215,15 @@ const ProductPage = () => {
               <div
                 ref={galleryRef}
                 className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide h-96 lg:h-[600px]"
+                onWheel={handleHorizontalScroll}
                 style={{ scrollBehavior: 'smooth' }}
               >
                 {mockProduct.images.map((image, index) => (
                   <motion.div
                     key={index}
-                    className="flex-shrink-0 w-80 lg:w-96 h-full relative rounded-2xl overflow-hidden shadow-xl cursor-pointer"
+                    className="flex-shrink-0 w-80 lg:w-96 h-full relative rounded-2xl overflow-hidden shadow-xl"
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.3 }}
-                    onClick={() => {
-                      setCurrentImageIndex(index);
-                      setLightboxOpen(true);
-                    }}
                   >
                     <img
                       src={image}
@@ -253,12 +235,14 @@ const ProductPage = () => {
                 ))}
               </div>
               
-              {/* Image Pagination */}
-              <ImageGalleryPagination
-                totalImages={mockProduct.images.length}
-                currentIndex={currentImageIndex}
-                onDotClick={handleImageDotClick}
-              />
+              <motion.p
+                className="text-sm text-muted-foreground mt-4 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+              >
+                Scroll horizontally to view more images
+              </motion.p>
             </motion.div>
 
             {/* Product Information Form */}
@@ -278,19 +262,6 @@ const ProductPage = () => {
                   {mockProduct.name}
                 </motion.h1>
                 
-                {/* Average Rating Display */}
-                <motion.div
-                  className="flex items-center space-x-2 mb-4"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <StarRating rating={mockProduct.averageRating} readonly size="sm" />
-                  <span className="text-sm text-muted-foreground">
-                    {mockProduct.averageRating}/5 ({mockProduct.totalReviews} reviews)
-                  </span>
-                </motion.div>
-                
                 <motion.p
                   className="text-lg text-muted-foreground mb-6"
                   initial={{ y: 20, opacity: 0 }}
@@ -300,22 +271,13 @@ const ProductPage = () => {
                   {mockProduct.description}
                 </motion.p>
                 
-                {/* Enhanced Pricing Display */}
                 <motion.div
-                  className="flex items-center space-x-4 mb-6"
+                  className="text-3xl font-bold gradient-text"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.8, type: "spring" }}
                 >
-                  <span className="text-2xl text-muted-foreground line-through">
-                    ${mockProduct.originalPrice.toFixed(2)}
-                  </span>
-                  <span className="text-3xl font-bold gradient-text">
-                    ${mockProduct.basePrice.toFixed(2)}
-                  </span>
-                  <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                    30% OFF
-                  </span>
+                  ${calculateTotalPrice().toFixed(2)}
                 </motion.div>
               </div>
 
@@ -323,11 +285,11 @@ const ProductPage = () => {
                 {/* Product Options */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Size</label>
+                    <label className="block text-sm font-medium mb-2 text-foreground">Size</label>
                     <select
                       value={selectedSize}
                       onChange={(e) => setSelectedSize(e.target.value)}
-                      className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                      className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                       required
                     >
                       <option value="">Select Size</option>
@@ -340,11 +302,11 @@ const ProductPage = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2">Color</label>
+                    <label className="block text-sm font-medium mb-2 text-foreground">Color</label>
                     <select
                       value={selectedColor}
                       onChange={(e) => setSelectedColor(e.target.value)}
-                      className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                      className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                       required
                     >
                       <option value="">Select Color</option>
@@ -359,39 +321,39 @@ const ProductPage = () => {
 
                 {/* Customer Information */}
                 <div className="space-y-4">
-                  <h3 className="text-xl font-semibold">Shipping Information</h3>
+                  <h3 className="text-xl font-semibold text-foreground">Shipping Information</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Full Name *</label>
+                      <label className="block text-sm font-medium mb-2 text-foreground">Full Name *</label>
                       <input
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                         required
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium mb-2">Phone Number *</label>
+                      <label className="block text-sm font-medium mb-2 text-foreground">Phone Number *</label>
                       <input
                         type="tel"
                         placeholder="0555 123 456"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                         required
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2">Wilaya *</label>
+                    <label className="block text-sm font-medium mb-2 text-foreground">Wilaya *</label>
                     <select
                       value={selectedWilaya}
                       onChange={(e) => setSelectedWilaya(e.target.value)}
-                      className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                      className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                       required
                     >
                       <option value="">Select Wilaya</option>
@@ -402,43 +364,9 @@ const ProductPage = () => {
                       ))}
                     </select>
                   </div>
-
-                  {/* Advanced Shipping Options */}
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="shipToHome"
-                        checked={shipToHome}
-                        onChange={(e) => setShipToHome(e.target.checked)}
-                        className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary/50"
-                      />
-                      <label htmlFor="shipToHome" className="text-sm font-medium">
-                        Ship to my Home Address (+30% shipping cost)
-                      </label>
-                    </div>
-
-                    {shipToHome && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <label className="block text-sm font-medium mb-2">Daira/Commune *</label>
-                        <input
-                          type="text"
-                          value={selectedCommune}
-                          onChange={(e) => setSelectedCommune(e.target.value)}
-                          className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                          placeholder="Enter your commune"
-                          required={shipToHome}
-                        />
-                      </motion.div>
-                    )}
-                  </div>
                 </div>
 
-                {/* Enhanced Submit Button */}
+                {/* Submit Button */}
                 <motion.button
                   type="submit"
                   disabled={isSubmitting}
@@ -454,7 +382,7 @@ const ProductPage = () => {
                   ) : (
                     <>
                       <ShoppingCart className="w-5 h-5" />
-                      <span>Place Order (${calculateTotalPrice().toFixed(2)})</span>
+                      <span>Place Order - ${calculateTotalPrice().toFixed(2)}</span>
                     </>
                   )}
                 </motion.button>
@@ -463,14 +391,6 @@ const ProductPage = () => {
           </div>
         </div>
       </motion.div>
-
-      {/* Image Lightbox */}
-      <ImageLightbox
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-        imageUrl={mockProduct.images[currentImageIndex]}
-        alt={`${mockProduct.name} - Image ${currentImageIndex + 1}`}
-      />
     </div>
   );
 };
