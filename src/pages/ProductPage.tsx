@@ -5,14 +5,20 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ImageLightbox from '../components/ImageLightbox';
+import ImageGalleryPagination from '../components/ImageGalleryPagination';
+import StarRating from '../components/StarRating';
 import { appStore } from '../store/appStore';
 
-// Mock product data
+// Mock product data with reviews
 const mockProduct = {
   id: '1',
   name: 'Premium Cotton T-Shirt',
   description: 'Experience ultimate comfort with our premium cotton t-shirt. Made from 100% organic cotton with a perfect fit.',
   basePrice: 29.99,
+  originalPrice: 42.99, // 30% discount
+  averageRating: 4.2,
+  reviewCount: 127,
   images: [
     'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1200&h=800&fit=crop',
     'https://images.unsplash.com/photo-1583743814133-5c9e2c78bb93?w=1200&h=800&fit=crop',
@@ -103,11 +109,22 @@ const ProductPage = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedWilaya, setSelectedWilaya] = useState('');
+  const [selectedCommune, setSelectedCommune] = useState('');
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [shipToHome, setShipToHome] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState('');
   
   const galleryRef = useRef<HTMLDivElement>(null);
+
+  // Mock communes data
+  const communesData: Record<string, string[]> = {
+    'Alger': ['Alger Centre', 'Bab El Oued', 'Casbah', 'El Madania', 'Sidi M\'Hamed'],
+    'Oran': ['Oran', 'Bir El Djir', 'Es Senia', 'Gdyel', 'Mers El Kébir'],
+    'Blida': ['Blida', 'Boufarik', 'Larbaa', 'Meftah', 'Soumaa']
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 800);
@@ -128,7 +145,12 @@ const ProductPage = () => {
     }
     
     if (selectedWilaya) {
-      total += shippingCosts[selectedWilaya as keyof typeof shippingCosts] || 0;
+      let shippingCost = shippingCosts[selectedWilaya as keyof typeof shippingCosts] || 0;
+      // Add 30% to shipping if home delivery is selected
+      if (shipToHome) {
+        shippingCost = shippingCost * 1.3;
+      }
+      total += shippingCost;
     }
     
     return total;
@@ -141,6 +163,22 @@ const ProductPage = () => {
     }
   };
 
+  const handleImageClick = (image: string) => {
+    setLightboxImage(image);
+    setLightboxOpen(true);
+  };
+
+  const handleImageIndexChange = (index: number) => {
+    setCurrentImageIndex(index);
+    if (galleryRef.current) {
+      const imageWidth = galleryRef.current.scrollWidth / mockProduct.images.length;
+      galleryRef.current.scrollTo({
+        left: imageWidth * index,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -150,8 +188,8 @@ const ProductPage = () => {
       customerName: fullName,
       customerPhone: phoneNumber,
       wilaya: selectedWilaya,
-      commune: '', // You might want to add commune selection
-      fullAddress: `${selectedWilaya}`, // Basic address for now
+      commune: selectedCommune,
+      fullAddress: `${selectedWilaya}${selectedCommune ? `, ${selectedCommune}` : ''}`,
       productName: mockProduct.name,
       size: selectedSize,
       color: selectedColor,
@@ -162,10 +200,13 @@ const ProductPage = () => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Navigate to confirmation page
+    // Navigate to confirmation page with product info
     navigate('/confirmation', { 
       state: { 
-        fromProductType: 't-shirts'
+        fromProductType: 't-shirts',
+        productId: mockProduct.id,
+        productName: mockProduct.name,
+        productImage: mockProduct.images[0]
       }
     });
   };
@@ -205,7 +246,7 @@ const ProductPage = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Horizontal Scroll Image Gallery */}
+            {/* Image Gallery with Pagination */}
             <motion.div
               className="relative"
               initial={{ x: -100, opacity: 0 }}
@@ -221,9 +262,10 @@ const ProductPage = () => {
                 {mockProduct.images.map((image, index) => (
                   <motion.div
                     key={index}
-                    className="flex-shrink-0 w-80 lg:w-96 h-full relative rounded-2xl overflow-hidden shadow-xl"
+                    className="flex-shrink-0 w-80 lg:w-96 h-full relative rounded-2xl overflow-hidden shadow-xl cursor-pointer"
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.3 }}
+                    onClick={() => handleImageClick(image)}
                   >
                     <img
                       src={image}
@@ -235,13 +277,20 @@ const ProductPage = () => {
                 ))}
               </div>
               
+              {/* Image Pagination Dots */}
+              <ImageGalleryPagination
+                images={mockProduct.images}
+                currentIndex={currentImageIndex}
+                onIndexChange={handleImageIndexChange}
+              />
+              
               <motion.p
                 className="text-sm text-muted-foreground mt-4 text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
               >
-                Scroll horizontally to view more images
+                Click images to view in full screen • Scroll horizontally for more
               </motion.p>
             </motion.div>
 
@@ -261,6 +310,23 @@ const ProductPage = () => {
                 >
                   {mockProduct.name}
                 </motion.h1>
+
+                {/* Star Rating Display */}
+                <motion.div
+                  className="flex items-center space-x-2 mb-6"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <StarRating 
+                    rating={mockProduct.averageRating} 
+                    readonly 
+                    showText 
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    ({mockProduct.reviewCount} reviews)
+                  </span>
+                </motion.div>
                 
                 <motion.p
                   className="text-lg text-muted-foreground mb-6"
@@ -271,13 +337,27 @@ const ProductPage = () => {
                   {mockProduct.description}
                 </motion.p>
                 
+                {/* Pricing with Discount */}
                 <motion.div
-                  className="text-3xl font-bold gradient-text"
+                  className="mb-6"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.8, type: "spring" }}
                 >
-                  ${calculateTotalPrice().toFixed(2)}
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl text-muted-foreground line-through">
+                      ${mockProduct.originalPrice.toFixed(2)}
+                    </span>
+                    <span className="text-3xl font-bold gradient-text">
+                      ${mockProduct.basePrice.toFixed(2)}
+                    </span>
+                    <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
+                      30% OFF
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Total: ${calculateTotalPrice().toFixed(2)} (including options & shipping)
+                  </p>
                 </motion.div>
               </div>
 
@@ -352,17 +432,66 @@ const ProductPage = () => {
                     <label className="block text-sm font-medium mb-2 text-foreground">Wilaya *</label>
                     <select
                       value={selectedWilaya}
-                      onChange={(e) => setSelectedWilaya(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedWilaya(e.target.value);
+                        setSelectedCommune(''); // Reset commune when wilaya changes
+                      }}
                       className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                       required
                     >
                       <option value="">Select Wilaya</option>
-                      {Object.keys(shippingCosts).map(wilaya => (
-                        <option key={wilaya} value={wilaya}>
-                          {wilaya} (+${shippingCosts[wilaya as keyof typeof shippingCosts]} shipping)
-                        </option>
-                      ))}
+                      {Object.keys(shippingCosts).map(wilaya => {
+                        const baseCost = shippingCosts[wilaya as keyof typeof shippingCosts];
+                        const finalCost = shipToHome ? baseCost * 1.3 : baseCost;
+                        return (
+                          <option key={wilaya} value={wilaya}>
+                            {wilaya} (+${finalCost.toFixed(2)} shipping)
+                          </option>
+                        );
+                      })}
                     </select>
+                  </div>
+
+                  {/* Advanced Shipping Option */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="shipToHome"
+                        checked={shipToHome}
+                        onChange={(e) => setShipToHome(e.target.checked)}
+                        className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary/50"
+                      />
+                      <label htmlFor="shipToHome" className="text-sm font-medium text-foreground">
+                        Ship to my Home Address (+30% shipping cost)
+                      </label>
+                    </div>
+
+                    {shipToHome && selectedWilaya && communesData[selectedWilaya] && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <label className="block text-sm font-medium mb-2 text-foreground">
+                          Daira/Commune (Town) *
+                        </label>
+                        <select
+                          value={selectedCommune}
+                          onChange={(e) => setSelectedCommune(e.target.value)}
+                          className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                          required={shipToHome}
+                        >
+                          <option value="">Select Commune</option>
+                          {communesData[selectedWilaya].map(commune => (
+                            <option key={commune} value={commune}>
+                              {commune}
+                            </option>
+                          ))}
+                        </select>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
 
@@ -382,7 +511,7 @@ const ProductPage = () => {
                   ) : (
                     <>
                       <ShoppingCart className="w-5 h-5" />
-                      <span>Place Order - ${calculateTotalPrice().toFixed(2)}</span>
+                      <span>Place Order (${calculateTotalPrice().toFixed(2)})</span>
                     </>
                   )}
                 </motion.button>
@@ -391,6 +520,14 @@ const ProductPage = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        src={lightboxImage}
+        alt={mockProduct.name}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
     </div>
   );
 };
