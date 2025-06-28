@@ -23,36 +23,23 @@ const ProductTypeCard = ({ id, name, imageUrl, index }: ProductTypeCardProps) =>
           <motion.img
             src={imageUrl}
             alt={name}
-            className="w-full h-full object-cover"
-            whileHover={{ scale: 1.1 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="w-full h-full object-cover transition-transform duration-600 ease-out group-hover:scale-110"
           />
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           
-          <motion.div
-            className="absolute inset-0 glass-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            whileHover={{ rotateY: 5, rotateX: 2 }}
-            style={{ transformStyle: "preserve-3d" }}
-          >
+          <div className="absolute inset-0 glass-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <div className="absolute bottom-6 left-6 right-6">
               <motion.h3
-                className="text-2xl font-bold text-white mb-2"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
+                className="text-2xl font-bold text-white mb-2 transform translate-y-5 group-hover:translate-y-0 transition-transform duration-300"
+                initial={false}
               >
                 {name}
               </motion.h3>
               
-              <motion.div
-                className="w-12 h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full"
-                initial={{ width: 0 }}
-                whileInView={{ width: 48 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-              />
+              <div className="w-0 h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full group-hover:w-12 transition-all duration-600 ease-out" />
             </div>
-          </motion.div>
+          </div>
         </div>
       </Link>
     </motion.div>

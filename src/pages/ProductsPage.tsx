@@ -1,9 +1,9 @@
-
 import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ImageLightbox from '../components/ImageLightbox';
 import { ArrowLeft } from 'lucide-react';
 
 // Mock data for products
@@ -64,6 +64,7 @@ const ProductsPage = () => {
   const { type } = useParams();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<any[]>([]);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
     // Simulate API call
@@ -132,48 +133,31 @@ const ProductsPage = () => {
               >
                 <Link to={`/product/${product.id}`}>
                   <div className="relative h-80 w-full overflow-hidden">
-                    <motion.img
+                    <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-full h-full object-cover"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      className="w-full h-full object-cover transition-transform duration-600 ease-out group-hover:scale-110 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setLightboxImage(product.imageUrl);
+                      }}
                     />
                     
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                     
-                    <motion.div
-                      className="absolute inset-0 glass-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      whileHover={{ rotateY: 5, rotateX: 2 }}
-                      style={{ transformStyle: "preserve-3d" }}
-                    >
+                    <div className="absolute inset-0 glass-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <div className="absolute bottom-6 left-6 right-6">
-                        <motion.h3
-                          className="text-xl font-bold text-white mb-2"
-                          initial={{ y: 20, opacity: 0 }}
-                          whileInView={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.2 }}
-                        >
+                        <h3 className="text-xl font-bold text-white mb-2 transform translate-y-5 group-hover:translate-y-0 transition-transform duration-300">
                           {product.name}
-                        </motion.h3>
+                        </h3>
                         
-                        <motion.p
-                          className="text-lg font-semibold text-white mb-3"
-                          initial={{ y: 20, opacity: 0 }}
-                          whileInView={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.3 }}
-                        >
+                        <p className="text-lg font-semibold text-white mb-3 transform translate-y-5 group-hover:translate-y-0 transition-transform duration-300 delay-75">
                           ${product.price}
-                        </motion.p>
+                        </p>
                         
-                        <motion.div
-                          className="w-12 h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full"
-                          initial={{ width: 0 }}
-                          whileInView={{ width: 48 }}
-                          transition={{ delay: 0.4, duration: 0.6 }}
-                        />
+                        <div className="w-0 h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full group-hover:w-12 transition-all duration-600 ease-out delay-150" />
                       </div>
-                    </motion.div>
+                    </div>
                   </div>
                 </Link>
               </motion.div>
@@ -181,6 +165,13 @@ const ProductsPage = () => {
           </div>
         </div>
       </motion.div>
+
+      <ImageLightbox
+        src={lightboxImage || ''}
+        alt="Product Image"
+        isOpen={!!lightboxImage}
+        onClose={() => setLightboxImage(null)}
+      />
     </div>
   );
 };
