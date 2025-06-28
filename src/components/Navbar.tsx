@@ -1,7 +1,7 @@
 
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { ShoppingCart, User } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 const Navbar = () => {
@@ -31,6 +31,14 @@ const Navbar = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
+            <motion.button
+              className="p-2 rounded-lg glass-effect hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <ShoppingCart className="w-5 h-5" />
+            </motion.button>
+            
             <Link to="/dashboard">
               <motion.button
                 className="p-2 rounded-lg glass-effect hover:bg-white/20 dark:hover:bg-black/20 transition-colors"

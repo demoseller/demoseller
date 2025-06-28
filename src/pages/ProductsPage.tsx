@@ -1,3 +1,4 @@
+
 import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -142,39 +143,37 @@ const ProductsPage = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                     
                     <motion.div
-                      className="absolute bottom-6 left-6 right-6"
-                      initial={{ opacity: 0, y: 20 }}
-                      whileHover={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <motion.h3
-                        className="text-xl font-bold text-white mb-2"
-                        initial={false}
-                      >
-                        {product.name}
-                      </motion.h3>
-                      
-                      <motion.p
-                        className="text-lg font-semibold text-white mb-3"
-                        initial={false}
-                      >
-                        ${product.price}
-                      </motion.p>
-                      
-                      <motion.div
-                        className="h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full origin-left"
-                        initial={{ scaleX: 0 }}
-                        whileHover={{ scaleX: 1 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        style={{ width: '48px' }}
-                      />
-                    </motion.div>
-                    
-                    <motion.div
                       className="absolute inset-0 glass-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       whileHover={{ rotateY: 5, rotateX: 2 }}
                       style={{ transformStyle: "preserve-3d" }}
-                    />
+                    >
+                      <div className="absolute bottom-6 left-6 right-6">
+                        <motion.h3
+                          className="text-xl font-bold text-white mb-2"
+                          initial={{ y: 20, opacity: 0 }}
+                          whileInView={{ y: 0, opacity: 1 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          {product.name}
+                        </motion.h3>
+                        
+                        <motion.p
+                          className="text-lg font-semibold text-white mb-3"
+                          initial={{ y: 20, opacity: 0 }}
+                          whileInView={{ y: 0, opacity: 1 }}
+                          transition={{ delay: 0.3 }}
+                        >
+                          ${product.price}
+                        </motion.p>
+                        
+                        <motion.div
+                          className="w-12 h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full"
+                          initial={{ width: 0 }}
+                          whileInView={{ width: 48 }}
+                          transition={{ delay: 0.4, duration: 0.6 }}
+                        />
+                      </div>
+                    </motion.div>
                   </div>
                 </Link>
               </motion.div>
