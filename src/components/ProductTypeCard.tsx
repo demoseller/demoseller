@@ -30,7 +30,12 @@ const ProductTypeCard = ({ id, name, imageUrl, index }: ProductTypeCardProps) =>
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           
-          <div className="absolute bottom-6 left-6 right-6">
+          <motion.div
+            className="absolute bottom-6 left-6 right-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileHover={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             <motion.h3
               className="text-2xl font-bold text-white mb-2"
               initial={false}
@@ -45,7 +50,7 @@ const ProductTypeCard = ({ id, name, imageUrl, index }: ProductTypeCardProps) =>
               transition={{ duration: 0.3, ease: "easeOut" }}
               style={{ width: '48px' }}
             />
-          </div>
+          </motion.div>
           
           <motion.div
             className="absolute inset-0 glass-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300"

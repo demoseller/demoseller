@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
@@ -8,6 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ImageLightbox from '../components/ImageLightbox';
 import ImageGalleryPagination from '../components/ImageGalleryPagination';
 import StarRating from '../components/StarRating';
+import AnimatedCheckbox from '../components/AnimatedCheckbox';
 import { appStore } from '../store/appStore';
 
 // Mock product data with reviews
@@ -454,18 +454,12 @@ const ProductPage = () => {
 
                   {/* Advanced Shipping Option */}
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="shipToHome"
-                        checked={shipToHome}
-                        onChange={(e) => setShipToHome(e.target.checked)}
-                        className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary/50"
-                      />
-                      <label htmlFor="shipToHome" className="text-sm font-medium text-foreground">
-                        Ship to my Home Address (+30% shipping cost)
-                      </label>
-                    </div>
+                    <AnimatedCheckbox
+                      id="shipToHome"
+                      checked={shipToHome}
+                      onChange={(checked) => setShipToHome(checked)}
+                      label="Ship to my Home Address (+30% shipping cost)"
+                    />
 
                     {shipToHome && selectedWilaya && communesData[selectedWilaya] && (
                       <motion.div
