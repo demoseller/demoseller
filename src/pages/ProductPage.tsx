@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
@@ -116,19 +115,94 @@ const ProductPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState('');
+  const [productRating, setProductRating] = useState(mockProduct.averageRating);
+  const [reviewCount, setReviewCount] = useState(mockProduct.reviewCount);
   
   const galleryRef = useRef<HTMLDivElement>(null);
 
   // Mock communes data
   const communesData: Record<string, string[]> = {
-    'Alger': ['Alger Centre', 'Bab El Oued', 'Casbah', 'El Madania', 'Sidi M\'Hamed'],
-    'Oran': ['Oran', 'Bir El Djir', 'Es Senia', 'Gdyel', 'Mers El Kébir'],
-    'Blida': ['Blida', 'Boufarik', 'Larbaa', 'Meftah', 'Soumaa']
+    'Adrar': ['Adrar', 'Tamest', 'Charouine', 'Reggane', 'Inzghmir'],
+    'Chlef': ['Chlef', 'Ténès', 'Boukadir', 'El Karimia', 'Sobha'],
+    'Laghouat': ['Laghouat', 'Aflou', 'Ksar El Hirane', 'Hassi Delaa', 'Hassi R\'Mel'],
+    'Oum El Bouaghi': ['Oum El Bouaghi', 'Aïn Beïda', 'Aïn M\'Lila', 'Sigus', 'Ksar Sbahi'],
+    'Batna': ['Batna', 'Barika', 'Arris', 'Biskra', 'Menaâ'],
+    'Béjaïa': ['Béjaïa', 'Akbou', 'Kherrata', 'Sidi Aïch', 'Amizour'],
+    'Biskra': ['Biskra', 'Tolga', 'Sidi Okba', 'Chetma', 'Djemorah'],
+    'Béchar': ['Béchar', 'Kenadsa', 'Abadla', 'Beni Ounif', 'Igli'],
+    'Blida': ['Blida', 'Boufarik', 'Larbaa', 'Meftah', 'Soumaa'],
+    'Bouira': ['Bouira', 'Lakhdaria', 'M\'Chedallah', 'Sour El Ghouzlane', 'Aïn Bessem'],
+    'Tamanrasset': ['Tamanrasset', 'In Salah', 'In Guezzam', 'Tin Zaouatine', 'Idles'],
+    'Tébessa': ['Tébessa', 'Cheria', 'El Aouinet', 'Bir El Ater', 'Negrine'],
+    'Tlemcen': ['Tlemcen', 'Maghnia', 'Chetouane', 'Nedroma', 'Remchi'],
+    'Tiaret': ['Tiaret', 'Sougueur', 'Mahdia', 'Frenda', 'Ksar Chellala'],
+    'Tizi Ouzou': ['Tizi Ouzou', 'Azazga', 'Azeffoun', 'Tigzirt', 'Aïn El Hammam'],
+    'Alger': ['Alger Centre', 'Bab El Oued', 'Casbah', 'El Madania', 'Sidi M\'Hamed', 'Bir Mourad Raïs', 'Birkhadem', 'El Biar', 'Hydra', 'Kouba'],
+    'Djelfa': ['Djelfa', 'Messaâd', 'Hassi Bahbah', 'Aïn Oussara', 'Birine'],
+    'Jijel': ['Jijel', 'Ferdjioua', 'Taher', 'El Milia', 'Sidi Maârouf'],
+    'Sétif': ['Sétif', 'El Eulma', 'Aïn Oulmen', 'Bougaâ', 'Hammam Sokhna'],
+    'Saïda': ['Saïda', 'Balloul', 'Ouled Brahim', 'Sidi Boubekeur', 'El Hassasna'],
+    'Skikda': ['Skikda', 'Collo', 'Azzaba', 'Tamalous', 'Oued Z\'hour'],
+    'Sidi Bel Abbès': ['Sidi Bel Abbès', 'Telagh', 'Sfisef', 'Ben Badis', 'Mostefa Ben Brahim'],
+    'Annaba': ['Annaba', 'El Hadjar', 'Berrahal', 'Chetaibi', 'Aïn Berda'],
+    'Guelma': ['Guelma', 'Bouchegouf', 'Héliopolis', 'Hammam Debagh', 'Oued Zenati'],
+    'Constantine': ['Constantine', 'Hamma Bouziane', 'Didouche Mourad', 'El Khroub', 'Aïn Smara'],
+    'Médéa': ['Médéa', 'Berrouaghia', 'Ksar El Boukhari', 'Ouzera', 'Chellalet El Adhaoura'],
+    'Mostaganem': ['Mostaganem', 'Relizane', 'Sidi Ali', 'Hassi Mameche', 'Stidia'],
+    'MSila': ['M\'Sila', 'Boussaâda', 'Sidi Aïssa', 'Magra', 'Hammam Dalaa'],
+    'Mascara': ['Mascara', 'Sig', 'Mohammadia', 'Tighennif', 'Bouhanifia'],
+    'Ouargla': ['Ouargla', 'Hassi Messaoud', 'Touggourt', 'Megarine', 'N\'Goussa'],
+    'Oran': ['Oran', 'Bir El Djir', 'Es Senia', 'Gdyel', 'Mers El Kébir', 'Aïn Turk', 'Boutlélis', 'El Braya'],
+    'El Bayadh': ['El Bayadh', 'Rogassa', 'Stitten', 'Brezina', 'Boualem'],
+    'Illizi': ['Illizi', 'Djanet', 'Bordj Omar Driss', 'Debdeb', 'In Aménas'],
+    'Bordj Bou Arréridj': ['Bordj Bou Arréridj', 'Ras El Oued', 'Bordj Ghdir', 'Mansourah', 'El M\'hir'],
+    'Boumerdès': ['Boumerdès', 'Dellys', 'Naciria', 'Khemis El Khechna', 'Boudouaou'],
+    'El Tarf': ['El Tarf', 'El Kala', 'Bouteldja', 'Ben M\'Hidi', 'Bougous'],
+    'Tindouf': ['Tindouf', 'Oum El Assel', 'Hassi El Ghella', 'Chenachene'],
+    'Tissemsilt': ['Tissemsilt', 'Theniet El Had', 'Bordj Bou Naama', 'Lazharia', 'Khemisti'],
+    'El Oued': ['El Oued', 'Robbah', 'Guemar', 'Reguiba', 'Magrane'],
+    'Khenchela': ['Khenchela', 'Babar', 'Bouhmama', 'El Hamma', 'Kais'],
+    'Souk Ahras': ['Souk Ahras', 'Sedrata', 'Haddada', 'Ouled Driss', 'Tiffech'],
+    'Tipaza': ['Tipaza', 'Koléa', 'Cherchell', 'Hadjout', 'Menaceur'],
+    'Mila': ['Mila', 'Ferdjioua', 'Chelghoum Laïd', 'Oued Athmania', 'Rouached'],
+    'Aïn Defla': ['Aïn Defla', 'Khemis Miliana', 'El Attaf', 'Boumedfaa', 'Djelida'],
+    'Naâma': ['Naâma', 'Mécheria', 'Aïn Sefra', 'Tiout', 'Sfissifa'],
+    'Aïn Témouchent': ['Aïn Témouchent', 'Hammam Bou Hadjar', 'Beni Saf', 'El Malah', 'Ouled Kihal'],
+    'Ghardaïa': ['Ghardaïa', 'El Menea', 'Berriane', 'Metlili', 'El Guerrara'],
+    'Relizane': ['Relizane', 'Mazouna', 'Oued Rhiou', 'Yellel', 'Sidi Khettab'],
+    'Timimoun': ['Timimoun', 'Aougrout', 'Deldoul', 'Charouine', 'Metarfa'],
+    'Bordj Badji Mokhtar': ['Bordj Badji Mokhtar', 'Timiaouine', 'Timokten'],
+    'Ouled Djellal': ['Ouled Djellal', 'Sidi Khaled', 'Besbes', 'Chaiba'],
+    'Béni Abbès': ['Béni Abbès', 'Tamtert', 'Ouled Khoudir', 'El Ouata'],
+    'In Salah': ['In Salah', 'Foggaret Ezzouia', 'In Ghar'],
+    'In Guezzam': ['In Guezzam', 'Tin Zaouatine'],
+    'Touggourt': ['Touggourt', 'Megarine', 'Sidi Slimane', 'Nezla'],
+    'Djanet': ['Djanet', 'Bordj El Haoues'],
+    'El MGhair': ['El MGhair', 'Djamaa', 'Sidi Amrane'],
+    'El Menia': ['El Menia', 'Hassi Gara', 'Hassi El Fejej']
   };
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 800);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Handle scroll-based image index update
+  useEffect(() => {
+    const handleScroll = () => {
+      if (galleryRef.current) {
+        const scrollLeft = galleryRef.current.scrollLeft;
+        const imageWidth = galleryRef.current.scrollWidth / mockProduct.images.length;
+        const newIndex = Math.round(scrollLeft / imageWidth);
+        setCurrentImageIndex(Math.max(0, Math.min(newIndex, mockProduct.images.length - 1)));
+      }
+    };
+
+    const galleryElement = galleryRef.current;
+    if (galleryElement) {
+      galleryElement.addEventListener('scroll', handleScroll);
+      return () => galleryElement.removeEventListener('scroll', handleScroll);
+    }
   }, []);
 
   const calculateTotalPrice = () => {
@@ -196,6 +270,12 @@ const ProductPage = () => {
       totalPrice: calculateTotalPrice(),
       status: 'pending'
     });
+    
+    // Simulate customer review submission and update rating
+    const newRating = Math.random() * 2 + 3; // Random rating between 3-5
+    const newAverageRating = ((productRating * reviewCount) + newRating) / (reviewCount + 1);
+    setProductRating(newAverageRating);
+    setReviewCount(reviewCount + 1);
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -319,12 +399,12 @@ const ProductPage = () => {
                   transition={{ delay: 0.5 }}
                 >
                   <StarRating 
-                    rating={mockProduct.averageRating} 
+                    rating={productRating} 
                     readonly 
                     showText 
                   />
                   <span className="text-sm text-muted-foreground">
-                    ({mockProduct.reviewCount} reviews)
+                    ({reviewCount} reviews)
                   </span>
                 </motion.div>
                 
