@@ -2,40 +2,80 @@
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { TrendingUp, ShoppingCart, DollarSign, Package } from 'lucide-react';
+import { useOrders, useProducts, useProductTypes } from '../../hooks/useSupabaseStore';
+import { useMemo } from 'react';
 
 const AnalyticsTab = () => {
-  // Mock data for charts
-  const ordersData = [
-    { date: '2024-01-01', orders: 12 },
-    { date: '2024-01-02', orders: 19 },
-    { date: '2024-01-03', orders: 15 },
-    { date: '2024-01-04', orders: 25 },
-    { date: '2024-01-05', orders: 22 },
-    { date: '2024-01-06', orders: 30 },
-    { date: '2024-01-07', orders: 28 },
-  ];
+  const { orders } = useOrders();
+  const { products } = useProducts();
+  const { productTypes } = useProductTypes();
 
-  const productTypesData = [
-    { name: 'T-Shirts', value: 45, color: '#8A2BE2' },
-    { name: 'Hoodies', value: 30, color: '#4682B4' },
-    { name: 'Jackets', value: 15, color: '#c039ff' },
-    { name: 'Accessories', value: 10, color: '#00bfff' },
-  ];
+  // Calculate analytics data from real database data
+  const analyticsData = useMemo(() => {
+    // Orders per day (last 7 days)
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toISOString().split('T')[0];
+    });
 
-  const topProductsData = [
-    { name: 'Premium T-Shirt', sales: 85 },
-    { name: 'Designer Hoodie', sales: 72 },
-    { name: 'Classic Jacket', sales: 63 },
-    { name: 'Sport Cap', sales: 45 },
-    { name: 'Winter Scarf', sales: 38 },
-  ];
+    const ordersPerDay = last7Days.map(date => {
+      const dayOrders = orders.filter(order => 
+        order.created_at.split('T')[0] === date
+      );
+      return {
+        date,
+        orders: dayOrders.length
+      };
+    });
 
-  const keyMetrics = [
-    { title: 'Total Revenue', value: '245,750 DA', icon: DollarSign, change: '+12.5%' },
-    { title: 'Total Orders', value: '1,247', icon: ShoppingCart, change: '+8.2%' },
-    { title: 'Average Order', value: '3,250 DA', icon: TrendingUp, change: '+4.1%' },
-    { title: 'Total Products', value: '89', icon: Package, change: '+15.3%' },
-  ];
+    // Product types distribution
+    const productTypeStats = productTypes.map(type => {
+      const typeProducts = products.filter(p => p.product_type_id === type.id);
+      const typeOrders = orders.filter(order => 
+        typeProducts.some(product => product.name === order.product_name)
+      );
+      return {
+        name: type.name,
+        value: typeOrders.length,
+        color: `hsl(${Math.random() * 360}, 70%, 60%)`
+      };
+    }).filter(item => item.value > 0);
+
+    // Calculate percentages for pie chart
+    const totalTypeOrders = productTypeStats.reduce((sum, item) => sum + item.value, 0);
+    const productTypesData = productTypeStats.map(item => ({
+      ...item,
+      value: totalTypeOrders > 0 ? Math.round((item.value / totalTypeOrders) * 100) : 0
+    }));
+
+    // Top selling products
+    const productSales = products.map(product => {
+      const productOrders = orders.filter(order => order.product_name === product.name);
+      return {
+        name: product.name,
+        sales: productOrders.length
+      };
+    }).sort((a, b) => b.sales - a.sales).slice(0, 5);
+
+    // Key metrics
+    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total_price), 0);
+    const totalOrders = orders.length;
+    const averageOrder = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const totalProducts = products.length;
+
+    return {
+      ordersPerDay,
+      productTypesData,
+      productSales,
+      keyMetrics: [
+        { title: 'Total Revenue', value: `${totalRevenue.toLocaleString()} DA`, icon: DollarSign, change: '+12.5%' },
+        { title: 'Total Orders', value: totalOrders.toString(), icon: ShoppingCart, change: '+8.2%' },
+        { title: 'Average Order', value: `${Math.round(averageOrder).toLocaleString()} DA`, icon: TrendingUp, change: '+4.1%' },
+        { title: 'Total Products', value: totalProducts.toString(), icon: Package, change: '+15.3%' },
+      ]
+    };
+  }, [orders, products, productTypes]);
 
   return (
     <div className="space-y-8">
@@ -43,7 +83,7 @@ const AnalyticsTab = () => {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {keyMetrics.map((metric, index) => (
+        {analyticsData.keyMetrics.map((metric, index) => (
           <motion.div
             key={metric.title}
             className="glass-effect p-6 rounded-xl border"
@@ -74,7 +114,7 @@ const AnalyticsTab = () => {
         >
           <h3 className="text-lg font-semibold mb-4">Orders Per Day (Last 7 Days)</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={ordersData}>
+            <LineChart data={analyticsData.ordersPerDay}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis 
                 dataKey="date" 
@@ -118,42 +158,50 @@ const AnalyticsTab = () => {
           transition={{ delay: 0.3 }}
         >
           <h3 className="text-lg font-semibold mb-4">Sales by Product Type</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={productTypesData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {productTypesData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+          {analyticsData.productTypesData.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={analyticsData.productTypesData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {analyticsData.productTypesData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(17, 24, 39, 0.9)', 
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#F9FAFB'
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap justify-center gap-4 mt-4">
+                {analyticsData.productTypesData.map((item, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-sm">{item.name} ({item.value}%)</span>
+                  </div>
                 ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(17, 24, 39, 0.9)', 
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#F9FAFB'
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="flex flex-wrap justify-center gap-4 mt-4">
-            {productTypesData.map((item, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-sm">{item.name} ({item.value}%)</span>
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+              No sales data available yet
+            </div>
+          )}
         </motion.div>
       </div>
 
@@ -165,28 +213,34 @@ const AnalyticsTab = () => {
         transition={{ delay: 0.4 }}
       >
         <h3 className="text-lg font-semibold mb-4">Top Selling Products</h3>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={topProductsData} layout="horizontal">
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis type="number" stroke="#9CA3AF" fontSize={12} />
-            <YAxis type="category" dataKey="name" stroke="#9CA3AF" fontSize={12} width={120} />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'rgba(17, 24, 39, 0.9)', 
-                border: '1px solid #374151',
-                borderRadius: '8px',
-                color: '#F9FAFB'
-              }}
-            />
-            <Bar dataKey="sales" fill="url(#barGradient)" radius={[0, 4, 4, 0]} />
-            <defs>
-              <linearGradient id="barGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#8A2BE2" />
-                <stop offset="100%" stopColor="#4682B4" />
-              </linearGradient>
-            </defs>
-          </BarChart>
-        </ResponsiveContainer>
+        {analyticsData.productSales.length > 0 && analyticsData.productSales[0].sales > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={analyticsData.productSales} layout="horizontal">
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis type="number" stroke="#9CA3AF" fontSize={12} />
+              <YAxis type="category" dataKey="name" stroke="#9CA3AF" fontSize={12} width={120} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'rgba(17, 24, 39, 0.9)', 
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#F9FAFB'
+                }}
+              />
+              <Bar dataKey="sales" fill="url(#barGradient)" radius={[0, 4, 4, 0]} />
+              <defs>
+                <linearGradient id="barGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#8A2BE2" />
+                  <stop offset="100%" stopColor="#4682B4" />
+                </linearGradient>
+              </defs>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex items-center justify-center h-[350px] text-muted-foreground">
+            No sales data available yet
+          </div>
+        )}
       </motion.div>
     </div>
   );

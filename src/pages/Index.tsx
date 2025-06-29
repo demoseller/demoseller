@@ -4,41 +4,19 @@ import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import ProductTypeCard from '../components/ProductTypeCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-
-// Mock data for product types
-const mockProductTypes = [
-  {
-    id: 't-shirts',
-    name: 'T-Shirts',
-    imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=600&fit=crop'
-  },
-  {
-    id: 'hoodies',
-    name: 'Hoodies',
-    imageUrl: 'https://images.unsplash.com/photo-1556821840-3a9c6aa6a6ad?w=800&h=600&fit=crop'
-  },
-  {
-    id: 'accessories',
-    name: 'Accessories',
-    imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&h=600&fit=crop'
-  },
-  {
-    id: 'electronics',
-    name: 'Electronics',
-    imageUrl: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&h=600&fit=crop'
-  }
-];
+import { useProductTypes } from '../hooks/useSupabaseStore';
 
 const Index = () => {
   const [loading, setLoading] = useState(true);
+  const { productTypes, loading: typesLoading } = useProductTypes();
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setLoading(false), 1500);
+    // Simulate loading for UI smoothness
+    const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
+  if (loading || typesLoading) {
     return <LoadingSpinner />;
   }
 
@@ -104,17 +82,23 @@ const Index = () => {
             Discover Our Collections
           </motion.h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {mockProductTypes.map((type, index) => (
-              <ProductTypeCard
-                key={type.id}
-                id={type.id}
-                name={type.name}
-                imageUrl={type.imageUrl}
-                index={index}
-              />
-            ))}
-          </div>
+          {productTypes.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {productTypes.map((type, index) => (
+                <ProductTypeCard
+                  key={type.id}
+                  id={type.id}
+                  name={type.name}
+                  imageUrl={type.image_url || '/placeholder.svg'}
+                  index={index}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-xl text-muted-foreground">No product types available yet.</p>
+            </div>
+          )}
         </div>
       </motion.section>
       

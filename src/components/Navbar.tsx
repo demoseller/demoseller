@@ -1,10 +1,13 @@
 
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { User, Home } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 const Navbar = () => {
+  const location = useLocation();
+  const isDashboard = location.pathname === '/dashboard';
+
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -31,15 +34,29 @@ const Navbar = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Link to="/dashboard">
-              <motion.button
-                className="p-2 rounded-lg glass-effect hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <User className="w-5 h-5" />
-              </motion.button>
-            </Link>
+            {isDashboard ? (
+              <Link to="/">
+                <motion.button
+                  className="p-2 rounded-lg glass-effect hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  title="Go to Home"
+                >
+                  <Home className="w-5 h-5" />
+                </motion.button>
+              </Link>
+            ) : (
+              <Link to="/dashboard">
+                <motion.button
+                  className="p-2 rounded-lg glass-effect hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  title="Go to Dashboard"
+                >
+                  <User className="w-5 h-5" />
+                </motion.button>
+              </Link>
+            )}
           </motion.div>
         </div>
       </div>

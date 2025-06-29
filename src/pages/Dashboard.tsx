@@ -2,12 +2,13 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, BarChart3, ShoppingCart, LogOut } from 'lucide-react';
+import { Package, BarChart3, ShoppingCart, LogOut, Home } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import ThemeToggle from '../components/ThemeToggle';
 import OrdersTab from '../components/dashboard/OrdersTab';
 import ProductsTab from '../components/dashboard/ProductsTab';
 import AnalyticsTab from '../components/dashboard/AnalyticsTab';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('orders');
@@ -43,6 +44,8 @@ const Dashboard = () => {
     { id: 'analytics', name: 'Analytics', icon: BarChart3 },
   ];
 
+  const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -55,7 +58,17 @@ const Dashboard = () => {
           <div className="flex justify-between items-center h-16">
             <h1 className="text-2xl font-bold gradient-text">Seller Dashboard</h1>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Welcome, {user.email}</span>
+              <span className="text-sm text-muted-foreground">Welcome, {displayName}</span>
+              <Link to="/">
+                <motion.button
+                  className="p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  title="Go to Home"
+                >
+                  <Home className="w-5 h-5" />
+                </motion.button>
+              </Link>
               <ThemeToggle />
               <button
                 onClick={handleLogout}

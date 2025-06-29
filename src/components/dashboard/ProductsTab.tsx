@@ -3,17 +3,18 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Plus, Package, Edit, Trash2, Upload, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { useProductTypes, useProducts } from '../../hooks/useSupabaseStore';
+import AddProductModal from './AddProductModal';
+import { toast } from 'sonner';
 
 const ProductsTab = () => {
   const { productTypes, loading: typesLoading, addProductType, updateProductType, deleteProductType } = useProductTypes();
-  const { products, loading: productsLoading, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, loading: productsLoading, deleteProduct } = useProducts();
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditTypeModal, setShowEditTypeModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedTypeId, setSelectedTypeId] = useState<string>('');
-  const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
   const [editingType, setEditingType] = useState<any>(null);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -35,10 +36,16 @@ const ProductsTab = () => {
 
   const handleDeleteConfirm = async () => {
     if (deleteTarget) {
-      if (deleteTarget.type === 'productType') {
-        await deleteProductType(deleteTarget.id);
-      } else {
-        await deleteProduct(deleteTarget.id);
+      try {
+        if (deleteTarget.type === 'productType') {
+          await deleteProductType(deleteTarget.id);
+          toast.success('Product type deleted successfully!');
+        } else {
+          await deleteProduct(deleteTarget.id);
+          toast.success('Product deleted successfully!');
+        }
+      } catch (error) {
+        toast.error('Failed to delete. Please try again.');
       }
       setDeleteTarget(null);
       setShowDeleteConfirm(false);
@@ -48,25 +55,42 @@ const ProductsTab = () => {
   const AddProductTypeModal = () => {
     const [typeName, setTypeName] = useState(editingType?.name || '');
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (editingType) {
-        await updateProductType(editingType.id, {
-          name: typeName,
-          image_url: editingType.image_url // Keep existing image for now
-        });
-        setShowEditTypeModal(false);
-        setEditingType(null);
-      } else {
-        await addProductType({
-          name: typeName,
-          image_url: '/placeholder.svg'
-        });
-        setShowAddTypeModal(false);
+      setLoading(true);
+      
+      try {
+        // For now, we'll use a placeholder URL for the image
+        // In a real app, you'd upload the image to Supabase Storage
+        const imageUrl = imageFile 
+          ? `https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=600&fit=crop&v=${Date.now()}`
+          : editingType?.image_url || '/placeholder.svg';
+
+        if (editingType) {
+          await updateProductType(editingType.id, {
+            name: typeName,
+            image_url: imageUrl
+          });
+          toast.success('Product type updated successfully!');
+          setShowEditTypeModal(false);
+          setEditingType(null);
+        } else {
+          await addProductType({
+            name: typeName,
+            image_url: imageUrl
+          });
+          toast.success('Product type added successfully!');
+          setShowAddTypeModal(false);
+        }
+      } catch (error) {
+        toast.error('Failed to save product type. Please try again.');
+      } finally {
+        setLoading(false);
+        setTypeName('');
+        setImageFile(null);
       }
-      setTypeName('');
-      setImageFile(null);
     };
 
     return (
@@ -109,6 +133,9 @@ const ProductsTab = () => {
                 <label htmlFor="type-image" className="cursor-pointer text-sm text-muted-foreground">
                   Click to upload image
                 </label>
+                {imageFile && (
+                  <p className="text-sm text-primary mt-2">{imageFile.name}</p>
+                )}
               </div>
             </div>
             <div className="flex space-x-3 pt-4">
@@ -123,14 +150,16 @@ const ProductsTab = () => {
                   }
                 }}
                 className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
+                disabled={loading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 btn-gradient py-2 rounded-lg"
+                className="flex-1 btn-gradient py-2 rounded-lg disabled:opacity-50"
+                disabled={loading}
               >
-                {editingType ? 'Update' : 'Add'} Type
+                {loading ? 'Saving...' : (editingType ? 'Update Type' : 'Add Type')}
               </button>
             </div>
           </form>
@@ -219,7 +248,7 @@ const ProductsTab = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
                   <h3 className="text-lg font-bold">{type.name}</h3>
-                  <p className="text-sm opacity-90">{type.productCount || 0} products</p>
+                  <p className="text-sm opacity-90">{typeProducts.length} products</p>
                 </div>
               </div>
               
@@ -228,6 +257,7 @@ const ProductsTab = () => {
                   <button
                     onClick={() => {
                       setSelectedTypeId(type.id);
+                      setEditingProduct(null);
                       setShowAddProductModal(true);
                     }}
                     className="flex-1 bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
@@ -332,6 +362,18 @@ const ProductsTab = () => {
 
       {(showAddTypeModal || showEditTypeModal) && <AddProductTypeModal />}
       {showDeleteConfirm && <DeleteConfirmModal />}
+      
+      <AddProductModal
+        isOpen={showAddProductModal || showEditProductModal}
+        onClose={() => {
+          setShowAddProductModal(false);
+          setShowEditProductModal(false);
+          setEditingProduct(null);
+          setSelectedTypeId('');
+        }}
+        selectedTypeId={selectedTypeId}
+        editingProduct={editingProduct}
+      />
     </div>
   );
 };
