@@ -8,13 +8,13 @@ import { ArrowLeft } from 'lucide-react';
 import { useProducts, useProductTypes } from '../hooks/useSupabaseStore';
 
 const ProductsPage = () => {
-  const { id } = useParams();
+  const { typeId } = useParams();
   const [loading, setLoading] = useState(true);
   const { products, loading: productsLoading } = useProducts();
   const { productTypes, loading: typesLoading } = useProductTypes();
   
-  const currentProductType = productTypes.find(type => type.id === id);
-  const filteredProducts = products.filter(product => product.product_type_id === id);
+  const currentProductType = productTypes.find(type => type.id === typeId);
+  const filteredProducts = products.filter(product => product.product_type_id === typeId);
 
   useEffect(() => {
     if (!productsLoading && !typesLoading) {
@@ -79,7 +79,7 @@ const ProductsPage = () => {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   className="group relative overflow-hidden rounded-2xl shadow-xl card-hover"
                 >
-                  <Link to={`/product/${product.id}`}>
+                  <Link to={`/products/${typeId}/${product.id}`}>
                     <div className="relative h-80 w-full overflow-hidden">
                       <motion.img
                         src={product.images[0] || '/placeholder.svg'}

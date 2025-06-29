@@ -9,7 +9,6 @@ import ProductPage from './pages/ProductPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 import Dashboard from './pages/Dashboard';
 import AuthPage from './pages/AuthPage';
-import LoginPage from './pages/LoginPage';
 import NotFound from './pages/NotFound';
 import './App.css';
 
@@ -23,12 +22,11 @@ function App() {
           <div className="min-h-screen bg-background text-foreground">
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/products/:id" element={<ProductPage />} />
+              <Route path="/products/:typeId" element={<ProductsPage />} />
+              <Route path="/products/:typeId/:productId" element={<ProductPage />} />
               <Route path="/confirmation" element={<ConfirmationPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/auth" element={<AuthPage />} />
-              <Route path="/login" element={<Navigate to="/auth" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

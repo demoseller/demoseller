@@ -7,35 +7,70 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ImageLightbox from '../components/ImageLightbox';
 import ImageGalleryPagination from '../components/ImageGalleryPagination';
 import StarRating from '../components/StarRating';
-import { appStore } from '../store/appStore';
+import { useProducts, useProductTypes } from '../hooks/useSupabaseStore';
+import { useReviews, useOrders } from '../hooks/useProductData';
+import { toast } from 'sonner';
 
-// Mock product data with reviews
-const mockProduct = {
-  id: '1',
-  name: 'Premium Cotton T-Shirt',
-  description: 'Experience ultimate comfort with our premium cotton t-shirt. Made from 100% organic cotton with a perfect fit.',
-  basePrice: 29.99,
-  originalPrice: 42.99, // 30% discount
-  averageRating: 4.2,
-  reviewCount: 127,
-  images: [
-    'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1583743814133-5c9e2c78bb93?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=1200&h=800&fit=crop'
-  ],
-  sizes: [
-    { name: 'Small', modifier: 0 },
-    { name: 'Medium', modifier: 0 },
-    { name: 'Large', modifier: 2 },
-    { name: 'XL', modifier: 5 }
-  ],
-  colors: [
-    { name: 'White', modifier: 0 },
-    { name: 'Black', modifier: 0 },
-    { name: 'Navy', modifier: 3 },
-    { name: 'Premium Grey', modifier: 7 }
-  ]
+// Mock communes data
+const communesData: Record<string, string[]> = {
+  'Adrar': ['Adrar', 'Tamest', 'Charouine', 'Reggane', 'Inzghmir'],
+  'Chlef': ['Chlef', 'Ténès', 'Boukadir', 'El Karimia', 'Sobha'],
+  'Laghouat': ['Laghouat', 'Aflou', 'Ksar El Hirane', 'Hassi Delaa', 'Hassi R\'Mel'],
+  'Oum El Bouaghi': ['Oum El Bouaghi', 'Aïn Beïda', 'Aïn M\'Lila', 'Sigus', 'Ksar Sbahi'],
+  'Batna': ['Batna', 'Barika', 'Arris', 'Biskra', 'Menaâ'],
+  'Béjaïa': ['Béjaïa', 'Akbou', 'Kherrata', 'Sidi Aïch', 'Amizour'],
+  'Biskra': ['Biskra', 'Tolga', 'Sidi Okba', 'Chetma', 'Djemorah'],
+  'Béchar': ['Béchar', 'Kenadsa', 'Abadla', 'Beni Ounif', 'Igli'],
+  'Blida': ['Blida', 'Boufarik', 'Larbaa', 'Meftah', 'Soumaa'],
+  'Bouira': ['Bouira', 'Lakhdaria', 'M\'Chedallah', 'Sour El Ghouzlane', 'Aïn Bessem'],
+  'Tamanrasset': ['Tamanrasset', 'In Salah', 'In Guezzam', 'Tin Zaouatine', 'Idles'],
+  'Tébessa': ['Tébessa', 'Cheria', 'El Aouinet', 'Bir El Ater', 'Negrine'],
+  'Tlemcen': ['Tlemcen', 'Maghnia', 'Chetouane', 'Nedroma', 'Remchi'],
+  'Tiaret': ['Tiaret', 'Sougueur', 'Mahdia', 'Frenda', 'Ksar Chellala'],
+  'Tizi Ouzou': ['Tizi Ouzou', 'Azazga', 'Azeffoun', 'Tigzirt', 'Aïn El Hammam'],
+  'Alger': ['Alger Centre', 'Bab El Oued', 'Casbah', 'El Madania', 'Sidi M\'Hamed', 'Bir Mourad Raïs', 'Birkhadem', 'El Biar', 'Hydra', 'Kouba'],
+  'Djelfa': ['Djelfa', 'Messaâd', 'Hassi Bahbah', 'Aïn Oussara', 'Birine'],
+  'Jijel': ['Jijel', 'Ferdjioua', 'Taher', 'El Milia', 'Sidi Maârouf'],
+  'Sétif': ['Sétif', 'El Eulma', 'Aïn Oulmen', 'Bougaâ', 'Hammam Sokhna'],
+  'Saïda': ['Saïda', 'Balloul', 'Ouled Brahim', 'Sidi Boubekeur', 'El Hassasna'],
+  'Skikda': ['Skikda', 'Collo', 'Azzaba', 'Tamalous', 'Oued Z\'hour'],
+  'Sidi Bel Abbès': ['Sidi Bel Abbès', 'Telagh', 'Sfisef', 'Ben Badis', 'Mostefa Ben Brahim'],
+  'Annaba': ['Annaba', 'El Hadjar', 'Berrahal', 'Chetaibi', 'Aïn Berda'],
+  'Guelma': ['Guelma', 'Bouchegouf', 'Héliopolis', 'Hammam Debagh', 'Oued Zenati'],
+  'Constantine': ['Constantine', 'Hamma Bouziane', 'Didouche Mourad', 'El Khroub', 'Aïn Smara'],
+  'Médéa': ['Médéa', 'Berrouaghia', 'Ksar El Boukhari', 'Ouzera', 'Chellalet El Adhaoura'],
+  'Mostaganem': ['Mostaganem', 'Relizane', 'Sidi Ali', 'Hassi Mameche', 'Stidia'],
+  'MSila': ['M\'Sila', 'Boussaâda', 'Sidi Aïssa', 'Magra', 'Hammam Dalaa'],
+  'Mascara': ['Mascara', 'Sig', 'Mohammadia', 'Tighennif', 'Bouhanifia'],
+  'Ouargla': ['Ouargla', 'Hassi Messaoud', 'Touggourt', 'Megarine', 'N\'Goussa'],
+  'Oran': ['Oran', 'Bir El Djir', 'Es Senia', 'Gdyel', 'Mers El Kébir', 'Aïn Turk', 'Boutlélis', 'El Braya'],
+  'El Bayadh': ['El Bayadh', 'Rogassa', 'Stitten', 'Brezina', 'Boualem'],
+  'Illizi': ['Illizi', 'Djanet', 'Bordj Omar Driss', 'Debdeb', 'In Aménas'],
+  'Bordj Bou Arréridj': ['Bordj Bou Arréridj', 'Ras El Oued', 'Bordj Ghdir', 'Mansourah', 'El M\'hir'],
+  'Boumerdès': ['Boumerdès', 'Dellys', 'Naciria', 'Khemis El Khechna', 'Boudouaou'],
+  'El Tarf': ['El Tarf', 'El Kala', 'Bouteldja', 'Ben M\'Hidi', 'Bougous'],
+  'Tindouf': ['Tindouf', 'Oum El Assel', 'Hassi El Ghella', 'Chenachene'],
+  'Tissemsilt': ['Tissemsilt', 'Theniet El Had', 'Bordj Bou Naama', 'Lazharia', 'Khemisti'],
+  'El Oued': ['El Oued', 'Robbah', 'Guemar', 'Reguiba', 'Magrane'],
+  'Khenchela': ['Khenchela', 'Babar', 'Bouhmama', 'El Hamma', 'Kais'],
+  'Souk Ahras': ['Souk Ahras', 'Sedrata', 'Haddada', 'Ouled Driss', 'Tiffech'],
+  'Tipaza': ['Tipaza', 'Koléa', 'Cherchell', 'Hadjout', 'Menaceur'],
+  'Mila': ['Mila', 'Ferdjioua', 'Chelghoum Laïd', 'Oued Athmania', 'Rouached'],
+  'Aïn Defla': ['Aïn Defla', 'Khemis Miliana', 'El Attaf', 'Boumedfaa', 'Djelida'],
+  'Naâma': ['Naâma', 'Mécheria', 'Aïn Sefra', 'Tiout', 'Sfissifa'],
+  'Aïn Témouchent': ['Aïn Témouchent', 'Hammam Bou Hadjar', 'Beni Saf', 'El Malah', 'Ouled Kihal'],
+  'Ghardaïa': ['Ghardaïa', 'El Menea', 'Berriane', 'Metlili', 'El Guerrara'],
+  'Relizane': ['Relizane', 'Mazouna', 'Oued Rhiou', 'Yellel', 'Sidi Khettab'],
+  'Timimoun': ['Timimoun', 'Aougrout', 'Deldoul', 'Charouine', 'Metarfa'],
+  'Bordj Badji Mokhtar': ['Bordj Badji Mokhtar', 'Timiaouine', 'Timokten'],
+  'Ouled Djellal': ['Ouled Djellal', 'Sidi Khaled', 'Besbes', 'Chaiba'],
+  'Béni Abbès': ['Béni Abbès', 'Tamtert', 'Ouled Khoudir', 'El Ouata'],
+  'In Salah': ['In Salah', 'Foggaret Ezzouia', 'In Ghar'],
+  'In Guezzam': ['In Guezzam', 'Tin Zaouatine'],
+  'Touggourt': ['Touggourt', 'Megarine', 'Sidi Slimane', 'Nezla'],
+  'Djanet': ['Djanet', 'Bordj El Haoues'],
+  'El MGhair': ['El MGhair', 'Djamaa', 'Sidi Amrane'],
+  'El Menia': ['El Menia', 'Hassi Gara', 'Hassi El Fejej']
 };
 
 // Mock shipping costs
@@ -101,7 +136,7 @@ const shippingCosts = {
 };
 
 const ProductPage = () => {
-  const { id } = useParams();
+  const { typeId, productId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -115,86 +150,38 @@ const ProductPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState('');
-  const [productRating, setProductRating] = useState(mockProduct.averageRating);
-  const [reviewCount, setReviewCount] = useState(mockProduct.reviewCount);
+  const [userRating, setUserRating] = useState(0);
+  const [userComment, setUserComment] = useState('');
   
   const galleryRef = useRef<HTMLDivElement>(null);
 
-  // Mock communes data
-  const communesData: Record<string, string[]> = {
-    'Adrar': ['Adrar', 'Tamest', 'Charouine', 'Reggane', 'Inzghmir'],
-    'Chlef': ['Chlef', 'Ténès', 'Boukadir', 'El Karimia', 'Sobha'],
-    'Laghouat': ['Laghouat', 'Aflou', 'Ksar El Hirane', 'Hassi Delaa', 'Hassi R\'Mel'],
-    'Oum El Bouaghi': ['Oum El Bouaghi', 'Aïn Beïda', 'Aïn M\'Lila', 'Sigus', 'Ksar Sbahi'],
-    'Batna': ['Batna', 'Barika', 'Arris', 'Biskra', 'Menaâ'],
-    'Béjaïa': ['Béjaïa', 'Akbou', 'Kherrata', 'Sidi Aïch', 'Amizour'],
-    'Biskra': ['Biskra', 'Tolga', 'Sidi Okba', 'Chetma', 'Djemorah'],
-    'Béchar': ['Béchar', 'Kenadsa', 'Abadla', 'Beni Ounif', 'Igli'],
-    'Blida': ['Blida', 'Boufarik', 'Larbaa', 'Meftah', 'Soumaa'],
-    'Bouira': ['Bouira', 'Lakhdaria', 'M\'Chedallah', 'Sour El Ghouzlane', 'Aïn Bessem'],
-    'Tamanrasset': ['Tamanrasset', 'In Salah', 'In Guezzam', 'Tin Zaouatine', 'Idles'],
-    'Tébessa': ['Tébessa', 'Cheria', 'El Aouinet', 'Bir El Ater', 'Negrine'],
-    'Tlemcen': ['Tlemcen', 'Maghnia', 'Chetouane', 'Nedroma', 'Remchi'],
-    'Tiaret': ['Tiaret', 'Sougueur', 'Mahdia', 'Frenda', 'Ksar Chellala'],
-    'Tizi Ouzou': ['Tizi Ouzou', 'Azazga', 'Azeffoun', 'Tigzirt', 'Aïn El Hammam'],
-    'Alger': ['Alger Centre', 'Bab El Oued', 'Casbah', 'El Madania', 'Sidi M\'Hamed', 'Bir Mourad Raïs', 'Birkhadem', 'El Biar', 'Hydra', 'Kouba'],
-    'Djelfa': ['Djelfa', 'Messaâd', 'Hassi Bahbah', 'Aïn Oussara', 'Birine'],
-    'Jijel': ['Jijel', 'Ferdjioua', 'Taher', 'El Milia', 'Sidi Maârouf'],
-    'Sétif': ['Sétif', 'El Eulma', 'Aïn Oulmen', 'Bougaâ', 'Hammam Sokhna'],
-    'Saïda': ['Saïda', 'Balloul', 'Ouled Brahim', 'Sidi Boubekeur', 'El Hassasna'],
-    'Skikda': ['Skikda', 'Collo', 'Azzaba', 'Tamalous', 'Oued Z\'hour'],
-    'Sidi Bel Abbès': ['Sidi Bel Abbès', 'Telagh', 'Sfisef', 'Ben Badis', 'Mostefa Ben Brahim'],
-    'Annaba': ['Annaba', 'El Hadjar', 'Berrahal', 'Chetaibi', 'Aïn Berda'],
-    'Guelma': ['Guelma', 'Bouchegouf', 'Héliopolis', 'Hammam Debagh', 'Oued Zenati'],
-    'Constantine': ['Constantine', 'Hamma Bouziane', 'Didouche Mourad', 'El Khroub', 'Aïn Smara'],
-    'Médéa': ['Médéa', 'Berrouaghia', 'Ksar El Boukhari', 'Ouzera', 'Chellalet El Adhaoura'],
-    'Mostaganem': ['Mostaganem', 'Relizane', 'Sidi Ali', 'Hassi Mameche', 'Stidia'],
-    'MSila': ['M\'Sila', 'Boussaâda', 'Sidi Aïssa', 'Magra', 'Hammam Dalaa'],
-    'Mascara': ['Mascara', 'Sig', 'Mohammadia', 'Tighennif', 'Bouhanifia'],
-    'Ouargla': ['Ouargla', 'Hassi Messaoud', 'Touggourt', 'Megarine', 'N\'Goussa'],
-    'Oran': ['Oran', 'Bir El Djir', 'Es Senia', 'Gdyel', 'Mers El Kébir', 'Aïn Turk', 'Boutlélis', 'El Braya'],
-    'El Bayadh': ['El Bayadh', 'Rogassa', 'Stitten', 'Brezina', 'Boualem'],
-    'Illizi': ['Illizi', 'Djanet', 'Bordj Omar Driss', 'Debdeb', 'In Aménas'],
-    'Bordj Bou Arréridj': ['Bordj Bou Arréridj', 'Ras El Oued', 'Bordj Ghdir', 'Mansourah', 'El M\'hir'],
-    'Boumerdès': ['Boumerdès', 'Dellys', 'Naciria', 'Khemis El Khechna', 'Boudouaou'],
-    'El Tarf': ['El Tarf', 'El Kala', 'Bouteldja', 'Ben M\'Hidi', 'Bougous'],
-    'Tindouf': ['Tindouf', 'Oum El Assel', 'Hassi El Ghella', 'Chenachene'],
-    'Tissemsilt': ['Tissemsilt', 'Theniet El Had', 'Bordj Bou Naama', 'Lazharia', 'Khemisti'],
-    'El Oued': ['El Oued', 'Robbah', 'Guemar', 'Reguiba', 'Magrane'],
-    'Khenchela': ['Khenchela', 'Babar', 'Bouhmama', 'El Hamma', 'Kais'],
-    'Souk Ahras': ['Souk Ahras', 'Sedrata', 'Haddada', 'Ouled Driss', 'Tiffech'],
-    'Tipaza': ['Tipaza', 'Koléa', 'Cherchell', 'Hadjout', 'Menaceur'],
-    'Mila': ['Mila', 'Ferdjioua', 'Chelghoum Laïd', 'Oued Athmania', 'Rouached'],
-    'Aïn Defla': ['Aïn Defla', 'Khemis Miliana', 'El Attaf', 'Boumedfaa', 'Djelida'],
-    'Naâma': ['Naâma', 'Mécheria', 'Aïn Sefra', 'Tiout', 'Sfissifa'],
-    'Aïn Témouchent': ['Aïn Témouchent', 'Hammam Bou Hadjar', 'Beni Saf', 'El Malah', 'Ouled Kihal'],
-    'Ghardaïa': ['Ghardaïa', 'El Menea', 'Berriane', 'Metlili', 'El Guerrara'],
-    'Relizane': ['Relizane', 'Mazouna', 'Oued Rhiou', 'Yellel', 'Sidi Khettab'],
-    'Timimoun': ['Timimoun', 'Aougrout', 'Deldoul', 'Charouine', 'Metarfa'],
-    'Bordj Badji Mokhtar': ['Bordj Badji Mokhtar', 'Timiaouine', 'Timokten'],
-    'Ouled Djellal': ['Ouled Djellal', 'Sidi Khaled', 'Besbes', 'Chaiba'],
-    'Béni Abbès': ['Béni Abbès', 'Tamtert', 'Ouled Khoudir', 'El Ouata'],
-    'In Salah': ['In Salah', 'Foggaret Ezzouia', 'In Ghar'],
-    'In Guezzam': ['In Guezzam', 'Tin Zaouatine'],
-    'Touggourt': ['Touggourt', 'Megarine', 'Sidi Slimane', 'Nezla'],
-    'Djanet': ['Djanet', 'Bordj El Haoues'],
-    'El MGhair': ['El MGhair', 'Djamaa', 'Sidi Amrane'],
-    'El Menia': ['El Menia', 'Hassi Gara', 'Hassi El Fejej']
-  };
+  const { products, loading: productsLoading } = useProducts();
+  const { productTypes, loading: typesLoading } = useProductTypes();
+  const { reviews, loading: reviewsLoading, addReview } = useReviews(productId || '');
+  const { addOrder } = useOrders();
+
+  const product = products.find(p => p.id === productId);
+  const productType = productTypes.find(t => t.id === typeId);
+
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+    : 0;
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!productsLoading && !typesLoading && !reviewsLoading) {
+      const timer = setTimeout(() => setLoading(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [productsLoading, typesLoading, reviewsLoading]);
 
   // Handle scroll-based image index update
   useEffect(() => {
     const handleScroll = () => {
-      if (galleryRef.current) {
+      if (galleryRef.current && product?.images) {
         const scrollLeft = galleryRef.current.scrollLeft;
-        const imageWidth = galleryRef.current.scrollWidth / mockProduct.images.length;
+        const imageWidth = galleryRef.current.scrollWidth / product.images.length;
         const newIndex = Math.round(scrollLeft / imageWidth);
-        setCurrentImageIndex(Math.max(0, Math.min(newIndex, mockProduct.images.length - 1)));
+        setCurrentImageIndex(Math.max(0, Math.min(newIndex, product.images.length - 1)));
       }
     };
 
@@ -203,24 +190,25 @@ const ProductPage = () => {
       galleryElement.addEventListener('scroll', handleScroll);
       return () => galleryElement.removeEventListener('scroll', handleScroll);
     }
-  }, []);
+  }, [product]);
 
   const calculateTotalPrice = () => {
-    let total = mockProduct.basePrice;
+    if (!product) return 0;
     
-    if (selectedSize) {
-      const size = mockProduct.sizes.find(s => s.name === selectedSize);
-      total += size?.modifier || 0;
+    let total = product.base_price;
+    
+    if (selectedSize && product.options.sizes) {
+      const size = product.options.sizes.find(s => s.name === selectedSize);
+      total += size?.priceModifier || 0;
     }
     
-    if (selectedColor) {
-      const color = mockProduct.colors.find(c => c.name === selectedColor);
-      total += color?.modifier || 0;
+    if (selectedColor && product.options.colors) {
+      const color = product.options.colors.find(c => c.name === selectedColor);
+      total += color?.priceModifier || 0;
     }
     
     if (selectedWilaya) {
       let shippingCost = shippingCosts[selectedWilaya as keyof typeof shippingCosts] || 0;
-      // Add 30% to shipping if home delivery is selected
       if (shipToHome) {
         shippingCost = shippingCost * 1.3;
       }
@@ -244,8 +232,8 @@ const ProductPage = () => {
 
   const handleImageIndexChange = (index: number) => {
     setCurrentImageIndex(index);
-    if (galleryRef.current) {
-      const imageWidth = galleryRef.current.scrollWidth / mockProduct.images.length;
+    if (galleryRef.current && product?.images) {
+      const imageWidth = galleryRef.current.scrollWidth / product.images.length;
       galleryRef.current.scrollTo({
         left: imageWidth * index,
         behavior: 'smooth'
@@ -253,45 +241,63 @@ const ProductPage = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Add order to the store
-    appStore.addOrder({
-      customerName: fullName,
-      customerPhone: phoneNumber,
-      wilaya: selectedWilaya,
-      commune: selectedCommune,
-      fullAddress: `${selectedWilaya}${selectedCommune ? `, ${selectedCommune}` : ''}`,
-      productName: mockProduct.name,
-      size: selectedSize,
-      color: selectedColor,
-      totalPrice: calculateTotalPrice(),
-      status: 'pending'
-    });
-    
-    // Simulate customer review submission and update rating
-    const newRating = Math.random() * 2 + 3; // Random rating between 3-5
-    const newAverageRating = ((productRating * reviewCount) + newRating) / (reviewCount + 1);
-    setProductRating(newAverageRating);
-    setReviewCount(reviewCount + 1);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Navigate to confirmation page with product info
-    navigate('/confirmation', { 
-      state: { 
-        fromProductType: 't-shirts',
-        productId: mockProduct.id,
-        productName: mockProduct.name,
-        productImage: mockProduct.images[0]
-      }
-    });
+    if (!product || userRating === 0) return;
+
+    try {
+      await addReview({
+        product_id: product.id,
+        rating: userRating,
+        comment: userComment,
+        reviewer_name: fullName || 'Anonymous'
+      });
+      
+      setUserRating(0);
+      setUserComment('');
+      toast.success('Review submitted successfully!');
+    } catch (error) {
+      toast.error('Failed to submit review');
+    }
   };
 
-  if (loading) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Add order to database
+      await addOrder({
+        customer_name: fullName,
+        customer_phone: phoneNumber,
+        wilaya: selectedWilaya,
+        commune: selectedCommune,
+        full_address: `${selectedWilaya}${selectedCommune ? `, ${selectedCommune}` : ''}`,
+        product_name: product.name,
+        size: selectedSize,
+        color: selectedColor,
+        total_price: calculateTotalPrice(),
+        status: 'pending' as const
+      });
+      
+      // Navigate to confirmation page
+      navigate('/confirmation', { 
+        state: { 
+          fromProductType: productType?.name,
+          productId: product.id,
+          productName: product.name,
+          productImage: product.images[0]
+        }
+      });
+    } catch (error) {
+      toast.error('Failed to place order. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading || !product) {
     return <LoadingSpinner />;
   }
 
@@ -313,7 +319,7 @@ const ProductPage = () => {
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <Link to="/products/t-shirts">
+            <Link to={`/products/${typeId}`}>
               <motion.button
                 className="flex items-center space-x-2 glass-effect px-4 py-2 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
                 whileHover={{ scale: 1.05 }}
@@ -339,7 +345,7 @@ const ProductPage = () => {
                 onWheel={handleHorizontalScroll}
                 style={{ scrollBehavior: 'smooth' }}
               >
-                {mockProduct.images.map((image, index) => (
+                {product.images.map((image, index) => (
                   <motion.div
                     key={index}
                     className="flex-shrink-0 w-80 lg:w-96 h-full relative rounded-2xl overflow-hidden shadow-xl cursor-pointer"
@@ -349,7 +355,7 @@ const ProductPage = () => {
                   >
                     <img
                       src={image}
-                      alt={`${mockProduct.name} - Image ${index + 1}`}
+                      alt={`${product.name} - Image ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -359,7 +365,7 @@ const ProductPage = () => {
               
               {/* Image Pagination Dots */}
               <ImageGalleryPagination
-                images={mockProduct.images}
+                images={product.images}
                 currentIndex={currentImageIndex}
                 onIndexChange={handleImageIndexChange}
               />
@@ -388,7 +394,7 @@ const ProductPage = () => {
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
                 >
-                  {mockProduct.name}
+                  {product.name}
                 </motion.h1>
 
                 {/* Star Rating Display */}
@@ -399,12 +405,12 @@ const ProductPage = () => {
                   transition={{ delay: 0.5 }}
                 >
                   <StarRating 
-                    rating={productRating} 
+                    rating={averageRating} 
                     readonly 
                     showText 
                   />
                   <span className="text-sm text-muted-foreground">
-                    ({reviewCount} reviews)
+                    ({reviews.length} reviews)
                   </span>
                 </motion.div>
                 
@@ -414,10 +420,10 @@ const ProductPage = () => {
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.6 }}
                 >
-                  {mockProduct.description}
+                  {product.description}
                 </motion.p>
                 
-                {/* Pricing with Discount */}
+                {/* Pricing */}
                 <motion.div
                   className="mb-6"
                   initial={{ scale: 0 }}
@@ -425,18 +431,12 @@ const ProductPage = () => {
                   transition={{ delay: 0.8, type: "spring" }}
                 >
                   <div className="flex items-center space-x-3">
-                    <span className="text-2xl text-muted-foreground line-through">
-                      ${mockProduct.originalPrice.toFixed(2)}
-                    </span>
                     <span className="text-3xl font-bold gradient-text">
-                      ${mockProduct.basePrice.toFixed(2)}
-                    </span>
-                    <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                      30% OFF
+                      {product.base_price} DA
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Total: ${calculateTotalPrice().toFixed(2)} (including options & shipping)
+                    Total: {calculateTotalPrice()} DA (including options & shipping)
                   </p>
                 </motion.div>
               </div>
@@ -444,39 +444,43 @@ const ProductPage = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Product Options */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-foreground">Size</label>
-                    <select
-                      value={selectedSize}
-                      onChange={(e) => setSelectedSize(e.target.value)}
-                      className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                      required
-                    >
-                      <option value="">Select Size</option>
-                      {mockProduct.sizes.map(size => (
-                        <option key={size.name} value={size.name}>
-                          {size.name} {size.modifier > 0 && `(+$${size.modifier})`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {product.options.sizes && product.options.sizes.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-foreground">Size</label>
+                      <select
+                        value={selectedSize}
+                        onChange={(e) => setSelectedSize(e.target.value)}
+                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                        required
+                      >
+                        <option value="">Select Size</option>
+                        {product.options.sizes.map(size => (
+                          <option key={size.name} value={size.name}>
+                            {size.name} {size.priceModifier > 0 && `(+${size.priceModifier} DA)`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-foreground">Color</label>
-                    <select
-                      value={selectedColor}
-                      onChange={(e) => setSelectedColor(e.target.value)}
-                      className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                      required
-                    >
-                      <option value="">Select Color</option>
-                      {mockProduct.colors.map(color => (
-                        <option key={color.name} value={color.name}>
-                          {color.name} {color.modifier > 0 && `(+$${color.modifier})`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {product.options.colors && product.options.colors.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-foreground">Color</label>
+                      <select
+                        value={selectedColor}
+                        onChange={(e) => setSelectedColor(e.target.value)}
+                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                        required
+                      >
+                        <option value="">Select Color</option>
+                        {product.options.colors.map(color => (
+                          <option key={color.name} value={color.name}>
+                            {color.name} {color.priceModifier > 0 && `(+${color.priceModifier} DA)`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {/* Customer Information */}
@@ -514,7 +518,7 @@ const ProductPage = () => {
                       value={selectedWilaya}
                       onChange={(e) => {
                         setSelectedWilaya(e.target.value);
-                        setSelectedCommune(''); // Reset commune when wilaya changes
+                        setSelectedCommune('');
                       }}
                       className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
                       required
@@ -525,7 +529,7 @@ const ProductPage = () => {
                         const finalCost = shipToHome ? baseCost * 1.3 : baseCost;
                         return (
                           <option key={wilaya} value={wilaya}>
-                            {wilaya} (+${finalCost.toFixed(2)} shipping)
+                            {wilaya} (+{finalCost.toFixed(2)} DA shipping)
                           </option>
                         );
                       })}
@@ -591,11 +595,70 @@ const ProductPage = () => {
                   ) : (
                     <>
                       <ShoppingCart className="w-5 h-5" />
-                      <span>Place Order (${calculateTotalPrice().toFixed(2)})</span>
+                      <span>Place Order ({calculateTotalPrice()} DA)</span>
                     </>
                   )}
                 </motion.button>
               </form>
+
+              {/* Reviews Section */}
+              <div className="space-y-6 mt-12 border-t pt-8">
+                <h3 className="text-2xl font-bold">Customer Reviews</h3>
+                
+                {/* Add Review Form */}
+                <form onSubmit={handleSubmitReview} className="space-y-4 p-4 bg-muted/20 rounded-lg">
+                  <h4 className="text-lg font-semibold">Write a Review</h4>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Your Rating</label>
+                    <StarRating
+                      rating={userRating}
+                      onRatingChange={setUserRating}
+                      size="lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Comment (Optional)</label>
+                    <textarea
+                      value={userComment}
+                      onChange={(e) => setUserComment(e.target.value)}
+                      className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                      rows={3}
+                      placeholder="Share your experience with this product..."
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={userRating === 0}
+                    className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Submit Review
+                  </button>
+                </form>
+
+                {/* Display Reviews */}
+                <div className="space-y-4">
+                  {reviews.length > 0 ? (
+                    reviews.map((review) => (
+                      <div key={review.id} className="p-4 bg-muted/10 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">{review.reviewer_name || 'Anonymous'}</span>
+                            <StarRating rating={review.rating} readonly size="sm" />
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(review.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {review.comment && (
+                          <p className="text-muted-foreground">{review.comment}</p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
+                  )}
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -604,7 +667,7 @@ const ProductPage = () => {
       {/* Image Lightbox */}
       <ImageLightbox
         src={lightboxImage}
-        alt={mockProduct.name}
+        alt={product.name}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
       />
