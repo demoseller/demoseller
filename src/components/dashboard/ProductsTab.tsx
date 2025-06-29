@@ -1,7 +1,8 @@
+
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Plus, Package, Edit, Trash2, Upload } from 'lucide-react';
-import { useProductTypes } from '../../hooks/useAppStore';
+import { Plus, Package, Edit, Trash2, Upload, ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { useProductTypes, useProducts } from '../../hooks/useAppStore';
 import { appStore } from '../../store/appStore';
 
 interface ProductType {
@@ -26,22 +27,66 @@ interface Product {
 
 const ProductsTab = () => {
   const productTypes = useProductTypes();
+  const products = useProducts();
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showEditTypeModal, setShowEditTypeModal] = useState(false);
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedTypeId, setSelectedTypeId] = useState<string>('');
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
+  const [editingType, setEditingType] = useState<ProductType | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{type: 'product' | 'productType', id: string} | null>(null);
+
+  const toggleTypeExpansion = (typeId: string) => {
+    const newExpanded = new Set(expandedTypes);
+    if (newExpanded.has(typeId)) {
+      newExpanded.delete(typeId);
+    } else {
+      newExpanded.add(typeId);
+    }
+    setExpandedTypes(newExpanded);
+  };
+
+  const getProductsByType = (typeId: string) => {
+    return products.filter(product => product.productTypeId === typeId);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteTarget) {
+      if (deleteTarget.type === 'productType') {
+        appStore.deleteProductType(deleteTarget.id);
+      } else {
+        appStore.deleteProduct(deleteTarget.id);
+      }
+      setDeleteTarget(null);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   const AddProductTypeModal = () => {
-    const [typeName, setTypeName] = useState('');
+    const [typeName, setTypeName] = useState(editingType?.name || '');
     const [imageFile, setImageFile] = useState<File | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      appStore.addProductType({
-        name: typeName,
-        imageUrl: '/placeholder.svg', // In real app, upload image first
-        productCount: 0
-      });
-      setShowAddTypeModal(false);
+      if (editingType) {
+        appStore.updateProductType(editingType.id, {
+          name: typeName,
+          imageUrl: editingType.imageUrl // Keep existing image for now
+        });
+        setShowEditTypeModal(false);
+        setEditingType(null);
+      } else {
+        appStore.addProductType({
+          name: typeName,
+          imageUrl: '/placeholder.svg',
+          productCount: 0
+        });
+        setShowAddTypeModal(false);
+      }
       setTypeName('');
       setImageFile(null);
     };
@@ -57,7 +102,9 @@ const ProductsTab = () => {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
         >
-          <h3 className="text-xl font-bold mb-4">Add New Product Type</h3>
+          <h3 className="text-xl font-bold mb-4">
+            {editingType ? 'Edit Product Type' : 'Add New Product Type'}
+          </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Type Name</label>
@@ -89,7 +136,14 @@ const ProductsTab = () => {
             <div className="flex space-x-3 pt-4">
               <button
                 type="button"
-                onClick={() => setShowAddTypeModal(false)}
+                onClick={() => {
+                  if (editingType) {
+                    setShowEditTypeModal(false);
+                    setEditingType(null);
+                  } else {
+                    setShowAddTypeModal(false);
+                  }
+                }}
                 className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
               >
                 Cancel
@@ -98,7 +152,7 @@ const ProductsTab = () => {
                 type="submit"
                 className="flex-1 btn-gradient py-2 rounded-lg"
               >
-                Add Type
+                {editingType ? 'Update' : 'Add'} Type
               </button>
             </div>
           </form>
@@ -107,164 +161,42 @@ const ProductsTab = () => {
     );
   };
 
-  const AddProductModal = () => {
-    const [productData, setProductData] = useState({
-      name: '',
-      description: '',
-      basePrice: 0,
-      sizes: [{ name: 'S', priceModifier: 0 }, { name: 'M', priceModifier: 0 }, { name: 'L', priceModifier: 100 }],
-      colors: [{ name: 'Black', priceModifier: 0 }, { name: 'White', priceModifier: 0 }, { name: 'Blue', priceModifier: 50 }]
-    });
-
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      appStore.addProduct({
-        name: productData.name,
-        description: productData.description,
-        basePrice: productData.basePrice,
-        images: ['/placeholder.svg'],
-        productTypeId: selectedTypeId,
-        options: {
-          sizes: productData.sizes,
-          colors: productData.colors
-        }
-      });
-      setShowAddProductModal(false);
-      setSelectedTypeId('');
-    };
-
-    return (
+  const DeleteConfirmModal = () => (
+    <motion.div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       <motion.div
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        className="bg-background rounded-2xl p-6 w-full max-w-md"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
       >
-        <motion.div
-          className="bg-background rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-        >
-          <h3 className="text-xl font-bold mb-4">Add New Product</h3>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Product Name</label>
-                <input
-                  type="text"
-                  value={productData.name}
-                  onChange={(e) => setProductData({...productData, name: e.target.value})}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Base Price (DA)</label>
-                <input
-                  type="number"
-                  value={productData.basePrice}
-                  onChange={(e) => setProductData({...productData, basePrice: Number(e.target.value)})}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  required
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
-              <textarea
-                value={productData.description}
-                onChange={(e) => setProductData({...productData, description: e.target.value})}
-                className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium mb-2">Size Options</label>
-                <div className="space-y-2">
-                  {productData.sizes.map((size, index) => (
-                    <div key={index} className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={size.name}
-                        onChange={(e) => {
-                          const newSizes = [...productData.sizes];
-                          newSizes[index].name = e.target.value;
-                          setProductData({...productData, sizes: newSizes});
-                        }}
-                        className="flex-1 px-2 py-1 text-sm rounded border border-border bg-background"
-                        placeholder="Size"
-                      />
-                      <input
-                        type="number"
-                        value={size.priceModifier}
-                        onChange={(e) => {
-                          const newSizes = [...productData.sizes];
-                          newSizes[index].priceModifier = Number(e.target.value);
-                          setProductData({...productData, sizes: newSizes});
-                        }}
-                        className="w-20 px-2 py-1 text-sm rounded border border-border bg-background"
-                        placeholder="Price +"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Color Options</label>
-                <div className="space-y-2">
-                  {productData.colors.map((color, index) => (
-                    <div key={index} className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={color.name}
-                        onChange={(e) => {
-                          const newColors = [...productData.colors];
-                          newColors[index].name = e.target.value;
-                          setProductData({...productData, colors: newColors});
-                        }}
-                        className="flex-1 px-2 py-1 text-sm rounded border border-border bg-background"
-                        placeholder="Color"
-                      />
-                      <input
-                        type="number"
-                        value={color.priceModifier}
-                        onChange={(e) => {
-                          const newColors = [...productData.colors];
-                          newColors[index].priceModifier = Number(e.target.value);
-                          setProductData({...productData, colors: newColors});
-                        }}
-                        className="w-20 px-2 py-1 text-sm rounded border border-border bg-background"
-                        placeholder="Price +"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={() => { setShowAddProductModal(false); setSelectedTypeId(''); }}
-                className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 btn-gradient py-2 rounded-lg"
-              >
-                Add Product
-              </button>
-            </div>
-          </form>
-        </motion.div>
+        <h3 className="text-xl font-bold mb-4 text-red-500">Confirm Deletion</h3>
+        <p className="text-muted-foreground mb-6">
+          Are you sure you want to delete this {deleteTarget?.type === 'productType' ? 'product type' : 'product'}? 
+          This action cannot be undone.
+        </p>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => {
+              setShowDeleteConfirm(false);
+              setDeleteTarget(null);
+            }}
+            className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDeleteConfirm}
+            className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
       </motion.div>
-    );
-  };
+    </motion.div>
+  );
 
   return (
     <div className="space-y-6">
@@ -280,49 +212,122 @@ const ProductsTab = () => {
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {productTypes.map((type, index) => (
-          <motion.div
-            key={type.id}
-            className="glass-effect rounded-xl overflow-hidden border card-hover"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <div className="aspect-video bg-muted relative">
-              <img
-                src={type.imageUrl}
-                alt={type.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-4 left-4 text-white">
-                <h3 className="text-lg font-bold">{type.name}</h3>
-                <p className="text-sm opacity-90">{type.productCount} products</p>
+        {productTypes.map((type, index) => {
+          const typeProducts = getProductsByType(type.id);
+          const isExpanded = expandedTypes.has(type.id);
+          
+          return (
+            <motion.div
+              key={type.id}
+              className="glass-effect rounded-xl overflow-hidden border card-hover"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <div className="aspect-video bg-muted relative">
+                <img
+                  src={type.imageUrl}
+                  alt={type.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-lg font-bold">{type.name}</h3>
+                  <p className="text-sm opacity-90">{type.productCount} products</p>
+                </div>
               </div>
-            </div>
-            
-            <div className="p-4">
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => {
-                    setSelectedTypeId(type.id);
-                    setShowAddProductModal(true);
-                  }}
-                  className="flex-1 bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Product</span>
-                </button>
-                <button className="px-3 py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                  <Edit className="w-4 h-4" />
-                </button>
-                <button className="px-3 py-2 border border-border rounded-lg hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-500 transition-colors">
-                  <Trash2 className="w-4 h-4" />
-                </button>
+              
+              <div className="p-4 space-y-3">
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => {
+                      setSelectedTypeId(type.id);
+                      setShowAddProductModal(true);
+                    }}
+                    className="flex-1 bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Product</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => toggleTypeExpansion(type.id)}
+                    className="px-3 py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors flex items-center"
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      setEditingType(type);
+                      setShowEditTypeModal(true);
+                    }}
+                    className="px-3 py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      setDeleteTarget({type: 'productType', id: type.id});
+                      setShowDeleteConfirm(true);
+                    }}
+                    className="px-3 py-2 border border-border rounded-lg hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="border-t pt-3 space-y-2"
+                  >
+                    <h4 className="font-medium text-sm">Products in this type:</h4>
+                    {typeProducts.length > 0 ? (
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {typeProducts.map(product => (
+                          <div key={product.id} className="flex justify-between items-center p-2 bg-muted/30 rounded text-sm">
+                            <div>
+                              <p className="font-medium">{product.name}</p>
+                              <p className="text-muted-foreground">{product.basePrice} DA</p>
+                            </div>
+                            <div className="flex space-x-1">
+                              <button
+                                onClick={() => {
+                                  setEditingProduct(product);
+                                  setSelectedTypeId(type.id);
+                                  setShowEditProductModal(true);
+                                }}
+                                className="p-1 hover:bg-muted/50 rounded"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setDeleteTarget({type: 'product', id: product.id});
+                                  setShowDeleteConfirm(true);
+                                }}
+                                className="p-1 hover:bg-red-500/10 hover:text-red-500 rounded"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-sm">No products yet</p>
+                    )}
+                  </motion.div>
+                )}
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
 
       {productTypes.length === 0 && (
@@ -339,8 +344,8 @@ const ProductsTab = () => {
         </div>
       )}
 
-      {showAddTypeModal && <AddProductTypeModal />}
-      {showAddProductModal && <AddProductModal />}
+      {(showAddTypeModal || showEditTypeModal) && <AddProductTypeModal />}
+      {showDeleteConfirm && <DeleteConfirmModal />}
     </div>
   );
 };

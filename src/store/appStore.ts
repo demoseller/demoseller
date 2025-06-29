@@ -1,4 +1,3 @@
-
 interface Order {
   id: string;
   customerName: string;
@@ -112,6 +111,21 @@ class AppStore {
     return newType;
   }
 
+  updateProductType(id: string, updates: Partial<Omit<ProductType, 'id'>>) {
+    this.productTypes = this.productTypes.map(type =>
+      type.id === id ? { ...type, ...updates } : type
+    );
+    this.notifyListeners();
+  }
+
+  deleteProductType(id: string) {
+    // Delete all products of this type first
+    this.products = this.products.filter(product => product.productTypeId !== id);
+    // Delete the product type
+    this.productTypes = this.productTypes.filter(type => type.id !== id);
+    this.notifyListeners();
+  }
+
   addProduct(product: Omit<Product, 'id'>) {
     const newProduct: Product = {
       ...product,
@@ -128,6 +142,27 @@ class AppStore {
     
     this.notifyListeners();
     return newProduct;
+  }
+
+  updateProduct(id: string, updates: Partial<Omit<Product, 'id'>>) {
+    this.products = this.products.map(product =>
+      product.id === id ? { ...product, ...updates } : product
+    );
+    this.notifyListeners();
+  }
+
+  deleteProduct(id: string) {
+    const product = this.products.find(p => p.id === id);
+    if (product) {
+      // Update product count for the type
+      this.productTypes = this.productTypes.map(type => 
+        type.id === product.productTypeId 
+          ? { ...type, productCount: Math.max(0, type.productCount - 1) }
+          : type
+      );
+    }
+    this.products = this.products.filter(product => product.id !== id);
+    this.notifyListeners();
   }
 
   getOrders() {

@@ -1,11 +1,26 @@
-
 import { motion } from 'framer-motion';
-import { Eye, Phone, MapPin, Package, Calendar } from 'lucide-react';
+import { useState } from 'react';
+import { Eye, Phone, MapPin, Package, Calendar, Filter } from 'lucide-react';
 import { useOrders } from '../../hooks/useAppStore';
 import { appStore } from '../../store/appStore';
+import OrderFilterModal from './OrderFilterModal';
+
+interface FilterOptions {
+  status: 'all' | 'pending' | 'confirmed';
+  product: string;
+  productType: string;
+  wilaya: string;
+}
 
 const OrdersTab = () => {
   const orders = useOrders();
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({
+    status: 'all',
+    product: '',
+    productType: '',
+    wilaya: ''
+  });
 
   const toggleOrderStatus = (orderId: string) => {
     const order = orders.find(o => o.id === orderId);
@@ -25,17 +40,42 @@ const OrdersTab = () => {
     });
   };
 
+  const filteredOrders = orders.filter(order => {
+    if (filters.status !== 'all' && order.status !== filters.status) return false;
+    if (filters.product && !order.productName.toLowerCase().includes(filters.product.toLowerCase())) return false;
+    if (filters.wilaya && order.wilaya !== filters.wilaya) return false;
+    return true;
+  });
+
+  const activeFiltersCount = Object.values(filters).filter(value => 
+    value !== '' && value !== 'all'
+  ).length;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Order Management</h2>
-        <div className="text-sm text-muted-foreground">
-          Total Orders: {orders.length}
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setShowFilterModal(true)}
+            className="flex items-center space-x-2 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors relative"
+          >
+            <Filter className="w-4 h-4" />
+            <span>Filter Orders</span>
+            {activeFiltersCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+          <div className="text-sm text-muted-foreground">
+            {filteredOrders.length} of {orders.length} orders
+          </div>
         </div>
       </div>
 
       <div className="grid gap-4">
-        {orders.map((order, index) => (
+        {filteredOrders.map((order, index) => (
           <motion.div
             key={order.id}
             className="glass-effect p-6 rounded-xl border"
@@ -109,6 +149,20 @@ const OrdersTab = () => {
         ))}
       </div>
 
+      {filteredOrders.length === 0 && orders.length > 0 && (
+        <div className="text-center py-12">
+          <Filter className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No Orders Match Your Filters</h3>
+          <p className="text-muted-foreground mb-4">Try adjusting your filter criteria.</p>
+          <button
+            onClick={() => setFilters({ status: 'all', product: '', productType: '', wilaya: '' })}
+            className="btn-gradient px-6 py-2 rounded-lg"
+          >
+            Clear Filters
+          </button>
+        </div>
+      )}
+
       {orders.length === 0 && (
         <div className="text-center py-12">
           <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
@@ -116,6 +170,13 @@ const OrdersTab = () => {
           <p className="text-muted-foreground">Orders will appear here once customers start purchasing.</p>
         </div>
       )}
+
+      <OrderFilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApplyFilters={setFilters}
+        currentFilters={filters}
+      />
     </div>
   );
 };
