@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { X, Filter } from 'lucide-react';
-import { useProductTypes } from '../../hooks/useAppStore';
+import { useProductTypes } from '../../hooks/useSupabaseStore';
 
 interface FilterOptions {
   status: 'all' | 'pending' | 'confirmed';
@@ -19,7 +19,7 @@ interface OrderFilterModalProps {
 }
 
 const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: OrderFilterModalProps) => {
-  const productTypes = useProductTypes();
+  const { productTypes } = useProductTypes();
   const [filters, setFilters] = useState<FilterOptions>(currentFilters);
 
   const wilayas = [

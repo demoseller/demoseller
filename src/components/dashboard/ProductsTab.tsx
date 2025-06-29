@@ -2,32 +2,11 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Plus, Package, Edit, Trash2, Upload, ChevronDown, ChevronUp, Eye } from 'lucide-react';
-import { useProductTypes, useProducts } from '../../hooks/useAppStore';
-import { appStore } from '../../store/appStore';
-
-interface ProductType {
-  id: string;
-  name: string;
-  imageUrl: string;
-  productCount: number;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  basePrice: number;
-  images: string[];
-  productTypeId: string;
-  options: {
-    sizes: Array<{ name: string; priceModifier: number }>;
-    colors: Array<{ name: string; priceModifier: number }>;
-  };
-}
+import { useProductTypes, useProducts } from '../../hooks/useSupabaseStore';
 
 const ProductsTab = () => {
-  const productTypes = useProductTypes();
-  const products = useProducts();
+  const { productTypes, loading: typesLoading, addProductType, updateProductType, deleteProductType } = useProductTypes();
+  const { products, loading: productsLoading, addProduct, updateProduct, deleteProduct } = useProducts();
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditTypeModal, setShowEditTypeModal] = useState(false);
@@ -36,8 +15,8 @@ const ProductsTab = () => {
   const [selectedTypeId, setSelectedTypeId] = useState<string>('');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
-  const [editingType, setEditingType] = useState<ProductType | null>(null);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingType, setEditingType] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const [deleteTarget, setDeleteTarget] = useState<{type: 'product' | 'productType', id: string} | null>(null);
 
   const toggleTypeExpansion = (typeId: string) => {
@@ -51,15 +30,15 @@ const ProductsTab = () => {
   };
 
   const getProductsByType = (typeId: string) => {
-    return products.filter(product => product.productTypeId === typeId);
+    return products.filter(product => product.product_type_id === typeId);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteTarget) {
       if (deleteTarget.type === 'productType') {
-        appStore.deleteProductType(deleteTarget.id);
+        await deleteProductType(deleteTarget.id);
       } else {
-        appStore.deleteProduct(deleteTarget.id);
+        await deleteProduct(deleteTarget.id);
       }
       setDeleteTarget(null);
       setShowDeleteConfirm(false);
@@ -70,20 +49,19 @@ const ProductsTab = () => {
     const [typeName, setTypeName] = useState(editingType?.name || '');
     const [imageFile, setImageFile] = useState<File | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       if (editingType) {
-        appStore.updateProductType(editingType.id, {
+        await updateProductType(editingType.id, {
           name: typeName,
-          imageUrl: editingType.imageUrl // Keep existing image for now
+          image_url: editingType.image_url // Keep existing image for now
         });
         setShowEditTypeModal(false);
         setEditingType(null);
       } else {
-        appStore.addProductType({
+        await addProductType({
           name: typeName,
-          imageUrl: '/placeholder.svg',
-          productCount: 0
+          image_url: '/placeholder.svg'
         });
         setShowAddTypeModal(false);
       }
@@ -198,6 +176,14 @@ const ProductsTab = () => {
     </motion.div>
   );
 
+  if (typesLoading || productsLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -226,14 +212,14 @@ const ProductsTab = () => {
             >
               <div className="aspect-video bg-muted relative">
                 <img
-                  src={type.imageUrl}
+                  src={type.image_url || '/placeholder.svg'}
                   alt={type.name}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
                   <h3 className="text-lg font-bold">{type.name}</h3>
-                  <p className="text-sm opacity-90">{type.productCount} products</p>
+                  <p className="text-sm opacity-90">{type.productCount || 0} products</p>
                 </div>
               </div>
               
@@ -293,7 +279,7 @@ const ProductsTab = () => {
                           <div key={product.id} className="flex justify-between items-center p-2 bg-muted/30 rounded text-sm">
                             <div>
                               <p className="font-medium">{product.name}</p>
-                              <p className="text-muted-foreground">{product.basePrice} DA</p>
+                              <p className="text-muted-foreground">{product.base_price} DA</p>
                             </div>
                             <div className="flex space-x-1">
                               <button

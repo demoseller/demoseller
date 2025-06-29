@@ -1,8 +1,8 @@
+
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Eye, Phone, MapPin, Package, Calendar, Filter } from 'lucide-react';
-import { useOrders } from '../../hooks/useAppStore';
-import { appStore } from '../../store/appStore';
+import { useOrders } from '../../hooks/useSupabaseStore';
 import OrderFilterModal from './OrderFilterModal';
 
 interface FilterOptions {
@@ -13,7 +13,7 @@ interface FilterOptions {
 }
 
 const OrdersTab = () => {
-  const orders = useOrders();
+  const { orders, loading, updateOrderStatus } = useOrders();
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     status: 'all',
@@ -22,11 +22,11 @@ const OrdersTab = () => {
     wilaya: ''
   });
 
-  const toggleOrderStatus = (orderId: string) => {
+  const toggleOrderStatus = async (orderId: string) => {
     const order = orders.find(o => o.id === orderId);
     if (order) {
       const newStatus = order.status === 'pending' ? 'confirmed' : 'pending';
-      appStore.updateOrderStatus(orderId, newStatus);
+      await updateOrderStatus(orderId, newStatus);
     }
   };
 
@@ -42,7 +42,7 @@ const OrdersTab = () => {
 
   const filteredOrders = orders.filter(order => {
     if (filters.status !== 'all' && order.status !== filters.status) return false;
-    if (filters.product && !order.productName.toLowerCase().includes(filters.product.toLowerCase())) return false;
+    if (filters.product && !order.product_name.toLowerCase().includes(filters.product.toLowerCase())) return false;
     if (filters.wilaya && order.wilaya !== filters.wilaya) return false;
     return true;
   });
@@ -50,6 +50,14 @@ const OrdersTab = () => {
   const activeFiltersCount = Object.values(filters).filter(value => 
     value !== '' && value !== 'all'
   ).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -91,16 +99,16 @@ const OrdersTab = () => {
                   <span className="font-semibold">Customer Details</span>
                 </div>
                 <div className="space-y-2 text-sm">
-                  <p><strong>Name:</strong> {order.customerName}</p>
+                  <p><strong>Name:</strong> {order.customer_name}</p>
                   <div className="flex items-center space-x-2">
                     <Phone className="w-4 h-4" />
-                    <span>{order.customerPhone}</span>
+                    <span>{order.customer_phone}</span>
                   </div>
                   <div className="flex items-start space-x-2">
                     <MapPin className="w-4 h-4 mt-0.5" />
                     <div>
                       <p>{order.wilaya}, {order.commune}</p>
-                      <p className="text-muted-foreground text-xs">{order.fullAddress}</p>
+                      <p className="text-muted-foreground text-xs">{order.full_address}</p>
                     </div>
                   </div>
                 </div>
@@ -113,10 +121,10 @@ const OrdersTab = () => {
                   <span className="font-semibold">Product Details</span>
                 </div>
                 <div className="space-y-2 text-sm">
-                  <p><strong>Product:</strong> {order.productName}</p>
+                  <p><strong>Product:</strong> {order.product_name}</p>
                   <p><strong>Size:</strong> {order.size}</p>
                   <p><strong>Color:</strong> {order.color}</p>
-                  <p><strong>Total:</strong> <span className="text-lg font-bold text-primary">{order.totalPrice} DA</span></p>
+                  <p><strong>Total:</strong> <span className="text-lg font-bold text-primary">{order.total_price} DA</span></p>
                 </div>
               </div>
 
@@ -127,7 +135,7 @@ const OrdersTab = () => {
                   <span className="font-semibold">Order Status</span>
                 </div>
                 <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">{formatDate(order.createdAt)}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(order.created_at)}</p>
                   
                   <div className="flex items-center space-x-3">
                     <span className="text-sm">Status:</span>

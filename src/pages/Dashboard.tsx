@@ -1,7 +1,9 @@
+
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, BarChart3, ShoppingCart, LogOut, Plus } from 'lucide-react';
+import { Package, BarChart3, ShoppingCart, LogOut } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 import ThemeToggle from '../components/ThemeToggle';
 import OrdersTab from '../components/dashboard/OrdersTab';
 import ProductsTab from '../components/dashboard/ProductsTab';
@@ -10,18 +12,30 @@ import AnalyticsTab from '../components/dashboard/AnalyticsTab';
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const navigate = useNavigate();
+  const { user, signOut, loading } = useAuth();
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('seller_authenticated');
-    if (!isAuthenticated) {
-      navigate('/login');
+    if (!loading && !user) {
+      navigate('/auth');
     }
-  }, [navigate]);
+  }, [user, loading, navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('seller_authenticated');
-    navigate('/login');
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const tabs = [
     { id: 'orders', name: 'Orders', icon: ShoppingCart },
@@ -41,6 +55,7 @@ const Dashboard = () => {
           <div className="flex justify-between items-center h-16">
             <h1 className="text-2xl font-bold gradient-text">Seller Dashboard</h1>
             <div className="flex items-center space-x-4">
+              <span className="text-sm text-muted-foreground">Welcome, {user.email}</span>
               <ThemeToggle />
               <button
                 onClick={handleLogout}

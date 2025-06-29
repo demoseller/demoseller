@@ -9,7 +9,181 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          color: string
+          commune: string
+          created_at: string | null
+          customer_name: string
+          customer_phone: string
+          full_address: string
+          id: string
+          product_name: string
+          size: string
+          status: string | null
+          total_price: number
+          updated_at: string | null
+          wilaya: string
+        }
+        Insert: {
+          color: string
+          commune: string
+          created_at?: string | null
+          customer_name: string
+          customer_phone: string
+          full_address: string
+          id?: string
+          product_name: string
+          size: string
+          status?: string | null
+          total_price: number
+          updated_at?: string | null
+          wilaya: string
+        }
+        Update: {
+          color?: string
+          commune?: string
+          created_at?: string | null
+          customer_name?: string
+          customer_phone?: string
+          full_address?: string
+          id?: string
+          product_name?: string
+          size?: string
+          status?: string | null
+          total_price?: number
+          updated_at?: string | null
+          wilaya?: string
+        }
+        Relationships: []
+      }
+      product_types: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          base_price: number
+          created_at: string | null
+          description: string | null
+          id: string
+          images: string[] | null
+          name: string
+          options: Json | null
+          product_type_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          base_price: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          name: string
+          options?: Json | null
+          product_type_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          base_price?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          name?: string
+          options?: Json | null
+          product_type_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_product_type_id_fkey"
+            columns: ["product_type_id"]
+            isOneToOne: false
+            referencedRelation: "product_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          product_id: string | null
+          rating: number
+          reviewer_name: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          rating: number
+          reviewer_name?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          rating?: number
+          reviewer_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
