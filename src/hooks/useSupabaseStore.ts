@@ -50,7 +50,12 @@ export const useOrders = () => {
     if (error) {
       console.error('Error fetching orders:', error);
     } else {
-      setOrders(data || []);
+      // Transform the data to match our Order interface
+      const transformedOrders: Order[] = (data || []).map(order => ({
+        ...order,
+        status: (order.status as 'pending' | 'confirmed') || 'pending'
+      }));
+      setOrders(transformedOrders);
     }
     setLoading(false);
   };
@@ -174,7 +179,14 @@ export const useProducts = () => {
     if (error) {
       console.error('Error fetching products:', error);
     } else {
-      setProducts(data || []);
+      // Transform the data to match our Product interface
+      const transformedProducts: Product[] = (data || []).map(product => ({
+        ...product,
+        options: typeof product.options === 'object' && product.options !== null 
+          ? product.options as { sizes: Array<{ name: string; priceModifier: number }>; colors: Array<{ name: string; priceModifier: number }> }
+          : { sizes: [], colors: [] }
+      }));
+      setProducts(transformedProducts);
     }
     setLoading(false);
   };
