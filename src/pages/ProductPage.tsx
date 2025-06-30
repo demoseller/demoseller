@@ -8,7 +8,6 @@ import { useProducts } from '../hooks/useSupabaseStore';
 import { useShippingData } from '../hooks/useShippingData';
 import { useOrders } from '../hooks/useProductData';
 import { toast } from 'sonner';
-
 const ProductPage = () => {
   const {
     typeId,
@@ -36,9 +35,7 @@ const ProductPage = () => {
   const [fullAddress, setFullAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shipToHome, setShipToHome] = useState(false);
-  
   const product = products.find(p => p.id === productId);
-  
   useEffect(() => {
     if (product && product.options.sizes.length > 0) {
       setSelectedSize(product.options.sizes[0].name);
@@ -47,22 +44,18 @@ const ProductPage = () => {
       setSelectedColor(product.options.colors[0].name);
     }
   }, [product]);
-  
   useEffect(() => {
     // When wilaya changes, reset commune
     setSelectedCommune('');
   }, [selectedWilaya]);
-  
   const selectedSizeOption = product?.options.sizes.find(s => s.name === selectedSize);
   const selectedColorOption = product?.options.colors.find(c => c.name === selectedColor);
   const baseShippingPrice = selectedWilaya ? shippingData.shippingPrices[selectedWilaya] || 0 : 0;
   const shippingPrice = shipToHome ? baseShippingPrice * 1.3 : baseShippingPrice;
   const totalPrice = product ? product.base_price + (selectedSizeOption?.priceModifier || 0) + (selectedColorOption?.priceModifier || 0) + shippingPrice : 0;
-  
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!product) return;
-
     console.log('Form submission started');
     console.log('Form values:', {
       customerName: customerName.trim(),
@@ -99,10 +92,8 @@ const ProductPage = () => {
       toast.error('Please enter your full address for home delivery');
       return;
     }
-
     console.log('All validations passed, submitting order');
     setIsSubmitting(true);
-    
     try {
       await addOrder({
         customer_name: customerName,
@@ -116,7 +107,6 @@ const ProductPage = () => {
         total_price: totalPrice,
         status: 'pending'
       });
-      
       console.log('Order submitted successfully, navigating to confirmation');
       navigate('/confirmation', {
         state: {
@@ -134,7 +124,6 @@ const ProductPage = () => {
       setIsSubmitting(false);
     }
   };
-  
   if (productsLoading || shippingLoading) {
     return <div className="min-h-screen bg-background">
         <Navbar />
@@ -143,7 +132,6 @@ const ProductPage = () => {
         </div>
       </div>;
   }
-  
   if (!product) {
     return <div className="min-h-screen bg-background">
         <Navbar />
@@ -159,7 +147,6 @@ const ProductPage = () => {
         </div>
       </div>;
   }
-  
   return <div className="min-h-screen bg-background">
       <Navbar />
       
@@ -344,7 +331,7 @@ const ProductPage = () => {
               </div>}
 
             {/* Full Address - Only show when shipping to home */}
-            {shipToHome && <div>
+            {shipToHome && <div className="hidden ">
                 <label className="block text-sm font-medium mb-2">Full Address *</label>
                 <textarea value={fullAddress} onChange={e => setFullAddress(e.target.value)} className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none" rows={3} placeholder="Enter your full address" required={shipToHome} />
               </div>}
@@ -427,5 +414,4 @@ const ProductPage = () => {
       </div>
     </div>;
 };
-
 export default ProductPage;
