@@ -1,3 +1,4 @@
+
 import { motion } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
@@ -9,131 +10,8 @@ import ImageGalleryPagination from '../components/ImageGalleryPagination';
 import StarRating from '../components/StarRating';
 import { useProducts, useProductTypes } from '../hooks/useSupabaseStore';
 import { useReviews, useOrders } from '../hooks/useProductData';
+import { useShippingData } from '../hooks/useShippingData';
 import { toast } from 'sonner';
-
-// Mock communes data
-const communesData: Record<string, string[]> = {
-  'Adrar': ['Adrar', 'Tamest', 'Charouine', 'Reggane', 'Inzghmir'],
-  'Chlef': ['Chlef', 'Ténès', 'Boukadir', 'El Karimia', 'Sobha'],
-  'Laghouat': ['Laghouat', 'Aflou', 'Ksar El Hirane', 'Hassi Delaa', 'Hassi R\'Mel'],
-  'Oum El Bouaghi': ['Oum El Bouaghi', 'Aïn Beïda', 'Aïn M\'Lila', 'Sigus', 'Ksar Sbahi'],
-  'Batna': ['Batna', 'Barika', 'Arris', 'Biskra', 'Menaâ'],
-  'Béjaïa': ['Béjaïa', 'Akbou', 'Kherrata', 'Sidi Aïch', 'Amizour'],
-  'Biskra': ['Biskra', 'Tolga', 'Sidi Okba', 'Chetma', 'Djemorah'],
-  'Béchar': ['Béchar', 'Kenadsa', 'Abadla', 'Beni Ounif', 'Igli'],
-  'Blida': ['Blida', 'Boufarik', 'Larbaa', 'Meftah', 'Soumaa'],
-  'Bouira': ['Bouira', 'Lakhdaria', 'M\'Chedallah', 'Sour El Ghouzlane', 'Aïn Bessem'],
-  'Tamanrasset': ['Tamanrasset', 'In Salah', 'In Guezzam', 'Tin Zaouatine', 'Idles'],
-  'Tébessa': ['Tébessa', 'Cheria', 'El Aouinet', 'Bir El Ater', 'Negrine'],
-  'Tlemcen': ['Tlemcen', 'Maghnia', 'Chetouane', 'Nedroma', 'Remchi'],
-  'Tiaret': ['Tiaret', 'Sougueur', 'Mahdia', 'Frenda', 'Ksar Chellala'],
-  'Tizi Ouzou': ['Tizi Ouzou', 'Azazga', 'Azeffoun', 'Tigzirt', 'Aïn El Hammam'],
-  'Alger': ['Alger Centre', 'Bab El Oued', 'Casbah', 'El Madania', 'Sidi M\'Hamed', 'Bir Mourad Raïs', 'Birkhadem', 'El Biar', 'Hydra', 'Kouba'],
-  'Djelfa': ['Djelfa', 'Messaâd', 'Hassi Bahbah', 'Aïn Oussara', 'Birine'],
-  'Jijel': ['Jijel', 'Ferdjioua', 'Taher', 'El Milia', 'Sidi Maârouf'],
-  'Sétif': ['Sétif', 'El Eulma', 'Aïn Oulmen', 'Bougaâ', 'Hammam Sokhna'],
-  'Saïda': ['Saïda', 'Balloul', 'Ouled Brahim', 'Sidi Boubekeur', 'El Hassasna'],
-  'Skikda': ['Skikda', 'Collo', 'Azzaba', 'Tamalous', 'Oued Z\'hour'],
-  'Sidi Bel Abbès': ['Sidi Bel Abbès', 'Telagh', 'Sfisef', 'Ben Badis', 'Mostefa Ben Brahim'],
-  'Annaba': ['Annaba', 'El Hadjar', 'Berrahal', 'Chetaibi', 'Aïn Berda'],
-  'Guelma': ['Guelma', 'Bouchegouf', 'Héliopolis', 'Hammam Debagh', 'Oued Zenati'],
-  'Constantine': ['Constantine', 'Hamma Bouziane', 'Didouche Mourad', 'El Khroub', 'Aïn Smara'],
-  'Médéa': ['Médéa', 'Berrouaghia', 'Ksar El Boukhari', 'Ouzera', 'Chellalet El Adhaoura'],
-  'Mostaganem': ['Mostaganem', 'Relizane', 'Sidi Ali', 'Hassi Mameche', 'Stidia'],
-  'MSila': ['M\'Sila', 'Boussaâda', 'Sidi Aïssa', 'Magra', 'Hammam Dalaa'],
-  'Mascara': ['Mascara', 'Sig', 'Mohammadia', 'Tighennif', 'Bouhanifia'],
-  'Ouargla': ['Ouargla', 'Hassi Messaoud', 'Touggourt', 'Megarine', 'N\'Goussa'],
-  'Oran': ['Oran', 'Bir El Djir', 'Es Senia', 'Gdyel', 'Mers El Kébir', 'Aïn Turk', 'Boutlélis', 'El Braya'],
-  'El Bayadh': ['El Bayadh', 'Rogassa', 'Stitten', 'Brezina', 'Boualem'],
-  'Illizi': ['Illizi', 'Djanet', 'Bordj Omar Driss', 'Debdeb', 'In Aménas'],
-  'Bordj Bou Arréridj': ['Bordj Bou Arréridj', 'Ras El Oued', 'Bordj Ghdir', 'Mansourah', 'El M\'hir'],
-  'Boumerdès': ['Boumerdès', 'Dellys', 'Naciria', 'Khemis El Khechna', 'Boudouaou'],
-  'El Tarf': ['El Tarf', 'El Kala', 'Bouteldja', 'Ben M\'Hidi', 'Bougous'],
-  'Tindouf': ['Tindouf', 'Oum El Assel', 'Hassi El Ghella', 'Chenachene'],
-  'Tissemsilt': ['Tissemsilt', 'Theniet El Had', 'Bordj Bou Naama', 'Lazharia', 'Khemisti'],
-  'El Oued': ['El Oued', 'Robbah', 'Guemar', 'Reguiba', 'Magrane'],
-  'Khenchela': ['Khenchela', 'Babar', 'Bouhmama', 'El Hamma', 'Kais'],
-  'Souk Ahras': ['Souk Ahras', 'Sedrata', 'Haddada', 'Ouled Driss', 'Tiffech'],
-  'Tipaza': ['Tipaza', 'Koléa', 'Cherchell', 'Hadjout', 'Menaceur'],
-  'Mila': ['Mila', 'Ferdjioua', 'Chelghoum Laïd', 'Oued Athmania', 'Rouached'],
-  'Aïn Defla': ['Aïn Defla', 'Khemis Miliana', 'El Attaf', 'Boumedfaa', 'Djelida'],
-  'Naâma': ['Naâma', 'Mécheria', 'Aïn Sefra', 'Tiout', 'Sfissifa'],
-  'Aïn Témouchent': ['Aïn Témouchent', 'Hammam Bou Hadjar', 'Beni Saf', 'El Malah', 'Ouled Kihal'],
-  'Ghardaïa': ['Ghardaïa', 'El Menea', 'Berriane', 'Metlili', 'El Guerrara'],
-  'Relizane': ['Relizane', 'Mazouna', 'Oued Rhiou', 'Yellel', 'Sidi Khettab'],
-  'Timimoun': ['Timimoun', 'Aougrout', 'Deldoul', 'Charouine', 'Metarfa'],
-  'Bordj Badji Mokhtar': ['Bordj Badji Mokhtar', 'Timiaouine', 'Timokten'],
-  'Ouled Djellal': ['Ouled Djellal', 'Sidi Khaled', 'Besbes', 'Chaiba'],
-  'Béni Abbès': ['Béni Abbès', 'Tamtert', 'Ouled Khoudir', 'El Ouata'],
-  'In Salah': ['In Salah', 'Foggaret Ezzouia', 'In Ghar'],
-  'In Guezzam': ['In Guezzam', 'Tin Zaouatine'],
-  'Touggourt': ['Touggourt', 'Megarine', 'Sidi Slimane', 'Nezla'],
-  'Djanet': ['Djanet', 'Bordj El Haoues'],
-  'El MGhair': ['El MGhair', 'Djamaa', 'Sidi Amrane'],
-  'El Menia': ['El Menia', 'Hassi Gara', 'Hassi El Fejej']
-};
-
-// Mock shipping costs
-const shippingCosts = {
-  'Adrar': 15,
-  'Chlef': 12,
-  'Laghouat': 14,
-  'Oum El Bouaghi': 13,
-  'Batna': 13,
-  'Béjaïa': 10,
-  'Biskra': 14,
-  'Béchar': 16,
-  'Blida': 8,
-  'Bouira': 10,
-  'Tamanrasset': 20,
-  'Tébessa': 15,
-  'Tlemcen': 12,
-  'Tiaret': 12,
-  'Tizi Ouzou': 9,
-  'Alger': 6,
-  'Djelfa': 13,
-  'Jijel': 11,
-  'Sétif': 11,
-  'Saïda': 13,
-  'Skikda': 11,
-  'Sidi Bel Abbès': 12,
-  'Annaba': 12,
-  'Guelma': 12,
-  'Constantine': 11,
-  'Médéa': 9,
-  'Mostaganem': 11,
-  'MSila': 13,
-  'Mascara': 12,
-  'Ouargla': 16,
-  'Oran': 10,
-  'El Bayadh': 14,
-  'Illizi': 22,
-  'Bordj Bou Arréridj': 11,
-  'Boumerdès': 8,
-  'El Tarf': 13,
-  'Tindouf': 20,
-  'Tissemsilt': 12,
-  'El Oued': 16,
-  'Khenchela': 14,
-  'Souk Ahras': 13,
-  'Tipaza': 8,
-  'Mila': 12,
-  'Aïn Defla': 10,
-  'Naâma': 15,
-  'Aïn Témouchent': 11,
-  'Ghardaïa': 15,
-  'Relizane': 11,
-  'Timimoun': 18,
-  'Bordj Badji Mokhtar': 22,
-  'Ouled Djellal': 14,
-  'Béni Abbès': 18,
-  'In Salah': 20,
-  'In Guezzam': 24,
-  'Touggourt': 16,
-  'Djanet': 24,
-  'El MGhair': 17,
-  'El Menia': 16
-};
 
 const ProductPage = () => {
   const { typeId, productId } = useParams();
@@ -150,15 +28,14 @@ const ProductPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState('');
-  const [userRating, setUserRating] = useState(0);
-  const [userComment, setUserComment] = useState('');
   
   const galleryRef = useRef<HTMLDivElement>(null);
 
   const { products, loading: productsLoading } = useProducts();
   const { productTypes, loading: typesLoading } = useProductTypes();
-  const { reviews, loading: reviewsLoading, addReview } = useReviews(productId || '');
+  const { reviews, loading: reviewsLoading } = useReviews(productId || '');
   const { addOrder } = useOrders();
+  const { shippingData, loading: shippingLoading } = useShippingData();
 
   const product = products.find(p => p.id === productId);
   const productType = productTypes.find(t => t.id === typeId);
@@ -168,11 +45,11 @@ const ProductPage = () => {
     : 0;
 
   useEffect(() => {
-    if (!productsLoading && !typesLoading && !reviewsLoading) {
+    if (!productsLoading && !typesLoading && !reviewsLoading && !shippingLoading) {
       const timer = setTimeout(() => setLoading(false), 800);
       return () => clearTimeout(timer);
     }
-  }, [productsLoading, typesLoading, reviewsLoading]);
+  }, [productsLoading, typesLoading, reviewsLoading, shippingLoading]);
 
   // Handle scroll-based image index update
   useEffect(() => {
@@ -207,15 +84,15 @@ const ProductPage = () => {
       total += color?.priceModifier || 0;
     }
     
-    if (selectedWilaya) {
-      let shippingCost = shippingCosts[selectedWilaya as keyof typeof shippingCosts] || 0;
+    if (selectedWilaya && shippingData.shippingPrices[selectedWilaya]) {
+      let shippingCost = shippingData.shippingPrices[selectedWilaya];
       if (shipToHome) {
         shippingCost = shippingCost * 1.3;
       }
       total += shippingCost;
     }
     
-    return total;
+    return Math.round(total * 100) / 100;
   };
 
   const handleHorizontalScroll = (e: React.WheelEvent) => {
@@ -238,26 +115,6 @@ const ProductPage = () => {
         left: imageWidth * index,
         behavior: 'smooth'
       });
-    }
-  };
-
-  const handleSubmitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!product || userRating === 0) return;
-
-    try {
-      await addReview({
-        product_id: product.id,
-        rating: userRating,
-        comment: userComment,
-        reviewer_name: fullName || 'Anonymous'
-      });
-      
-      setUserRating(0);
-      setUserComment('');
-      toast.success('Review submitted successfully!');
-    } catch (error) {
-      toast.error('Failed to submit review');
     }
   };
 
@@ -524,8 +381,7 @@ const ProductPage = () => {
                       required
                     >
                       <option value="">Select Wilaya</option>
-                      {Object.keys(shippingCosts).map(wilaya => {
-                        const baseCost = shippingCosts[wilaya as keyof typeof shippingCosts];
+                      {Object.entries(shippingData.shippingPrices).map(([wilaya, baseCost]) => {
                         const finalCost = shipToHome ? baseCost * 1.3 : baseCost;
                         return (
                           <option key={wilaya} value={wilaya}>
@@ -551,7 +407,7 @@ const ProductPage = () => {
                       </label>
                     </div>
 
-                    {shipToHome && selectedWilaya && communesData[selectedWilaya] && (
+                    {shipToHome && selectedWilaya && shippingData.communes[selectedWilaya] && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
@@ -568,7 +424,7 @@ const ProductPage = () => {
                           required={shipToHome}
                         >
                           <option value="">Select Commune</option>
-                          {communesData[selectedWilaya].map(commune => (
+                          {shippingData.communes[selectedWilaya].map(commune => (
                             <option key={commune} value={commune}>
                               {commune}
                             </option>
@@ -600,65 +456,6 @@ const ProductPage = () => {
                   )}
                 </motion.button>
               </form>
-
-              {/* Reviews Section */}
-              <div className="space-y-6 mt-12 border-t pt-8">
-                <h3 className="text-2xl font-bold">Customer Reviews</h3>
-                
-                {/* Add Review Form */}
-                <form onSubmit={handleSubmitReview} className="space-y-4 p-4 bg-muted/20 rounded-lg">
-                  <h4 className="text-lg font-semibold">Write a Review</h4>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Your Rating</label>
-                    <StarRating
-                      rating={userRating}
-                      onRatingChange={setUserRating}
-                      size="lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Comment (Optional)</label>
-                    <textarea
-                      value={userComment}
-                      onChange={(e) => setUserComment(e.target.value)}
-                      className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                      rows={3}
-                      placeholder="Share your experience with this product..."
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={userRating === 0}
-                    className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Submit Review
-                  </button>
-                </form>
-
-                {/* Display Reviews */}
-                <div className="space-y-4">
-                  {reviews.length > 0 ? (
-                    reviews.map((review) => (
-                      <div key={review.id} className="p-4 bg-muted/10 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium">{review.reviewer_name || 'Anonymous'}</span>
-                            <StarRating rating={review.rating} readonly size="sm" />
-                          </div>
-                          <span className="text-sm text-muted-foreground">
-                            {new Date(review.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        {review.comment && (
-                          <p className="text-muted-foreground">{review.comment}</p>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
-                  )}
-                </div>
-              </div>
             </motion.div>
           </div>
         </div>

@@ -2,12 +2,13 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, BarChart3, ShoppingCart, LogOut, Home } from 'lucide-react';
+import { Package, BarChart3, ShoppingCart, LogOut, Home, MapPin } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import ThemeToggle from '../components/ThemeToggle';
 import OrdersTab from '../components/dashboard/OrdersTab';
 import ProductsTab from '../components/dashboard/ProductsTab';
 import AnalyticsTab from '../components/dashboard/AnalyticsTab';
+import ShippingTab from '../components/dashboard/ShippingTab';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -41,6 +42,7 @@ const Dashboard = () => {
   const tabs = [
     { id: 'orders', name: 'Orders', icon: ShoppingCart },
     { id: 'products', name: 'Products', icon: Package },
+    { id: 'shipping', name: 'Shipping', icon: MapPin },
     { id: 'analytics', name: 'Analytics', icon: BarChart3 },
   ];
 
@@ -115,6 +117,7 @@ const Dashboard = () => {
         >
           {activeTab === 'orders' && <OrdersTab />}
           {activeTab === 'products' && <ProductsTab />}
+          {activeTab === 'shipping' && <ShippingTab />}
           {activeTab === 'analytics' && <AnalyticsTab />}
         </motion.div>
       </div>
