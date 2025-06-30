@@ -67,23 +67,31 @@ export const useOrders = () => {
     
     if (error) {
       console.error('Error updating order:', error);
-    } else {
-      await fetchOrders();
-    }
-  };
-
-  const deleteOrder = async (orderId: string) => {
-    const { error } = await supabase
-      .from('orders')
-      .delete()
-      .eq('id', orderId);
-    
-    if (error) {
-      console.error('Error deleting order:', error);
       return false;
     } else {
       await fetchOrders();
       return true;
+    }
+  };
+
+  const deleteOrder = async (orderId: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+      
+      if (error) {
+        console.error('Error deleting order:', error);
+        return false;
+      } else {
+        // Update local state immediately
+        setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
+        return true;
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      return false;
     }
   };
 

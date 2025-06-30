@@ -1,9 +1,19 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from '../integrations/supabase/client';
 
 interface ShippingData {
   shippingPrices: Record<string, number>;
   communes: Record<string, string[]>;
+}
+
+interface ShippingDataRow {
+  id: string;
+  wilaya: string;
+  base_price: number;
+  communes: string[];
+  created_at: string;
+  updated_at: string;
 }
 
 export const useShippingData = () => {
@@ -15,20 +25,29 @@ export const useShippingData = () => {
 
   const loadShippingData = async () => {
     try {
-      // Try to load from localStorage first
-      const stored = localStorage.getItem('shippingData');
-      if (stored) {
-        setShippingData(JSON.parse(stored));
-      } else {
-        // If no localStorage data, load from JSON file and save to localStorage
-        const response = await fetch('/src/data/shippingData.json');
-        const data = await response.json();
-        setShippingData(data);
-        localStorage.setItem('shippingData', JSON.stringify(data));
+      const { data, error } = await supabase
+        .from('shipping_data')
+        .select('*')
+        .order('wilaya');
+
+      if (error) {
+        console.error('Error loading shipping data:', error);
+        return;
+      }
+
+      if (data) {
+        const shippingPrices: Record<string, number> = {};
+        const communes: Record<string, string[]> = {};
+
+        data.forEach((row: ShippingDataRow) => {
+          shippingPrices[row.wilaya] = row.base_price;
+          communes[row.wilaya] = row.communes;
+        });
+
+        setShippingData({ shippingPrices, communes });
       }
     } catch (error) {
       console.error('Error loading shipping data:', error);
-      // Fallback to empty data if everything fails
       setShippingData({
         shippingPrices: {},
         communes: {}
@@ -38,58 +57,79 @@ export const useShippingData = () => {
     }
   };
 
-  const updateShippingData = (newData: ShippingData) => {
-    setShippingData(newData);
-    localStorage.setItem('shippingData', JSON.stringify(newData));
-  };
+  const updateWilayaPrice = async (wilaya: string, price: number) => {
+    try {
+      const { error } = await supabase
+        .from('shipping_data')
+        .update({ base_price: price, updated_at: new Date().toISOString() })
+        .eq('wilaya', wilaya);
 
-  const updateWilayaPrice = (wilaya: string, price: number) => {
-    const newData = {
-      ...shippingData,
-      shippingPrices: {
-        ...shippingData.shippingPrices,
-        [wilaya]: price
+      if (error) {
+        console.error('Error updating price:', error);
+        return;
       }
-    };
-    updateShippingData(newData);
+
+      await loadShippingData();
+    } catch (error) {
+      console.error('Error updating price:', error);
+    }
   };
 
-  const updateWilayaCommunes = (wilaya: string, communes: string[]) => {
-    const newData = {
-      ...shippingData,
-      communes: {
-        ...shippingData.communes,
-        [wilaya]: communes
+  const updateWilayaCommunes = async (wilaya: string, communes: string[]) => {
+    try {
+      const { error } = await supabase
+        .from('shipping_data')
+        .update({ communes, updated_at: new Date().toISOString() })
+        .eq('wilaya', wilaya);
+
+      if (error) {
+        console.error('Error updating communes:', error);
+        return;
       }
-    };
-    updateShippingData(newData);
+
+      await loadShippingData();
+    } catch (error) {
+      console.error('Error updating communes:', error);
+    }
   };
 
-  const addWilaya = (wilaya: string, price: number, communes: string[] = []) => {
-    const newData = {
-      shippingPrices: {
-        ...shippingData.shippingPrices,
-        [wilaya]: price
-      },
-      communes: {
-        ...shippingData.communes,
-        [wilaya]: communes
+  const addWilaya = async (wilaya: string, price: number, communes: string[] = []) => {
+    try {
+      const { error } = await supabase
+        .from('shipping_data')
+        .insert({
+          wilaya,
+          base_price: price,
+          communes
+        });
+
+      if (error) {
+        console.error('Error adding wilaya:', error);
+        return;
       }
-    };
-    updateShippingData(newData);
+
+      await loadShippingData();
+    } catch (error) {
+      console.error('Error adding wilaya:', error);
+    }
   };
 
-  const removeWilaya = (wilaya: string) => {
-    const newShippingPrices = { ...shippingData.shippingPrices };
-    const newCommunes = { ...shippingData.communes };
-    delete newShippingPrices[wilaya];
-    delete newCommunes[wilaya];
-    
-    const newData = {
-      shippingPrices: newShippingPrices,
-      communes: newCommunes
-    };
-    updateShippingData(newData);
+  const removeWilaya = async (wilaya: string) => {
+    try {
+      const { error } = await supabase
+        .from('shipping_data')
+        .delete()
+        .eq('wilaya', wilaya);
+
+      if (error) {
+        console.error('Error removing wilaya:', error);
+        return;
+      }
+
+      await loadShippingData();
+    } catch (error) {
+      console.error('Error removing wilaya:', error);
+    }
   };
 
   useEffect(() => {

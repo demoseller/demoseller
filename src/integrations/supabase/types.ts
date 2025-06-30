@@ -184,6 +184,33 @@ export type Database = {
           },
         ]
       }
+      shipping_data: {
+        Row: {
+          base_price: number
+          communes: string[]
+          created_at: string
+          id: string
+          updated_at: string
+          wilaya: string
+        }
+        Insert: {
+          base_price?: number
+          communes?: string[]
+          created_at?: string
+          id?: string
+          updated_at?: string
+          wilaya: string
+        }
+        Update: {
+          base_price?: number
+          communes?: string[]
+          created_at?: string
+          id?: string
+          updated_at?: string
+          wilaya?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

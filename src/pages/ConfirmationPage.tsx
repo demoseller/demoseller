@@ -57,9 +57,10 @@ const ConfirmationPage = () => {
     }
   };
 
-  // Handle star rating change without auto-submitting
+  // Handle star rating change WITHOUT auto-submitting
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);
+    // Don't auto-submit here, just update the rating state
   };
 
   return (
@@ -178,6 +179,7 @@ const ConfirmationPage = () => {
                         rating={rating}
                         onRatingChange={handleRatingChange}
                         size="lg"
+                        readonly={false}
                       />
                     </div>
                   </div>
