@@ -21,7 +21,7 @@ const Navbar = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            SpectraCommerce 
+            SpectraCommerce haha
           </motion.div>
         </Link>
         
