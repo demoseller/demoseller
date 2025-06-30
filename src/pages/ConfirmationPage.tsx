@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, ShoppingBag } from 'lucide-react';
@@ -30,6 +29,8 @@ const ConfirmationPage = () => {
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Submit review called with rating:', rating);
+    
     if (rating === 0) {
       toast.error('Please select a rating');
       return;
@@ -59,6 +60,7 @@ const ConfirmationPage = () => {
 
   // Handle star rating change WITHOUT auto-submitting
   const handleRatingChange = (newRating: number) => {
+    console.log('Rating changed to:', newRating);
     setRating(newRating);
     // Don't auto-submit here, just update the rating state
   };

@@ -76,21 +76,24 @@ export const useOrders = () => {
 
   const deleteOrder = async (orderId: string) => {
     try {
+      console.log('Attempting to delete order:', orderId);
+      
       const { error } = await supabase
         .from('orders')
         .delete()
         .eq('id', orderId);
       
       if (error) {
-        console.error('Error deleting order:', error);
+        console.error('Error deleting order from database:', error);
         return false;
       } else {
+        console.log('Order deleted successfully from database');
         // Update local state immediately
         setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
         return true;
       }
     } catch (error) {
-      console.error('Error deleting order:', error);
+      console.error('Error in deleteOrder function:', error);
       return false;
     }
   };
