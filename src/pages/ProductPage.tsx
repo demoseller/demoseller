@@ -1,473 +1,408 @@
-
 import { motion } from 'framer-motion';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ShoppingCart } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, Star, ShoppingCart, Truck, Shield, RotateCcw } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import LoadingSpinner from '../components/LoadingSpinner';
-import ImageLightbox from '../components/ImageLightbox';
-import ImageGalleryPagination from '../components/ImageGalleryPagination';
 import StarRating from '../components/StarRating';
-import { useProducts, useProductTypes } from '../hooks/useSupabaseStore';
-import { useReviews, useOrders } from '../hooks/useProductData';
+import { useProducts } from '../hooks/useSupabaseStore';
 import { useShippingData } from '../hooks/useShippingData';
+import { useOrders } from '../hooks/useProductData';
 import { toast } from 'sonner';
 
 const ProductPage = () => {
   const { typeId, productId } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { products, loading: productsLoading } = useProducts();
+  const { shippingData, loading: shippingLoading } = useShippingData();
+  const { addOrder } = useOrders();
+
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [selectedWilaya, setSelectedWilaya] = useState('');
   const [selectedCommune, setSelectedCommune] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [shipToHome, setShipToHome] = useState(false);
+  const [fullAddress, setFullAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxImage, setLightboxImage] = useState('');
-  
-  const galleryRef = useRef<HTMLDivElement>(null);
-
-  const { products, loading: productsLoading } = useProducts();
-  const { productTypes, loading: typesLoading } = useProductTypes();
-  const { reviews, loading: reviewsLoading } = useReviews(productId || '');
-  const { addOrder } = useOrders();
-  const { shippingData, loading: shippingLoading } = useShippingData();
 
   const product = products.find(p => p.id === productId);
-  const productType = productTypes.find(t => t.id === typeId);
-
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-    : 0;
 
   useEffect(() => {
-    if (!productsLoading && !typesLoading && !reviewsLoading && !shippingLoading) {
-      const timer = setTimeout(() => setLoading(false), 800);
-      return () => clearTimeout(timer);
+    if (product && product.options.sizes.length > 0) {
+      setSelectedSize(product.options.sizes[0].name);
     }
-  }, [productsLoading, typesLoading, reviewsLoading, shippingLoading]);
-
-  // Handle scroll-based image index update
-  useEffect(() => {
-    const handleScroll = () => {
-      if (galleryRef.current && product?.images) {
-        const scrollLeft = galleryRef.current.scrollLeft;
-        const imageWidth = galleryRef.current.scrollWidth / product.images.length;
-        const newIndex = Math.round(scrollLeft / imageWidth);
-        setCurrentImageIndex(Math.max(0, Math.min(newIndex, product.images.length - 1)));
-      }
-    };
-
-    const galleryElement = galleryRef.current;
-    if (galleryElement) {
-      galleryElement.addEventListener('scroll', handleScroll);
-      return () => galleryElement.removeEventListener('scroll', handleScroll);
+    if (product && product.options.colors.length > 0) {
+      setSelectedColor(product.options.colors[0].name);
     }
   }, [product]);
 
-  const calculateTotalPrice = () => {
-    if (!product) return 0;
-    
-    let total = product.base_price;
-    
-    if (selectedSize && product.options.sizes) {
-      const size = product.options.sizes.find(s => s.name === selectedSize);
-      total += size?.priceModifier || 0;
-    }
-    
-    if (selectedColor && product.options.colors) {
-      const color = product.options.colors.find(c => c.name === selectedColor);
-      total += color?.priceModifier || 0;
-    }
-    
-    if (selectedWilaya && shippingData.shippingPrices[selectedWilaya]) {
-      let shippingCost = shippingData.shippingPrices[selectedWilaya];
-      if (shipToHome) {
-        shippingCost = shippingCost * 1.3;
-      }
-      total += shippingCost;
-    }
-    
-    return Math.round(total * 100) / 100;
-  };
+  const selectedSizeOption = product?.options.sizes.find(s => s.name === selectedSize);
+  const selectedColorOption = product?.options.colors.find(c => c.name === selectedColor);
+  const shippingPrice = selectedWilaya ? shippingData.shippingPrices[selectedWilaya] || 0 : 0;
+  const totalPrice = product ? product.base_price + (selectedSizeOption?.priceModifier || 0) + (selectedColorOption?.priceModifier || 0) + shippingPrice : 0;
 
-  const handleHorizontalScroll = (e: React.WheelEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (galleryRef.current) {
-      galleryRef.current.scrollLeft += e.deltaY;
-    }
-  };
-
-  const handleImageClick = (image: string) => {
-    setLightboxImage(image);
-    setLightboxOpen(true);
-  };
-
-  const handleImageIndexChange = (index: number) => {
-    setCurrentImageIndex(index);
-    if (galleryRef.current && product?.images) {
-      const imageWidth = galleryRef.current.scrollWidth / product.images.length;
-      galleryRef.current.scrollTo({
-        left: imageWidth * index,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    
     if (!product) return;
     
+    if (!customerName.trim() || !customerPhone.trim() || !selectedWilaya || !selectedCommune || !fullAddress.trim()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      // Add order to database
       await addOrder({
-        customer_name: fullName,
-        customer_phone: phoneNumber,
+        customer_name: customerName,
+        customer_phone: customerPhone,
         wilaya: selectedWilaya,
         commune: selectedCommune,
-        full_address: `${selectedWilaya}${selectedCommune ? `, ${selectedCommune}` : ''}`,
+        full_address: fullAddress,
         product_name: product.name,
         size: selectedSize,
         color: selectedColor,
-        total_price: calculateTotalPrice(),
-        status: 'pending' as const
+        total_price: totalPrice,
+        status: 'pending'
       });
-      
-      // Navigate to confirmation page
+
       navigate('/confirmation', { 
         state: { 
-          fromProductType: productType?.name,
+          fromProductType: typeId,
+          fromProductTypeId: typeId, // Pass the actual type ID
           productId: product.id,
           productName: product.name,
           productImage: product.images[0]
-        }
+        } 
       });
     } catch (error) {
-      toast.error('Failed to place order. Please try again.');
+      console.error('Error submitting order:', error);
+      toast.error('Failed to submit order. Please try again.');
+    } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading || !product) {
-    return <LoadingSpinner />;
+  if (productsLoading || shippingLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+            <Link to={`/products/${typeId}`}>
+              <button className="btn-gradient px-6 py-3 rounded-lg">
+                Back to Products
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navbar />
       
-      <motion.div
-        className="pt-32 pb-20 px-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="container mx-auto">
-          {/* Back Button */}
-          <motion.div
-            className="mb-8"
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Link to={`/products/${typeId}`}>
-              <motion.button
-                className="flex items-center space-x-2 glass-effect px-4 py-2 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Back to Products</span>
-              </motion.button>
-            </Link>
-          </motion.div>
+      <div className="container mx-auto px-4 py-8">
+        {/* Back Button */}
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <Link to={`/products/${typeId}`}>
+            <button className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back to Products</span>
+            </button>
+          </Link>
+        </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Image Gallery with Pagination */}
-            <motion.div
-              className="relative"
-              initial={{ x: -100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8 }}
+        {/* Product Display */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Image Gallery */}
+          <div>
+            <motion.img
+              src={product.images[selectedImageIndex]}
+              alt={product.name}
+              className="w-full rounded-lg shadow-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            />
+            <div className="flex mt-4 space-x-2 overflow-auto">
+              {product.images.map((image, index) => (
+                <motion.div
+                  key={index}
+                  className={`w-20 h-20 rounded-md overflow-hidden cursor-pointer ${index === selectedImageIndex ? 'ring-2 ring-primary' : ''}`}
+                  onClick={() => setSelectedImageIndex(index)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <img src={image} alt={`${product.name} - ${index}`} className="w-full h-full object-cover" />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Product Details */}
+          <div className="space-y-4">
+            <motion.h1
+              className="text-3xl font-bold gradient-text"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
             >
-              <div
-                ref={galleryRef}
-                className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide h-96 lg:h-[600px]"
-                onWheel={handleHorizontalScroll}
-                style={{ scrollBehavior: 'smooth' }}
-              >
-                {product.images.map((image, index) => (
-                  <motion.div
-                    key={index}
-                    className="flex-shrink-0 w-80 lg:w-96 h-full relative rounded-2xl overflow-hidden shadow-xl cursor-pointer"
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ duration: 0.3 }}
-                    onClick={() => handleImageClick(image)}
-                  >
-                    <img
-                      src={image}
-                      alt={`${product.name} - Image ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                  </motion.div>
-                ))}
-              </div>
-              
-              {/* Image Pagination Dots */}
-              <ImageGalleryPagination
-                images={product.images}
-                currentIndex={currentImageIndex}
-                onIndexChange={handleImageIndexChange}
-              />
-              
-              <motion.p
-                className="text-sm text-muted-foreground mt-4 text-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-              >
-                Click images to view in full screen • Scroll horizontally for more
-              </motion.p>
+              {product.name}
+            </motion.h1>
+            <motion.p
+              className="text-muted-foreground leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+            >
+              {product.description}
+            </motion.p>
+            <motion.div
+              className="flex items-center space-x-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.4 }}
+            >
+              <StarRating rating={4.5} readonly size="sm" />
+              <span className="text-sm text-muted-foreground">
+                (4.5/5 - 24 ratings)
+              </span>
+            </motion.div>
+            <motion.div
+              className="text-2xl font-semibold"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
+            >
+              Price: <span className="gradient-text">{product.base_price} DA</span>
             </motion.div>
 
-            {/* Product Information Form */}
-            <motion.div
-              className="space-y-8"
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <div>
-                <motion.h1
-                  className="text-4xl md:text-5xl font-bold gradient-text mb-4"
-                  initial={{ y: 30, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  {product.name}
-                </motion.h1>
-
-                {/* Star Rating Display */}
-                <motion.div
-                  className="flex items-center space-x-2 mb-6"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <StarRating 
-                    rating={averageRating} 
-                    readonly 
-                    showText 
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    ({reviews.length} reviews)
-                  </span>
-                </motion.div>
-                
-                <motion.p
-                  className="text-lg text-muted-foreground mb-6"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  {product.description}
-                </motion.p>
-                
-                {/* Pricing */}
-                <motion.div
-                  className="mb-6"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.8, type: "spring" }}
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-3xl font-bold gradient-text">
-                      {product.base_price} DA
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Total: {calculateTotalPrice()} DA (including options & shipping)
-                  </p>
-                </motion.div>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Product Options */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {product.options.sizes && product.options.sizes.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-foreground">Size</label>
-                      <select
-                        value={selectedSize}
-                        onChange={(e) => setSelectedSize(e.target.value)}
-                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                        required
-                      >
-                        <option value="">Select Size</option>
-                        {product.options.sizes.map(size => (
-                          <option key={size.name} value={size.name}>
-                            {size.name} {size.priceModifier > 0 && `(+${size.priceModifier} DA)`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                  
-                  {product.options.colors && product.options.colors.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-foreground">Color</label>
-                      <select
-                        value={selectedColor}
-                        onChange={(e) => setSelectedColor(e.target.value)}
-                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                        required
-                      >
-                        <option value="">Select Color</option>
-                        {product.options.colors.map(color => (
-                          <option key={color.name} value={color.name}>
-                            {color.name} {color.priceModifier > 0 && `(+${color.priceModifier} DA)`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                </div>
-
-                {/* Customer Information */}
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-foreground">Shipping Information</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-foreground">Full Name *</label>
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-foreground">Phone Number *</label>
-                      <input
-                        type="tel"
-                        placeholder="0555 123 456"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-foreground">Wilaya *</label>
-                    <select
-                      value={selectedWilaya}
-                      onChange={(e) => {
-                        setSelectedWilaya(e.target.value);
-                        setSelectedCommune('');
-                      }}
-                      className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                      required
+            {/* Size Options */}
+            {product.options.sizes.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.6 }}
+              >
+                <h4 className="text-lg font-semibold mb-2">Size:</h4>
+                <div className="flex space-x-2">
+                  {product.options.sizes.map((size) => (
+                    <button
+                      key={size.name}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedSize === size.name
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted/50 hover:bg-muted'
+                        }`}
+                      onClick={() => setSelectedSize(size.name)}
                     >
-                      <option value="">Select Wilaya</option>
-                      {Object.entries(shippingData.shippingPrices).map(([wilaya, baseCost]) => {
-                        const finalCost = shipToHome ? baseCost * 1.3 : baseCost;
-                        return (
-                          <option key={wilaya} value={wilaya}>
-                            {wilaya} (+{finalCost.toFixed(2)} DA shipping)
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
-
-                  {/* Advanced Shipping Option */}
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="shipToHome"
-                        checked={shipToHome}
-                        onChange={(e) => setShipToHome(e.target.checked)}
-                        className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary/50"
-                      />
-                      <label htmlFor="shipToHome" className="text-sm font-medium text-foreground">
-                        Ship to my Home Address (+30% shipping cost)
-                      </label>
-                    </div>
-
-                    {shipToHome && selectedWilaya && shippingData.communes[selectedWilaya] && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <label className="block text-sm font-medium mb-2 text-foreground">
-                          Daira/Commune (Town) *
-                        </label>
-                        <select
-                          value={selectedCommune}
-                          onChange={(e) => setSelectedCommune(e.target.value)}
-                          className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
-                          required={shipToHome}
-                        >
-                          <option value="">Select Commune</option>
-                          {shippingData.communes[selectedWilaya].map(commune => (
-                            <option key={commune} value={commune}>
-                              {commune}
-                            </option>
-                          ))}
-                        </select>
-                      </motion.div>
-                    )}
-                  </div>
+                      {size.name} {size.priceModifier > 0 ? `(+${size.priceModifier} DA)` : ''}
+                    </button>
+                  ))}
                 </div>
+              </motion.div>
+            )}
 
-                {/* Submit Button */}
-                <motion.button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full btn-gradient flex items-center justify-center space-x-2 py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                  whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
-                  whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
-                      <span>Processing Order...</span>
-                    </div>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-5 h-5" />
-                      <span>Place Order ({calculateTotalPrice()} DA)</span>
-                    </>
-                  )}
-                </motion.button>
-              </form>
-            </motion.div>
+            {/* Color Options */}
+            {product.options.colors.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.7 }}
+              >
+                <h4 className="text-lg font-semibold mb-2">Color:</h4>
+                <div className="flex space-x-2">
+                  {product.options.colors.map((color) => (
+                    <button
+                      key={color.name}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedColor === color.name
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted/50 hover:bg-muted'
+                        }`}
+                      onClick={() => setSelectedColor(color.name)}
+                    >
+                      {color.name} {color.priceModifier > 0 ? `(+${color.priceModifier} DA)` : ''}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
-      </motion.div>
 
-      {/* Image Lightbox */}
-      <ImageLightbox
-        src={lightboxImage}
-        alt={product.name}
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-      />
+        {/* Order Form */}
+        <motion.div
+          className="glass-effect rounded-2xl p-8 mt-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-2xl font-semibold mb-6 gradient-text">Order Information</h2>
+          <form onSubmit={handleSubmitOrder} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Full Name</label>
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                placeholder="Enter your full name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Phone Number</label>
+              <input
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                placeholder="Enter your phone number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Wilaya</label>
+              <select
+                value={selectedWilaya}
+                onChange={(e) => setSelectedWilaya(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+              >
+                <option value="">Select Wilaya</option>
+                {Object.keys(shippingData.shippingPrices).map((wilaya) => (
+                  <option key={wilaya} value={wilaya}>{wilaya}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Commune</label>
+              <select
+                value={selectedCommune}
+                onChange={(e) => setSelectedCommune(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                disabled={!selectedWilaya}
+              >
+                <option value="">Select Commune</option>
+                {selectedWilaya && shippingData.communes[selectedWilaya] ? (
+                  shippingData.communes[selectedWilaya].map((commune) => (
+                    <option key={commune} value={commune}>{commune}</option>
+                  ))
+                ) : (
+                  <option value="" disabled>Select Wilaya First</option>
+                )}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Full Address</label>
+              <textarea
+                value={fullAddress}
+                onChange={(e) => setFullAddress(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none"
+                rows={3}
+                placeholder="Enter your full address"
+              />
+            </div>
+
+            {/* Order Summary */}
+            <div className="py-4 border-t border-white/10">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-medium">Base Price:</span>
+                <span>{product.base_price} DA</span>
+              </div>
+              {selectedSizeOption && (
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">Size ({selectedSize}):</span>
+                  <span>{selectedSizeOption.priceModifier} DA</span>
+                </div>
+              )}
+              {selectedColorOption && (
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">Color ({selectedColor}):</span>
+                  <span>{selectedColorOption.priceModifier} DA</span>
+                </div>
+              )}
+              {selectedWilaya && (
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Shipping to {selectedWilaya}:</span>
+                  <span>{shippingPrice} DA</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-lg font-semibold">Total:</span>
+                <span className="text-lg font-bold gradient-text">{totalPrice} DA</span>
+              </div>
+            </div>
+
+            <motion.button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-gradient w-full px-6 py-3 rounded-lg font-semibold"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isSubmitting ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <RotateCcw className="animate-spin w-4 h-4" />
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                <>
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  <span>Place Order</span>
+                </>
+              )}
+            </motion.button>
+          </form>
+        </motion.div>
+
+        {/* Guarantee Section */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 text-center"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="glass-effect rounded-2xl p-6">
+            <Truck className="w-8 h-8 mx-auto text-primary mb-3" />
+            <h3 className="font-semibold text-lg mb-1">Fast Shipping</h3>
+            <p className="text-muted-foreground text-sm">
+              Enjoy fast and reliable shipping on all orders.
+            </p>
+          </div>
+          <div className="glass-effect rounded-2xl p-6">
+            <Shield className="w-8 h-8 mx-auto text-primary mb-3" />
+            <h3 className="font-semibold text-lg mb-1">Secure Payments</h3>
+            <p className="text-muted-foreground text-sm">
+              We guarantee secure payment processing for your peace of mind.
+            </p>
+          </div>
+          <div className="glass-effect rounded-2xl p-6">
+            <RotateCcw className="w-8 h-8 mx-auto text-primary mb-3" />
+            <h3 className="font-semibold text-lg mb-1">Easy Returns</h3>
+            <p className="text-muted-foreground text-sm">
+              Not satisfied? Return your order within 30 days for a full refund.
+            </p>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };

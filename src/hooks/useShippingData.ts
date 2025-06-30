@@ -15,16 +15,24 @@ export const useShippingData = () => {
 
   const loadShippingData = async () => {
     try {
-      const response = await fetch('/src/data/shippingData.json');
-      const data = await response.json();
-      setShippingData(data);
-    } catch (error) {
-      console.error('Error loading shipping data:', error);
-      // Fallback to localStorage if JSON file fails
+      // Try to load from localStorage first
       const stored = localStorage.getItem('shippingData');
       if (stored) {
         setShippingData(JSON.parse(stored));
+      } else {
+        // If no localStorage data, load from JSON file and save to localStorage
+        const response = await fetch('/src/data/shippingData.json');
+        const data = await response.json();
+        setShippingData(data);
+        localStorage.setItem('shippingData', JSON.stringify(data));
       }
+    } catch (error) {
+      console.error('Error loading shipping data:', error);
+      // Fallback to empty data if everything fails
+      setShippingData({
+        shippingPrices: {},
+        communes: {}
+      });
     } finally {
       setLoading(false);
     }

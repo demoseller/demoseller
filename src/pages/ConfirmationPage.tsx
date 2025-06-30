@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 const ConfirmationPage = () => {
   const location = useLocation();
-  const { fromProductType, productId, productName, productImage } = location.state || {};
+  const { fromProductType, fromProductTypeId, productId, productName, productImage } = location.state || {};
   
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -55,6 +55,11 @@ const ConfirmationPage = () => {
     } finally {
       setIsSubmittingReview(false);
     }
+  };
+
+  // Handle star rating change without auto-submitting
+  const handleRatingChange = (newRating: number) => {
+    setRating(newRating);
   };
 
   return (
@@ -171,7 +176,7 @@ const ConfirmationPage = () => {
                     <div className="flex justify-center">
                       <StarRating
                         rating={rating}
-                        onRatingChange={setRating}
+                        onRatingChange={handleRatingChange}
                         size="lg"
                       />
                     </div>
@@ -274,7 +279,7 @@ const ConfirmationPage = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: reviewSubmitted ? 0.7 : 1.2 }}
         >
-          <Link to={`/products/${fromProductType || 't-shirts'}`}>
+          <Link to={`/products/${fromProductTypeId || fromProductType || 't-shirts'}`}>
             <motion.button
               className="btn-gradient flex items-center space-x-3 mx-auto px-8 py-4 text-lg font-semibold"
               whileHover={{ scale: 1.05 }}

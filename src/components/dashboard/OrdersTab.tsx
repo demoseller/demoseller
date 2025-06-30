@@ -1,9 +1,10 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Eye, Phone, MapPin, Package, Calendar, Filter } from 'lucide-react';
+import { Eye, Phone, MapPin, Package, Calendar, Filter, Trash2 } from 'lucide-react';
 import { useOrders } from '../../hooks/useSupabaseStore';
 import OrderFilterModal from './OrderFilterModal';
+import { toast } from 'sonner';
 
 interface FilterOptions {
   status: 'all' | 'pending' | 'confirmed';
@@ -13,7 +14,7 @@ interface FilterOptions {
 }
 
 const OrdersTab = () => {
-  const { orders, loading, updateOrderStatus } = useOrders();
+  const { orders, loading, updateOrderStatus, deleteOrder } = useOrders();
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     status: 'all',
@@ -27,6 +28,17 @@ const OrdersTab = () => {
     if (order) {
       const newStatus = order.status === 'pending' ? 'confirmed' : 'pending';
       await updateOrderStatus(orderId, newStatus);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string, customerName: string) => {
+    if (window.confirm(`Are you sure you want to delete the order from ${customerName}?`)) {
+      const success = await deleteOrder(orderId);
+      if (success) {
+        toast.success('Order deleted successfully');
+      } else {
+        toast.error('Failed to delete order');
+      }
     }
   };
 
@@ -137,18 +149,32 @@ const OrdersTab = () => {
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">{formatDate(order.created_at)}</p>
                   
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm">Status:</span>
-                    <button
-                      onClick={() => toggleOrderStatus(order.id)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                        order.status === 'confirmed'
-                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                          : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                      }`}
-                    >
-                      {order.status === 'confirmed' ? 'Confirmed' : 'Pending'}
-                    </button>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm">Status:</span>
+                      <button
+                        onClick={() => toggleOrderStatus(order.id)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                          order.status === 'confirmed'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                        }`}
+                      >
+                        {order.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                      </button>
+                    </div>
+                    
+                    {order.status === 'confirmed' && (
+                      <motion.button
+                        onClick={() => handleDeleteOrder(order.id, order.customer_name)}
+                        className="p-2 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        title="Delete completed order"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </motion.button>
+                    )}
                   </div>
                 </div>
               </div>

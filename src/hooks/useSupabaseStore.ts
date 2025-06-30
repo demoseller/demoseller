@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 
@@ -73,11 +72,26 @@ export const useOrders = () => {
     }
   };
 
+  const deleteOrder = async (orderId: string) => {
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', orderId);
+    
+    if (error) {
+      console.error('Error deleting order:', error);
+      return false;
+    } else {
+      await fetchOrders();
+      return true;
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
   }, []);
 
-  return { orders, loading, updateOrderStatus, refreshOrders: fetchOrders };
+  return { orders, loading, updateOrderStatus, deleteOrder, refreshOrders: fetchOrders };
 };
 
 export const useProductTypes = () => {
