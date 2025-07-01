@@ -1,431 +1,320 @@
 import { motion } from 'framer-motion';
-import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Star, ShoppingCart, Truck, Shield, RotateCcw } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import StarRating from '../components/StarRating';
-import { useProducts } from '../hooks/useSupabaseStore';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, ShoppingCart, Star, Truck, Shield, RotateCcw } from 'lucide-react';
+import { useProductById, useReviews } from '../hooks/useProductData';
 import { useShippingData } from '../hooks/useShippingData';
-import { useOrders } from '../hooks/useProductData';
+import { useOrders } from '../hooks/useSupabaseStore';
+import LoadingSpinner from '../components/LoadingSpinner';
+import StarRating from '../components/StarRating';
 import { toast } from 'sonner';
 
 const ProductPage = () => {
-  const {
-    typeId,
-    productId
-  } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const {
-    products,
-    loading: productsLoading
-  } = useProducts();
-  const {
-    shippingData,
-    loading: shippingLoading
-  } = useShippingData();
-  const {
-    addOrder
-  } = useOrders();
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [selectedWilaya, setSelectedWilaya] = useState('');
-  const [selectedCommune, setSelectedCommune] = useState('');
-  const [fullAddress, setFullAddress] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [shipToHome, setShipToHome] = useState(false);
-  
-  const product = products.find(p => p.id === productId);
-  
+  const [quantity, setQuantity] = useState(1);
+  const [size, setSize] = useState('');
+  const [color, setColor] = useState('');
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
+  const { product, loading } = useProductById(id || '');
+  const { shippingData } = useShippingData();
+  const { addOrder } = useOrders();
+  const { reviews, loading: reviewsLoading } = useReviews(id || '');
+
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    : 0;
+
   useEffect(() => {
-    if (product && product.options.sizes.length > 0) {
-      setSelectedSize(product.options.sizes[0].name);
-    }
-    if (product && product.options.colors.length > 0) {
-      setSelectedColor(product.options.colors[0].name);
-    }
-  }, [product]);
-  
-  useEffect(() => {
-    // When wilaya changes, reset commune
-    setSelectedCommune('');
-  }, [selectedWilaya]);
-  
-  const selectedSizeOption = product?.options.sizes.find(s => s.name === selectedSize);
-  const selectedColorOption = product?.options.colors.find(c => c.name === selectedColor);
-  const baseShippingPrice = selectedWilaya ? shippingData.shippingPrices[selectedWilaya] || 0 : 0;
-  const shippingPrice = shipToHome ? baseShippingPrice * 1.3 : baseShippingPrice;
-  const totalPrice = product ? product.base_price + (selectedSizeOption?.priceModifier || 0) + (selectedColorOption?.priceModifier || 0) + shippingPrice : 0;
-  
-  const handleSubmitOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!product) return;
+    window.scrollTo(0, 0);
+  }, []);
 
-    console.log('Form submission started');
-    console.log('Form values:', {
-      customerName: customerName.trim(),
-      customerPhone: customerPhone.trim(),
-      selectedWilaya,
-      selectedCommune,
-      fullAddress: fullAddress.trim(),
-      shipToHome
-    });
+  const incrementQuantity = () => {
+    setQuantity(prevQuantity => prevQuantity + 1);
+  };
 
-    // Check required fields
-    if (!customerName.trim()) {
-      console.log('Missing customer name');
-      toast.error('Please enter your full name');
-      return;
-    }
-    if (!customerPhone.trim()) {
-      console.log('Missing customer phone');
-      toast.error('Please enter your phone number');
-      return;
-    }
-    if (!selectedWilaya) {
-      console.log('Missing wilaya');
-      toast.error('Please select a wilaya');
-      return;
-    }
-    if (shipToHome && !selectedCommune) {
-      console.log('Missing commune for home delivery');
-      toast.error('Please select a commune for home delivery');
-      return;
-    }
-    if (shipToHome && !fullAddress.trim()) {
-      console.log('Missing full address for home delivery');
-      toast.error('Please enter your full address for home delivery');
-      return;
-    }
-
-    console.log('All validations passed, submitting order');
-    setIsSubmitting(true);
-    
-    try {
-      await addOrder({
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        wilaya: selectedWilaya,
-        commune: selectedCommune || 'To pickup point',
-        full_address: shipToHome ? fullAddress : 'To pickup point',
-        product_name: product.name,
-        size: selectedSize,
-        color: selectedColor,
-        total_price: totalPrice,
-        status: 'pending'
-      });
-      
-      console.log('Order submitted successfully, navigating to confirmation');
-      navigate('/confirmation', {
-        state: {
-          fromProductType: typeId,
-          fromProductTypeId: typeId,
-          productId: product.id,
-          productName: product.name,
-          productImage: product.images[0]
-        }
-      });
-    } catch (error) {
-      console.error('Error submitting order:', error);
-      toast.error('Failed to submit order. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+  const decrementQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(prevQuantity => prevQuantity - 1);
     }
   };
-  
-  if (productsLoading || shippingLoading) {
-    return <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>;
-  }
-  
-  if (!product) {
-    return <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
-            <Link to={`/products/${typeId}`}>
-              <button className="btn-gradient px-6 py-3 rounded-lg">
-                Back to Products
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>;
-  }
-  
-  return <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <motion.div className="mb-6" initial={{
-        opacity: 0,
-        x: -20
-      }} animate={{
-        opacity: 1,
-        x: 0
-      }}>
-          <Link to={`/products/${typeId}`}>
-            <button className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back to Products</span>
-            </button>
-          </Link>
-        </motion.div>
 
-        {/* Product Display */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Image Gallery */}
-          <div>
-            <motion.img src={product.images[selectedImageIndex]} alt={product.name} className="w-full rounded-lg shadow-lg" initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.3
-          }} />
-            <div className="flex mt-4 space-x-2 overflow-auto">
-              {product.images.map((image, index) => <motion.div key={index} className={`w-20 h-20 rounded-md overflow-hidden cursor-pointer ${index === selectedImageIndex ? 'ring-2 ring-primary' : ''}`} onClick={() => setSelectedImageIndex(index)} whileHover={{
-              scale: 1.1
-            }} whileTap={{
-              scale: 0.95
-            }}>
-                  <img src={image} alt={`${product.name} - ${index}`} className="w-full h-full object-cover" />
-                </motion.div>)}
+  const handleSizeChange = (e) => {
+    setSize(e.target.value);
+  };
+
+  const handleColorChange = (e) => {
+    setColor(e.target.value);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!size || !color) {
+      toast.error('Please select both size and color');
+      return;
+    }
+
+    if (!product) {
+      toast.error('Product details are not available');
+      return;
+    }
+
+    setIsPlacingOrder(true);
+
+    try {
+      const orderData = {
+        product_type_id: product.product_type_id,
+        product_name: product.name,
+        size: size,
+        color: color,
+        quantity: quantity,
+        base_price: product.base_price,
+        total_price: product.base_price * quantity,
+        customer_name: shippingData?.fullName || 'N/A',
+        customer_phone: shippingData?.phone || 'N/A',
+        wilaya: shippingData?.wilaya || 'N/A',
+        commune: shippingData?.commune || 'N/A',
+        full_address: shippingData?.address || 'N/A',
+        status: 'pending',
+        image_url: product.image_url
+      };
+
+      const newOrder = await addOrder(orderData);
+
+      if (newOrder) {
+        navigate('/confirmation', {
+          state: {
+            fromProductType: product.product_type_id,
+            fromProductTypeId: product.product_type_id,
+            productId: product.id,
+            productName: product.name,
+            productImage: product.image_url
+          }
+        });
+        toast.success('Order placed successfully!');
+      } else {
+        toast.error('Failed to place order');
+      }
+    } catch (error) {
+      toast.error('An error occurred while placing the order');
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  const formatAverageRating = (rating: number) => {
+    return rating.toFixed(1);
+  };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
+        <div className="text-center">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Product not found</h2>
+          <button onClick={() => navigate(-1)} className="btn-gradient px-4 py-2 rounded-lg">
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Back Button */}
+      <motion.div
+        className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b p-3 sm:p-4"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="text-sm sm:text-base">Back</span>
+        </button>
+      </motion.div>
+
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
+          {/* Product Image */}
+          <motion.div
+            className="space-y-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="aspect-square bg-muted rounded-lg sm:rounded-xl overflow-hidden">
+              <img
+                src={product.image_url || '/placeholder.svg'}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
             </div>
-          </div>
+          </motion.div>
 
           {/* Product Details */}
-          <div className="space-y-4">
-            <motion.h1 className="text-3xl font-bold gradient-text" initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.3,
-            delay: 0.2
-          }}>
-              {product.name}
-            </motion.h1>
-            <motion.p className="text-muted-foreground leading-relaxed" initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.3,
-            delay: 0.3
-          }}>
-              {product.description}
-            </motion.p>
-            <motion.div className="flex items-center space-x-2" initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.3,
-            delay: 0.4
-          }}>
-              <StarRating rating={4.5} readonly size="sm" />
-              <span className="text-sm text-muted-foreground">
-                (4.5/5 - 24 ratings)
-              </span>
-            </motion.div>
-            <motion.div className="text-2xl font-semibold" initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.3,
-            delay: 0.5
-          }}>
-              Price: <span className="gradient-text">{product.base_price} DA</span>
-            </motion.div>
-
-            {/* Size Options */}
-            {product.options.sizes.length > 0 && <motion.div initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.3,
-            delay: 0.6
-          }}>
-                <h4 className="text-lg font-semibold mb-2">Size:</h4>
-                <div className="flex space-x-2">
-                  {product.options.sizes.map(size => <button key={size.name} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedSize === size.name ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted/50 hover:bg-muted'}`} onClick={() => setSelectedSize(size.name)}>
-                      {size.name} {size.priceModifier > 0 ? `(+${size.priceModifier} DA)` : ''}
-                    </button>)}
+          <motion.div
+            className="space-y-4 sm:space-y-6"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">{product.name}</h1>
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-3 sm:mb-4">
+                {product.base_price} DA
+              </p>
+              
+              {/* Rating Section - Made more responsive */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 mb-4 sm:mb-6">
+                <div className="flex items-center space-x-2">
+                  <StarRating rating={averageRating} readonly size="md" />
+                  <span className="text-sm sm:text-base font-medium">
+                    {formatAverageRating(averageRating)}
+                  </span>
                 </div>
-              </motion.div>}
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
+                </span>
+              </div>
+              
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                {product.description}
+              </p>
+            </div>
 
-            {/* Color Options */}
-            {product.options.colors.length > 0 && <motion.div initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.3,
-            delay: 0.7
-          }}>
-                <h4 className="text-lg font-semibold mb-2">Color:</h4>
-                <div className="flex space-x-2">
-                  {product.options.colors.map(color => <button key={color.name} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedColor === color.name ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted/50 hover:bg-muted'}`} onClick={() => setSelectedColor(color.name)}>
-                      {color.name} {color.priceModifier > 0 ? `(+${color.priceModifier} DA)` : ''}
-                    </button>)}
+            {/* Features */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 p-4 sm:p-6 glass-effect rounded-lg sm:rounded-xl">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <span className="text-xs sm:text-sm">Free Shipping</span>
+              </div>
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <span className="text-xs sm:text-sm">Secure Payment</span>
+              </div>
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <span className="text-xs sm:text-sm">Easy Returns</span>
+              </div>
+            </div>
+
+            {/* Order Form */}
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 p-4 sm:p-6 glass-effect rounded-lg sm:rounded-xl">
+              <h3 className="text-lg sm:text-xl font-bold mb-4">Place Your Order</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium mb-2">Size</label>
+                  <select
+                    value={size}
+                    onChange={handleSizeChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
+                    required
+                  >
+                    <option value="">Select Size</option>
+                    {product.sizes && product.sizes.map((s, index) => (
+                      <option key={index} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
-              </motion.div>}
-          </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium mb-2">Color</label>
+                  <select
+                    value={color}
+                    onChange={handleColorChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
+                    required
+                  >
+                    <option value="">Select Color</option>
+                    {product.colors && product.colors.map((c, index) => (
+                      <option key={index} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-2">Quantity</label>
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={decrementQuantity}
+                    className="px-4 py-2 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={quantity <= 1}
+                  >
+                    -
+                  </button>
+                  <span className="text-sm sm:text-base">{quantity}</span>
+                  <button
+                    type="button"
+                    onClick={incrementQuantity}
+                    className="px-4 py-2 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              
+              <button
+                type="submit"
+                disabled={isPlacingOrder}
+                className="w-full btn-gradient py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                {isPlacingOrder ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                    <span>Placing Order...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span>Place Order</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </motion.div>
         </div>
 
-        {/* Order Form */}
-        <motion.div className="glass-effect rounded-2xl p-8 mt-12" initial={{
-        opacity: 0,
-        y: 30
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.5
-      }}>
-          <h2 className="text-2xl font-semibold mb-6 gradient-text">Order Information</h2>
-          <form onSubmit={handleSubmitOrder} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Full Name *</label>
-              <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none" placeholder="Enter your full name" required />
+        {/* Reviews Section */}
+        {reviews.length > 0 && (
+          <motion.div
+            className="mt-8 sm:mt-12 lg:mt-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <h3 className="text-xl sm:text-2xl font-bold mb-4">Customer Reviews</h3>
+            <div className="space-y-4">
+              {reviews.map(review => (
+                <div key={review.id} className="p-4 glass-effect rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">{review.reviewer_name || 'Anonymous'}</span>
+                      <StarRating rating={review.rating} readonly size="sm" />
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(review.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground">{review.comment}</p>
+                </div>
+              ))}
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Phone Number *</label>
-              <input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none" placeholder="Enter your phone number" required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Wilaya *</label>
-              <select value={selectedWilaya} onChange={e => setSelectedWilaya(e.target.value)} className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none" required>
-                <option value="">Select Wilaya</option>
-                {Object.keys(shippingData.shippingPrices).map(wilaya => <option key={wilaya} value={wilaya}>{wilaya}</option>)}
-              </select>
-            </div>
-
-            {/* Shipping to Home Checkbox */}
-            <div className="flex items-center space-x-2">
-              <input type="checkbox" id="shipToHome" checked={shipToHome} onChange={e => setShipToHome(e.target.checked)} className="rounded border-border" />
-              <label htmlFor="shipToHome" className="text-sm font-medium">
-                Ship to home (+30% shipping cost)
-              </label>
-            </div>
-
-            {/* Commune Field - Only show when shipping to home */}
-            {shipToHome && <div>
-                <label className="block text-sm font-medium mb-2">Commune *</label>
-                <select value={selectedCommune} onChange={e => setSelectedCommune(e.target.value)} className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none" disabled={!selectedWilaya} required={shipToHome}>
-                  <option value="">Select Commune</option>
-                  {selectedWilaya && shippingData.communes[selectedWilaya] ? shippingData.communes[selectedWilaya].map(commune => <option key={commune} value={commune}>{commune}</option>) : <option value="" disabled>Select Wilaya First</option>}
-                </select>
-              </div>}
-
-            {/* Full Address - Only show when shipping to home */}
-            {shipToHome && <div>
-                <label className="block text-sm font-medium mb-2">Full Address *</label>
-                <textarea value={fullAddress} onChange={e => setFullAddress(e.target.value)} className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/50 outline-none" rows={3} placeholder="Enter your full address" required={shipToHome} />
-              </div>}
-
-            {/* Order Summary */}
-            <div className="py-4 border-t border-white/10">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium">Base Price:</span>
-                <span>{product.base_price} DA</span>
-              </div>
-              {selectedSizeOption && selectedSizeOption.priceModifier > 0 && <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">Size ({selectedSize}):</span>
-                  <span>{selectedSizeOption.priceModifier} DA</span>
-                </div>}
-              {selectedColorOption && selectedColorOption.priceModifier > 0 && <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">Color ({selectedColor}):</span>
-                  <span>{selectedColorOption.priceModifier} DA</span>
-                </div>}
-              {selectedWilaya && <div className="flex justify-between items-center">
-                  <span className="font-medium">
-                    Shipping to {selectedWilaya} {shipToHome ? '(Home delivery)' : '(Pickup point)'}:
-                  </span>
-                  <span>{shippingPrice.toFixed(0)} DA</span>
-                </div>}
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-lg font-semibold">Total:</span>
-                <span className="text-lg font-bold gradient-text">{totalPrice.toFixed(0)} DA</span>
-              </div>
-            </div>
-
-            <motion.button type="submit" disabled={isSubmitting} className="btn-gradient w-full px-6 py-3 rounded-lg font-semibold" whileHover={{
-            scale: 1.05
-          }} whileTap={{
-            scale: 0.95
-          }}>
-              {isSubmitting ? <div className="flex items-center justify-center space-x-2">
-                  <RotateCcw className="animate-spin w-4 h-4" />
-                  <span>Processing...</span>
-                </div> : <div className="flex items-center justify-center space-x-2">
-                  <ShoppingCart className="w-5 h-5" />
-                  <span>Place Order</span>
-                </div>}
-            </motion.button>
-          </form>
-        </motion.div>
-
-        {/* Guarantee Section */}
-        <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 text-center" initial={{
-        opacity: 0,
-        y: 30
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.5,
-        delay: 0.2
-      }}>
-          <div className="glass-effect rounded-2xl p-6">
-            <Truck className="w-8 h-8 mx-auto text-primary mb-3" />
-            <h3 className="font-semibold text-lg mb-1">Fast Shipping</h3>
-            <p className="text-muted-foreground text-sm">
-              Enjoy fast and reliable shipping on all orders.
-            </p>
-          </div>
-          <div className="glass-effect rounded-2xl p-6">
-            <Shield className="w-8 h-8 mx-auto text-primary mb-3" />
-            <h3 className="font-semibold text-lg mb-1">Secure Payments</h3>
-            <p className="text-muted-foreground text-sm">
-              We guarantee secure payment processing for your peace of mind.
-            </p>
-          </div>
-          <div className="glass-effect rounded-2xl p-6">
-            <RotateCcw className="w-8 h-8 mx-auto text-primary mb-3" />
-            <h3 className="font-semibold text-lg mb-1">Easy Returns</h3>
-            <p className="text-muted-foreground text-sm">
-              Not satisfied? Return your order within 30 days for a full refund.
-            </p>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default ProductPage;
