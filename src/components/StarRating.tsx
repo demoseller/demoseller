@@ -40,6 +40,7 @@ const StarRating = ({
         {[1, 2, 3, 4, 5].map((star) => (
           <motion.button
             key={star}
+            type="button"
             className={`${readonly ? 'cursor-default' : 'cursor-pointer'} transition-colors`}
             onClick={() => handleClick(star)}
             onMouseEnter={() => !readonly && setHoverRating(star)}

@@ -55,6 +55,8 @@ export const useProductById = (productId: string) => {
       return;
     }
 
+    console.log('Fetching product with ID:', productId);
+
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -64,7 +66,9 @@ export const useProductById = (productId: string) => {
     if (error) {
       console.error('Error fetching product:', error);
       setProduct(null);
-    } else {
+    } else if (data) {
+      console.log('Product data received:', data);
+      
       // Safely parse the options field
       let parsedOptions = { sizes: [], colors: [] };
       if (data.options && typeof data.options === 'object' && data.options !== null) {
@@ -86,6 +90,9 @@ export const useProductById = (productId: string) => {
         options: parsedOptions
       };
       setProduct(transformedProduct);
+    } else {
+      console.log('No product found with ID:', productId);
+      setProduct(null);
     }
     setLoading(false);
   };
@@ -161,4 +168,31 @@ export const useOrders = () => {
   };
 
   return { addOrder };
+};
+
+// Image upload utility function
+export const uploadImage = async (file: File): Promise<string> => {
+  try {
+    // Create FormData for the image
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'lovable_uploads'); // You'll need to set this in Cloudinary
+    
+    // Upload to Cloudinary (you can replace this with any cloud service)
+    const response = await fetch('https://api.cloudinary.com/v1_1/your-cloud-name/image/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to upload image');
+    }
+    
+    const data = await response.json();
+    return data.secure_url;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    // Fallback: return a placeholder URL for now
+    return '/placeholder.svg';
+  }
 };

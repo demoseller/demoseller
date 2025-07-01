@@ -4,23 +4,23 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Star, Truck, Shield, RotateCcw } from 'lucide-react';
 import { useProductById, useReviews, useOrders } from '../hooks/useProductData';
-import { useShippingData } from '../hooks/useShippingData';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StarRating from '../components/StarRating';
 import { toast } from 'sonner';
 
 const ProductPage = () => {
-  const { id } = useParams();
+  const { productId } = useParams();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState('');
   const [color, setColor] = useState('');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  const { product, loading } = useProductById(id || '');
-  const { shippingData } = useShippingData();
+  console.log('ProductPage - productId from params:', productId);
+
+  const { product, loading } = useProductById(productId || '');
   const { addOrder } = useOrders();
-  const { reviews, loading: reviewsLoading } = useReviews(id || '');
+  const { reviews, loading: reviewsLoading } = useReviews(productId || '');
 
   const averageRating = reviews.length > 0
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
@@ -40,11 +40,11 @@ const ProductPage = () => {
     }
   };
 
-  const handleSizeChange = (e) => {
+  const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSize(e.target.value);
   };
 
-  const handleColorChange = (e) => {
+  const handleColorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setColor(e.target.value);
   };
 
@@ -117,6 +117,7 @@ const ProductPage = () => {
       <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
         <div className="text-center">
           <h2 className="text-lg sm:text-xl font-bold mb-4">Product not found</h2>
+          <p className="text-sm text-muted-foreground mb-4">Product ID: {productId}</p>
           <button onClick={() => navigate(-1)} className="btn-gradient px-4 py-2 rounded-lg text-sm">
             Go Back
           </button>
