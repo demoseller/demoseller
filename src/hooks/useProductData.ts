@@ -55,8 +55,6 @@ export const useProductById = (productId: string) => {
       return;
     }
 
-    console.log('Fetching product with ID:', productId);
-
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -66,9 +64,7 @@ export const useProductById = (productId: string) => {
     if (error) {
       console.error('Error fetching product:', error);
       setProduct(null);
-    } else if (data) {
-      console.log('Product data received:', data);
-      
+    } else {
       // Safely parse the options field
       let parsedOptions = { sizes: [], colors: [] };
       if (data.options && typeof data.options === 'object' && data.options !== null) {
@@ -90,9 +86,6 @@ export const useProductById = (productId: string) => {
         options: parsedOptions
       };
       setProduct(transformedProduct);
-    } else {
-      console.log('No product found with ID:', productId);
-      setProduct(null);
     }
     setLoading(false);
   };

@@ -10,21 +10,17 @@ import StarRating from '../components/StarRating';
 import { toast } from 'sonner';
 
 const ProductPage = () => {
-  const { typeId, id } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState('');
   const [color, setColor] = useState('');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  // Use the product ID from the URL params
-  const productId = id || '';
-  console.log('Product ID from params:', productId);
-
-  const { product, loading } = useProductById(productId);
+  const { product, loading } = useProductById(id || '');
   const { shippingData } = useShippingData();
   const { addOrder } = useOrders();
-  const { reviews, loading: reviewsLoading } = useReviews(productId);
+  const { reviews, loading: reviewsLoading } = useReviews(id || '');
 
   const averageRating = reviews.length > 0
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length

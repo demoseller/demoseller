@@ -28,7 +28,6 @@ const StarRating = ({
 
   const handleClick = (value: number) => {
     if (!readonly && onRatingChange) {
-      console.log('Star clicked, setting rating to:', value);
       onRatingChange(value);
     }
   };
@@ -41,7 +40,6 @@ const StarRating = ({
         {[1, 2, 3, 4, 5].map((star) => (
           <motion.button
             key={star}
-            type="button"
             className={`${readonly ? 'cursor-default' : 'cursor-pointer'} transition-colors`}
             onClick={() => handleClick(star)}
             onMouseEnter={() => !readonly && setHoverRating(star)}
