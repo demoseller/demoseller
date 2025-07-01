@@ -65,15 +65,25 @@ export const useProductById = (productId: string) => {
       console.error('Error fetching product:', error);
       setProduct(null);
     } else {
+      // Safely parse the options field
+      let parsedOptions = { sizes: [], colors: [] };
+      if (data.options && typeof data.options === 'object' && data.options !== null) {
+        const options = data.options as any;
+        if (options.sizes && Array.isArray(options.sizes)) {
+          parsedOptions.sizes = options.sizes;
+        }
+        if (options.colors && Array.isArray(options.colors)) {
+          parsedOptions.colors = options.colors;
+        }
+      }
+
       // Transform the data to match our Product interface
       const transformedProduct: Product = {
         ...data,
         image_url: data.images?.[0] || null,
-        sizes: data.options?.sizes?.map((s: any) => s.name) || [],
-        colors: data.options?.colors?.map((c: any) => c.name) || [],
-        options: typeof data.options === 'object' && data.options !== null 
-          ? data.options as { sizes: Array<{ name: string; priceModifier: number }>; colors: Array<{ name: string; priceModifier: number }> }
-          : { sizes: [], colors: [] }
+        sizes: parsedOptions.sizes?.map((s: any) => s.name) || [],
+        colors: parsedOptions.colors?.map((c: any) => c.name) || [],
+        options: parsedOptions
       };
       setProduct(transformedProduct);
     }
