@@ -12,6 +12,22 @@ export interface Review {
   created_at: string;
 }
 
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  base_price: number;
+  image_url?: string;
+  images: string[];
+  product_type_id: string;
+  sizes?: string[];
+  colors?: string[];
+  options?: {
+    sizes: Array<{ name: string; priceModifier: number }>;
+    colors: Array<{ name: string; priceModifier: number }>;
+  };
+}
+
 export interface OrderData {
   customer_name: string;
   customer_phone: string;
@@ -21,9 +37,55 @@ export interface OrderData {
   product_name: string;
   size: string;
   color: string;
+  quantity: number;
+  base_price: number;
   total_price: number;
   status: 'pending' | 'confirmed';
+  product_type_id: string;
+  image_url?: string;
 }
+
+export const useProductById = (productId: string) => {
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProduct = async () => {
+    if (!productId) {
+      setLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching product:', error);
+      setProduct(null);
+    } else {
+      // Transform the data to match our Product interface
+      const transformedProduct: Product = {
+        ...data,
+        image_url: data.images?.[0] || null,
+        sizes: data.options?.sizes?.map((s: any) => s.name) || [],
+        colors: data.options?.colors?.map((c: any) => c.name) || [],
+        options: typeof data.options === 'object' && data.options !== null 
+          ? data.options as { sizes: Array<{ name: string; priceModifier: number }>; colors: Array<{ name: string; priceModifier: number }> }
+          : { sizes: [], colors: [] }
+      };
+      setProduct(transformedProduct);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchProduct();
+  }, [productId]);
+
+  return { product, loading, refreshProduct: fetchProduct };
+};
 
 export const useReviews = (productId: string) => {
   const [reviews, setReviews] = useState<Review[]>([]);
