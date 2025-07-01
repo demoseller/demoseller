@@ -115,12 +115,6 @@
     }
   }
 
-  @media (min-width: 768px) {
-    html {
-      font-size: 15px;
-    }
-  }
-
   @media (min-width: 1024px) {
     html {
       font-size: 16px;
@@ -129,7 +123,7 @@
 
   @media (min-width: 1280px) {
     html {
-      font-size: 17px;
+      font-size: 18px;
     }
   }
 }
@@ -144,11 +138,11 @@
   }
   
   .btn-gradient {
-    @apply bg-gradient-primary dark:bg-gradient-primary-dark text-white font-medium px-3 py-2 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-center;
+    @apply bg-gradient-primary dark:bg-gradient-primary-dark text-white font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-center;
   }
   
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg sm:hover:shadow-xl hover:-translate-y-0.5 sm:hover:-translate-y-1 md:hover:-translate-y-2;
+    @apply transition-all duration-300 hover:shadow-xl sm:hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2;
   }
 
   .scrollbar-hide {
@@ -158,6 +152,11 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Container improvements for mobile */
+  .container {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
   /* Responsive text sizing */
@@ -205,7 +204,7 @@ img {
   button, 
   a, 
   [role="button"] {
-    min-height: 40px;
-    min-width: 40px;
+    min-height: 44px;
+    min-width: 44px;
   }
 }

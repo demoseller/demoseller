@@ -12,22 +12,6 @@ export interface Review {
   created_at: string;
 }
 
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  base_price: number;
-  image_url?: string;
-  images: string[];
-  product_type_id: string;
-  sizes?: string[];
-  colors?: string[];
-  options?: {
-    sizes: Array<{ name: string; priceModifier: number }>;
-    colors: Array<{ name: string; priceModifier: number }>;
-  };
-}
-
 export interface OrderData {
   customer_name: string;
   customer_phone: string;
@@ -37,72 +21,9 @@ export interface OrderData {
   product_name: string;
   size: string;
   color: string;
-  quantity: number;
-  base_price: number;
   total_price: number;
   status: 'pending' | 'confirmed';
-  product_type_id: string;
-  image_url?: string;
 }
-
-export const useProductById = (productId: string) => {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchProduct = async () => {
-    if (!productId) {
-      setLoading(false);
-      return;
-    }
-
-    console.log('Fetching product with ID:', productId);
-
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', productId)
-      .single();
-
-    if (error) {
-      console.error('Error fetching product:', error);
-      setProduct(null);
-    } else if (data) {
-      console.log('Product data received:', data);
-      
-      // Safely parse the options field
-      let parsedOptions = { sizes: [], colors: [] };
-      if (data.options && typeof data.options === 'object' && data.options !== null) {
-        const options = data.options as any;
-        if (options.sizes && Array.isArray(options.sizes)) {
-          parsedOptions.sizes = options.sizes;
-        }
-        if (options.colors && Array.isArray(options.colors)) {
-          parsedOptions.colors = options.colors;
-        }
-      }
-
-      // Transform the data to match our Product interface
-      const transformedProduct: Product = {
-        ...data,
-        image_url: data.images?.[0] || null,
-        sizes: parsedOptions.sizes?.map((s: any) => s.name) || [],
-        colors: parsedOptions.colors?.map((c: any) => c.name) || [],
-        options: parsedOptions
-      };
-      setProduct(transformedProduct);
-    } else {
-      console.log('No product found with ID:', productId);
-      setProduct(null);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchProduct();
-  }, [productId]);
-
-  return { product, loading, refreshProduct: fetchProduct };
-};
 
 export const useReviews = (productId: string) => {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -168,31 +89,4 @@ export const useOrders = () => {
   };
 
   return { addOrder };
-};
-
-// Image upload utility function
-export const uploadImage = async (file: File): Promise<string> => {
-  try {
-    // Create FormData for the image
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'lovable_uploads'); // You'll need to set this in Cloudinary
-    
-    // Upload to Cloudinary (you can replace this with any cloud service)
-    const response = await fetch('https://api.cloudinary.com/v1_1/your-cloud-name/image/upload', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to upload image');
-    }
-    
-    const data = await response.json();
-    return data.secure_url;
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    // Fallback: return a placeholder URL for now
-    return '/placeholder.svg';
-  }
 };
