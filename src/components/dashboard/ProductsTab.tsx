@@ -1,9 +1,10 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Plus, Package, Edit, Trash2, Upload, ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { Plus, Package, Edit, Trash2, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { useProductTypes, useProducts } from '../../hooks/useSupabaseStore';
 import AddProductModal from './AddProductModal';
+import ImageUpload from '../ImageUpload';
 import { toast } from 'sonner';
 
 const ProductsTab = () => {
@@ -54,22 +55,28 @@ const ProductsTab = () => {
 
   const AddProductTypeModal = () => {
     const [typeName, setTypeName] = useState(editingType?.name || '');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageUrl, setImageUrl] = useState(editingType?.image_url || '');
     const [loading, setLoading] = useState(false);
+
+    const handleImageUploaded = (url: string) => {
+      setImageUrl(url);
+    };
+
+    const handleImageRemoved = () => {
+      setImageUrl('');
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setLoading(true);
       
       try {
-        const imageUrl = imageFile 
-          ? `https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=600&fit=crop&v=${Date.now()}`
-          : editingType?.image_url || '/placeholder.svg';
+        const finalImageUrl = imageUrl || '/placeholder.svg';
 
         if (editingType) {
           await updateProductType(editingType.id, {
             name: typeName,
-            image_url: imageUrl
+            image_url: finalImageUrl
           });
           toast.success('Product type updated successfully!');
           setShowEditTypeModal(false);
@@ -77,7 +84,7 @@ const ProductsTab = () => {
         } else {
           await addProductType({
             name: typeName,
-            image_url: imageUrl
+            image_url: finalImageUrl
           });
           toast.success('Product type added successfully!');
           setShowAddTypeModal(false);
@@ -87,7 +94,7 @@ const ProductsTab = () => {
       } finally {
         setLoading(false);
         setTypeName('');
-        setImageFile(null);
+        setImageUrl('');
       }
     };
 
@@ -119,22 +126,12 @@ const ProductsTab = () => {
             </div>
             <div>
               <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Image</label>
-              <div className="border-2 border-dashed border-border rounded-lg p-3 sm:p-4 text-center">
-                <Upload className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-muted-foreground" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                  id="type-image"
-                />
-                <label htmlFor="type-image" className="cursor-pointer text-xs sm:text-sm text-muted-foreground">
-                  Click to upload image
-                </label>
-                {imageFile && (
-                  <p className="text-xs sm:text-sm text-primary mt-2">{imageFile.name}</p>
-                )}
-              </div>
+              <ImageUpload
+                onImageUploaded={handleImageUploaded}
+                currentImage={imageUrl}
+                onImageRemoved={handleImageRemoved}
+                className="w-full"
+              />
             </div>
             <div className="flex space-x-2 sm:space-x-3 pt-3 sm:pt-4">
               <button
