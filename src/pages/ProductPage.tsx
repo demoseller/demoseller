@@ -10,17 +10,17 @@ import StarRating from '../components/StarRating';
 import { toast } from 'sonner';
 
 const ProductPage = () => {
-  const { id } = useParams();
+  const { productId } = useParams();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState('');
   const [color, setColor] = useState('');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  const { product, loading } = useProductById(id || '');
+  const { product, loading } = useProductById(productId || '');
   const { shippingData } = useShippingData();
   const { addOrder } = useOrders();
-  const { reviews, loading: reviewsLoading } = useReviews(id || '');
+  const { reviews, loading: reviewsLoading } = useReviews(productId || '');
 
   const averageRating = reviews.length > 0
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
