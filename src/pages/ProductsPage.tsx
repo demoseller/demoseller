@@ -28,31 +28,31 @@ const ProductsPage = () => {
   }
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
+    <div className="min-h-screen">
       <Navbar />
       
       <motion.div
-        className="pt-20 md:pt-32 pb-12 md:pb-20 px-4"
+        className="pt-32 pb-20 px-4"
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -100 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="container mx-auto max-w-full">
+        <div className="container mx-auto">
           {/* Back Button */}
           <motion.div
-            className="mb-6 md:mb-8"
+            className="mb-8"
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
             <Link to="/">
               <motion.button
-                className="flex items-center space-x-2 glass-effect px-3 py-2 md:px-4 md:py-2 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-sm md:text-base"
+                className="flex items-center space-x-2 glass-effect px-4 py-2 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+                <ArrowLeft className="w-5 h-5" />
                 <span>Back to Home</span>
               </motion.button>
             </Link>
@@ -60,7 +60,7 @@ const ProductsPage = () => {
           
           {/* Header */}
           <motion.h1
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-8 md:mb-16 gradient-text capitalize px-2 leading-tight"
+            className="text-5xl md:text-6xl font-bold mb-16 gradient-text capitalize"
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -70,17 +70,17 @@ const ProductsPage = () => {
           
           {/* Products Grid */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {filteredProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="group relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg md:shadow-xl card-hover w-full max-w-sm mx-auto"
+                  className="group relative overflow-hidden rounded-2xl shadow-xl card-hover"
                 >
                   <Link to={`/products/${typeId}/${product.id}`}>
-                    <div className="relative h-64 sm:h-72 md:h-80 w-full overflow-hidden">
+                    <div className="relative h-80 w-full overflow-hidden">
                       <motion.img
                         src={product.images[0] || '/placeholder.svg'}
                         alt={product.name}
@@ -89,16 +89,16 @@ const ProductsPage = () => {
                         transition={{ duration: 0.6, ease: "easeOut" }}
                       />
                       
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                       
                       <motion.div
                         className="absolute inset-0 glass-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        whileHover={{ rotateY: 2, rotateX: 1 }}
+                        whileHover={{ rotateY: 5, rotateX: 2 }}
                         style={{ transformStyle: "preserve-3d" }}
                       >
-                        <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 right-4 md:right-6">
+                        <div className="absolute bottom-6 left-6 right-6">
                           <motion.h3
-                            className="text-lg sm:text-xl font-bold text-white mb-2 leading-tight"
+                            className="text-xl font-bold text-white mb-2"
                             initial={{ y: 20, opacity: 0 }}
                             whileInView={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.2 }}
@@ -107,7 +107,7 @@ const ProductsPage = () => {
                           </motion.h3>
                           
                           <motion.p
-                            className="text-base sm:text-lg font-semibold text-white mb-3"
+                            className="text-lg font-semibold text-white mb-3"
                             initial={{ y: 20, opacity: 0 }}
                             whileInView={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.3 }}
@@ -116,9 +116,9 @@ const ProductsPage = () => {
                           </motion.p>
                           
                           <motion.div
-                            className="w-8 md:w-12 h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full"
+                            className="w-12 h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full"
                             initial={{ width: 0 }}
-                            whileInView={{ width: window.innerWidth < 768 ? 32 : 48 }}
+                            whileInView={{ width: 48 }}
                             transition={{ delay: 0.4, duration: 0.6 }}
                           />
                         </div>
@@ -130,7 +130,7 @@ const ProductsPage = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-lg md:text-xl text-muted-foreground px-4">No products available in this category yet.</p>
+              <p className="text-xl text-muted-foreground">No products available in this category yet.</p>
             </div>
           )}
         </div>

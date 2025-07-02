@@ -54,7 +54,7 @@ const OrdersTab = () => {
 
   const filteredOrders = orders.filter(order => {
     if (filters.status !== 'all' && order.status !== filters.status) return false;
-    if (filters.product && order.product_name !== filters.product) return false;
+    if (filters.product && !order.product_name.toLowerCase().includes(filters.product.toLowerCase())) return false;
     if (filters.wilaya && order.wilaya !== filters.wilaya) return false;
     return true;
   });
@@ -72,52 +72,52 @@ const OrdersTab = () => {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
-        <h2 className="text-xl sm:text-2xl font-bold">Order Management</h2>
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Order Management</h2>
+        <div className="flex items-center space-x-4">
           <button
             onClick={() => setShowFilterModal(true)}
-            className="flex items-center justify-center space-x-2 px-3 py-2 sm:px-4 sm:py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors relative text-sm"
+            className="flex items-center space-x-2 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors relative"
           >
-            <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>Filter</span>
+            <Filter className="w-4 h-4" />
+            <span>Filter Orders</span>
             {activeFiltersCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {activeFiltersCount}
               </span>
             )}
           </button>
-          <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
+          <div className="text-sm text-muted-foreground">
             {filteredOrders.length} of {orders.length} orders
           </div>
         </div>
       </div>
 
-      <div className="grid gap-3 sm:gap-4">
+      <div className="grid gap-4">
         {filteredOrders.map((order, index) => (
           <motion.div
             key={order.id}
-            className="glass-effect p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl border"
+            className="glass-effect p-6 rounded-xl border"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Customer Info */}
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
-                  <span className="font-semibold text-sm sm:text-base">Customer Details</span>
+                  <Eye className="w-4 h-4 text-primary" />
+                  <span className="font-semibold">Customer Details</span>
                 </div>
-                <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                <div className="space-y-2 text-sm">
                   <p><strong>Name:</strong> {order.customer_name}</p>
                   <div className="flex items-center space-x-2">
-                    <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Phone className="w-4 h-4" />
                     <span>{order.customer_phone}</span>
                   </div>
                   <div className="flex items-start space-x-2">
-                    <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5" />
+                    <MapPin className="w-4 h-4 mt-0.5" />
                     <div>
                       <p>{order.wilaya}, {order.commune}</p>
                       <p className="text-muted-foreground text-xs">{order.full_address}</p>
@@ -127,34 +127,34 @@ const OrdersTab = () => {
               </div>
 
               {/* Product Info */}
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <Package className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
-                  <span className="font-semibold text-sm sm:text-base">Product Details</span>
+                  <Package className="w-4 h-4 text-primary" />
+                  <span className="font-semibold">Product Details</span>
                 </div>
-                <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                <div className="space-y-2 text-sm">
                   <p><strong>Product:</strong> {order.product_name}</p>
                   <p><strong>Size:</strong> {order.size}</p>
                   <p><strong>Color:</strong> {order.color}</p>
-                  <p><strong>Total:</strong> <span className="text-base sm:text-lg font-bold text-primary">{order.total_price} DA</span></p>
+                  <p><strong>Total:</strong> <span className="text-lg font-bold text-primary">{order.total_price} DA</span></p>
                 </div>
               </div>
 
               {/* Order Status & Actions */}
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
-                  <span className="font-semibold text-sm sm:text-base">Order Status</span>
+                  <Calendar className="w-4 h-4 text-primary" />
+                  <span className="font-semibold">Order Status</span>
                 </div>
-                <div className="space-y-2 sm:space-y-3">
-                  <p className="text-xs sm:text-sm text-muted-foreground">{formatDate(order.created_at)}</p>
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">{formatDate(order.created_at)}</p>
                   
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2 sm:space-x-3">
-                      <span className="text-xs sm:text-sm">Status:</span>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm">Status:</span>
                       <button
                         onClick={() => toggleOrderStatus(order.id)}
-                        className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-medium transition-colors ${
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                           order.status === 'confirmed'
                             ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                             : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
@@ -167,12 +167,12 @@ const OrdersTab = () => {
                     {order.status === 'confirmed' && (
                       <motion.button
                         onClick={() => handleDeleteOrder(order.id, order.customer_name)}
-                        className="p-1.5 sm:p-2 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
+                        className="p-2 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         title="Delete completed order"
                       >
-                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </motion.button>
                     )}
                   </div>

@@ -87,50 +87,15 @@
 @layer base {
   * {
     @apply border-border;
-    box-sizing: border-box;
-  }
-
-  html {
-    scroll-behavior: smooth;
-    font-size: 16px;
   }
 
   body {
     @apply bg-gradient-light dark:bg-gradient-dark text-foreground font-poppins;
     font-family: 'Poppins', sans-serif;
-    width: 100%;
-    overflow-x: hidden;
-    min-height: 100vh;
   }
 
-  #root {
-    width: 100%;
-    min-height: 100vh;
-  }
-
-  /* Mobile-first responsive typography */
-  @media (max-width: 640px) {
-    html {
-      font-size: 14px;
-    }
-  }
-
-  @media (min-width: 768px) {
-    html {
-      font-size: 15px;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    html {
-      font-size: 16px;
-    }
-  }
-
-  @media (min-width: 1280px) {
-    html {
-      font-size: 17px;
-    }
+  html {
+    scroll-behavior: smooth;
   }
 }
 
@@ -144,11 +109,11 @@
   }
   
   .btn-gradient {
-    @apply bg-gradient-primary dark:bg-gradient-primary-dark text-white font-medium px-3 py-2 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-center;
+    @apply bg-gradient-primary dark:bg-gradient-primary-dark text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105;
   }
   
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg sm:hover:shadow-xl hover:-translate-y-0.5 sm:hover:-translate-y-1 md:hover:-translate-y-2;
+    @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-2;
   }
 
   .scrollbar-hide {
@@ -158,54 +123,5 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
-  }
-
-  /* Responsive text sizing */
-  .text-responsive-xs {
-    @apply text-xs sm:text-sm;
-  }
-
-  .text-responsive-sm {
-    @apply text-sm sm:text-base;
-  }
-
-  .text-responsive-base {
-    @apply text-base sm:text-lg;
-  }
-
-  .text-responsive-lg {
-    @apply text-lg sm:text-xl md:text-2xl;
-  }
-
-  .text-responsive-xl {
-    @apply text-xl sm:text-2xl md:text-3xl;
-  }
-
-  .text-responsive-2xl {
-    @apply text-2xl sm:text-3xl md:text-4xl;
-  }
-
-  .text-responsive-3xl {
-    @apply text-3xl sm:text-4xl md:text-5xl;
-  }
-}
-
-/* Ensure no horizontal overflow on any screen size */
-* {
-  max-width: 100%;
-}
-
-img {
-  height: auto;
-  max-width: 100%;
-}
-
-/* Improve touch targets for mobile */
-@media (max-width: 768px) {
-  button, 
-  a, 
-  [role="button"] {
-    min-height: 40px;
-    min-width: 40px;
   }
 }
