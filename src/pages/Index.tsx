@@ -21,19 +21,19 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full overflow-x-hidden">
       <Navbar />
       
       {/* Hero Section */}
       <motion.section 
-        className="pt-32 pb-20 px-4"
+        className="pt-20 md:pt-32 pb-12 md:pb-20 px-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
       >
-        <div className="container mx-auto text-center">
+        <div className="container mx-auto text-center max-w-full">
           <motion.h1
-            className="text-6xl md:text-8xl font-bold mb-6 gradient-text"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold mb-4 md:mb-6 gradient-text leading-tight"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -42,7 +42,7 @@ const Index = () => {
           </motion.h1>
           
           <motion.p
-            className="text-xl md:text-2xl mb-12 text-muted-foreground max-w-3xl mx-auto"
+            className="text-base sm:text-lg md:text-xl lg:text-2xl mb-8 md:mb-12 text-muted-foreground max-w-3xl mx-auto px-2 leading-relaxed"
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -56,7 +56,7 @@ const Index = () => {
             animate={{ scale: 1 }}
             transition={{ duration: 0.6, delay: 0.6, type: "spring", stiffness: 200 }}
           >
-            <div className="btn-gradient">
+            <div className="btn-gradient text-sm sm:text-base px-6 py-3 sm:px-8 sm:py-4">
               Explore Collections
             </div>
           </motion.div>
@@ -65,15 +65,15 @@ const Index = () => {
       
       {/* Product Types Grid */}
       <motion.section 
-        className="py-20 px-4"
+        className="py-12 md:py-20 px-4"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
-        <div className="container mx-auto">
+        <div className="container mx-auto max-w-full">
           <motion.h2
-            className="text-4xl md:text-5xl font-bold text-center mb-16 gradient-text"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-8 md:mb-16 gradient-text px-2"
             initial={{ y: 30, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6 }}
@@ -83,7 +83,7 @@ const Index = () => {
           </motion.h2>
           
           {productTypes.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto">
               {productTypes.map((type, index) => (
                 <ProductTypeCard
                   key={type.id}
@@ -96,7 +96,7 @@ const Index = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-xl text-muted-foreground">No product types available yet.</p>
+              <p className="text-lg md:text-xl text-muted-foreground px-4">No product types available yet.</p>
             </div>
           )}
         </div>
@@ -104,14 +104,14 @@ const Index = () => {
       
       {/* Footer */}
       <motion.footer
-        className="py-12 px-4 mt-20 glass-effect"
+        className="py-8 md:py-12 px-4 mt-12 md:mt-20 glass-effect"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
       >
-        <div className="container mx-auto text-center">
-          <p className="text-muted-foreground">
+        <div className="container mx-auto text-center max-w-full">
+          <p className="text-sm md:text-base text-muted-foreground px-2">
             © 2024 SpectraCommerce. The Zenith of Interactive E-commerce.
           </p>
         </div>

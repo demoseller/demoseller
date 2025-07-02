@@ -13,10 +13,26 @@ export default {
 	theme: {
 		container: {
 			center: true,
-			padding: '2rem',
+			padding: {
+				DEFAULT: '1rem',
+				sm: '1.5rem',
+				lg: '2rem',
+			},
 			screens: {
+				'sm': '640px',
+				'md': '768px',
+				'lg': '1024px',
+				'xl': '1280px',
 				'2xl': '1400px'
 			}
+		},
+		screens: {
+			'xs': '320px',
+			'sm': '640px',
+			'md': '768px',
+			'lg': '1024px',
+			'xl': '1280px',
+			'2xl': '1536px',
 		},
 		extend: {
 			fontFamily: {
@@ -72,6 +88,12 @@ export default {
 				'gradient-dark': 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)',
 				'gradient-primary': 'linear-gradient(135deg, #8A2BE2 0%, #4682B4 100%)',
 				'gradient-primary-dark': 'linear-gradient(135deg, #c039ff 0%, #00bfff 100%)',
+			},
+			spacing: {
+				'safe-top': 'env(safe-area-inset-top)',
+				'safe-bottom': 'env(safe-area-inset-bottom)',
+				'safe-left': 'env(safe-area-inset-left)',
+				'safe-right': 'env(safe-area-inset-right)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
