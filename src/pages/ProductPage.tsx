@@ -2,11 +2,13 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Star, Truck, Shield, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Star, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProductById, useReviews, useOrders } from '../hooks/useProductData';
 import { useShippingData } from '../hooks/useShippingData';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StarRating from '../components/StarRating';
+import ImageGalleryPagination from '../components/ImageGalleryPagination';
+import ImageLightbox from '../components/ImageLightbox';
 import { toast } from 'sonner';
 
 const ProductPage = () => {
@@ -16,6 +18,8 @@ const ProductPage = () => {
   const [size, setSize] = useState('');
   const [color, setColor] = useState('');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const { product, loading } = useProductById(productId || '');
   const { shippingData } = useShippingData();
@@ -46,6 +50,18 @@ const ProductPage = () => {
 
   const handleColorChange = (e) => {
     setColor(e.target.value);
+  };
+
+  const nextImage = () => {
+    if (product?.images) {
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (product?.images) {
+      setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -144,67 +160,50 @@ const ProductPage = () => {
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6">
         <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-          {/* Product Image */}
+          {/* Left Column - Image Gallery and Order Form */}
           <motion.div
-            className="space-y-3"
+            className="space-y-4"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-              <img
-                src={product.image_url || '/placeholder.svg'}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </motion.div>
-
-          {/* Product Details */}
-          <motion.div
-            className="space-y-3 sm:space-y-4"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div>
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-2 sm:mb-3">
-                {product.base_price} DA
-              </p>
-              
-              {/* Rating Section - Mobile optimized */}
-              <div className="flex items-center space-x-2 mb-3 sm:mb-4">
-                <div className="flex items-center">
-                  <StarRating rating={averageRating} readonly size="lg" />
-                </div>
-                <span className="text-sm font-medium ml-1">
-                  {formatAverageRating(averageRating)}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
-                </span>
+            {/* Image Gallery */}
+            <div className="relative group">
+              <div className="aspect-square bg-muted rounded-lg overflow-hidden relative">
+                <img
+                  src={product.images?.[currentImageIndex] || product.image_url || '/placeholder.svg'}
+                  alt={product.name}
+                  className="w-full h-full object-cover cursor-zoom-in"
+                  onClick={() => setIsLightboxOpen(true)}
+                />
+                
+                {/* Navigation Arrows */}
+                {product.images && product.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
               </div>
               
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-
-            {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 p-3 sm:p-4 glass-effect rounded-lg">
-              <div className="flex items-center space-x-2">
-                <Truck className="w-4 h-4 text-primary" />
-                <span className="text-xs sm:text-sm">Free Shipping</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Shield className="w-4 h-4 text-primary" />
-                <span className="text-xs sm:text-sm">Secure Payment</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RotateCcw className="w-4 h-4 text-primary" />
-                <span className="text-xs sm:text-sm">Easy Returns</span>
-              </div>
+              {/* Image Pagination */}
+              {product.images && product.images.length > 1 && (
+                <ImageGalleryPagination
+                  images={product.images}
+                  currentIndex={currentImageIndex}
+                  onIndexChange={setCurrentImageIndex}
+                />
+              )}
             </div>
 
             {/* Order Form */}
@@ -283,6 +282,81 @@ const ProductPage = () => {
               </button>
             </form>
           </motion.div>
+
+          {/* Right Column - Product Information */}
+          <motion.div
+            className="space-y-3 sm:space-y-4"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-2 sm:mb-3">
+                {product.base_price} DA
+              </p>
+              
+              {/* Rating Section */}
+              <div className="flex items-center space-x-2 mb-3 sm:mb-4">
+                <div className="flex items-center">
+                  <StarRating rating={averageRating} readonly size="lg" />
+                </div>
+                <span className="text-sm font-medium ml-1">
+                  {formatAverageRating(averageRating)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
+                </span>
+              </div>
+              
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {product.description}
+              </p>
+            </div>
+
+            {/* Features */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 p-3 sm:p-4 glass-effect rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Truck className="w-4 h-4 text-primary" />
+                <span className="text-xs sm:text-sm">Free Shipping</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Shield className="w-4 h-4 text-primary" />
+                <span className="text-xs sm:text-sm">Secure Payment</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RotateCcw className="w-4 h-4 text-primary" />
+                <span className="text-xs sm:text-sm">Easy Returns</span>
+              </div>
+            </div>
+
+            {/* Size and Color Information */}
+            <div className="space-y-3 p-3 sm:p-4 glass-effect rounded-lg">
+              <h3 className="text-base font-semibold mb-2">Available Options</h3>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-2">Sizes Available:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes && product.sizes.map((s, index) => (
+                    <span key={index} className="px-2 py-1 bg-muted rounded text-xs">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-2">Colors Available:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors && product.colors.map((c, index) => (
+                    <span key={index} className="px-2 py-1 bg-muted rounded text-xs">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Reviews Section */}
@@ -313,6 +387,14 @@ const ProductPage = () => {
           </motion.div>
         )}
       </div>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        src={product.images?.[currentImageIndex] || product.image_url || '/placeholder.svg'}
+        alt={product.name}
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+      />
     </div>
   );
 };
