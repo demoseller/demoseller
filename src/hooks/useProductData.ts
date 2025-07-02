@@ -66,14 +66,19 @@ export const useProductById = (productId: string) => {
       setProduct(null);
     } else {
       // Transform the data to match our Product interface
+      const options = data.options && typeof data.options === 'object' && data.options !== null 
+        ? data.options as { sizes?: Array<{ name: string; priceModifier: number }>; colors?: Array<{ name: string; priceModifier: number }> }
+        : { sizes: [], colors: [] };
+
       const transformedProduct: Product = {
         ...data,
         image_url: data.images?.[0] || null,
-        sizes: data.options?.sizes?.map((s: any) => s.name) || [],
-        colors: data.options?.colors?.map((c: any) => c.name) || [],
-        options: typeof data.options === 'object' && data.options !== null 
-          ? data.options as { sizes: Array<{ name: string; priceModifier: number }>; colors: Array<{ name: string; priceModifier: number }> }
-          : { sizes: [], colors: [] }
+        sizes: options.sizes?.map((s) => s.name) || [],
+        colors: options.colors?.map((c) => c.name) || [],
+        options: {
+          sizes: options.sizes || [],
+          colors: options.colors || []
+        }
       };
       setProduct(transformedProduct);
     }
