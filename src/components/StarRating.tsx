@@ -28,6 +28,8 @@ const StarRating = ({
 
   const handleClick = (value: number) => {
     if (!readonly && onRatingChange) {
+      // Only call onRatingChange to update the rating state
+      // Do NOT trigger form submission here
       onRatingChange(value);
     }
   };
@@ -40,6 +42,7 @@ const StarRating = ({
         {[1, 2, 3, 4, 5].map((star) => (
           <motion.button
             key={star}
+            type="button"
             className={`${readonly ? 'cursor-default' : 'cursor-pointer'} transition-colors`}
             onClick={() => handleClick(star)}
             onMouseEnter={() => !readonly && setHoverRating(star)}
