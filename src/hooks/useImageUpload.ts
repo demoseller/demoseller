@@ -48,10 +48,14 @@ export const useImageUpload = () => {
         console.error('Supabase function error:', error);
         let errorMessage = 'Upload failed';
         
-        if (error.message && error.message.includes('FunctionsHttpError')) {
-          errorMessage = 'Upload service is currently unavailable. Please check your internet connection and try again.';
-        } else if (error.message) {
-          errorMessage = `Upload failed: ${error.message}`;
+        if (error.message) {
+          if (error.message.includes('FunctionsHttpError')) {
+            errorMessage = 'Upload service temporarily unavailable. Please try again.';
+          } else if (error.message.includes('network')) {
+            errorMessage = 'Network error. Please check your connection and try again.';
+          } else {
+            errorMessage = `Upload failed: ${error.message}`;
+          }
         }
         
         toast.error(errorMessage);
@@ -74,7 +78,7 @@ export const useImageUpload = () => {
       }
     } catch (error) {
       console.error('Upload error:', error);
-      const errorMessage = 'Network error occurred during upload';
+      const errorMessage = 'Network error occurred during upload. Please try again.';
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
