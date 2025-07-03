@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { useImageUpload } from '../hooks/useImageUpload';
 
@@ -19,16 +19,27 @@ const ImageUpload = ({
 }: ImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [uploadError, setUploadError] = useState<string>('');
   const { uploadImage, uploading } = useImageUpload();
 
   const handleFileSelect = async (file: File) => {
+    setUploadError('');
+    
     if (!file.type.startsWith('image/')) {
+      setUploadError('Please select an image file');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('Image size must be less than 10MB');
       return;
     }
 
     const result = await uploadImage(file);
     if (result.success && result.imageUrl) {
       onImageUploaded(result.imageUrl);
+    } else {
+      setUploadError(result.error || 'Upload failed');
     }
   };
 
@@ -60,13 +71,16 @@ const ImageUpload = ({
   };
 
   const handleClick = () => {
-    fileInputRef.current?.click();
+    if (!uploading) {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleRemoveImage = () => {
     if (onImageRemoved) {
       onImageRemoved();
     }
+    setUploadError('');
   };
 
   return (
@@ -116,7 +130,7 @@ const ImageUpload = ({
             dragOver 
               ? 'border-primary bg-primary/5' 
               : 'border-gray-300 hover:border-primary hover:bg-primary/5'
-          }`}
+          } ${uploading ? 'pointer-events-none opacity-50' : ''}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -125,7 +139,7 @@ const ImageUpload = ({
           {uploading ? (
             <div className="flex flex-col items-center space-y-2">
               <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full"></div>
-              <p className="text-sm text-muted-foreground">Uploading...</p>
+              <p className="text-sm text-muted-foreground">Uploading image...</p>
             </div>
           ) : (
             <div className="flex flex-col items-center space-y-2">
@@ -136,6 +150,13 @@ const ImageUpload = ({
               </div>
             </div>
           )}
+        </div>
+      )}
+      
+      {uploadError && (
+        <div className="mt-2 flex items-center space-x-1 text-red-500 text-sm">
+          <AlertCircle className="w-4 h-4" />
+          <span>{uploadError}</span>
         </div>
       )}
     </div>
