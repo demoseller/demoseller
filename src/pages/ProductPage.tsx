@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Star, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProductById, useReviews, useOrders } from '../hooks/useProductData';
 import { useShippingData } from '../hooks/useShippingData';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -17,6 +17,10 @@ const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState('');
   const [color, setColor] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [wilaya, setWilaya] = useState('');
+  const [commune, setCommune] = useState('');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -67,6 +71,26 @@ const ProductPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!customerName.trim()) {
+      toast.error('Please enter your full name');
+      return;
+    }
+
+    if (!customerPhone.trim()) {
+      toast.error('Please enter your phone number');
+      return;
+    }
+
+    if (!wilaya.trim()) {
+      toast.error('Please select your wilaya');
+      return;
+    }
+
+    if (!commune.trim()) {
+      toast.error('Please select your commune');
+      return;
+    }
+
     if (!size || !color) {
       toast.error('Please select both size and color');
       return;
@@ -88,11 +112,11 @@ const ProductPage = () => {
         quantity: quantity,
         base_price: product.base_price,
         total_price: product.base_price * quantity,
-        customer_name: 'Ship to Home',
-        customer_phone: 'N/A',
-        wilaya: 'N/A',
-        commune: 'N/A',
-        full_address: 'Ship to Home',
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        wilaya: wilaya,
+        commune: commune,
+        full_address: `${commune}, ${wilaya}`,
         status: 'pending' as const,
         image_url: product.image_url
       };
@@ -210,6 +234,75 @@ const ProductPage = () => {
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 p-3 sm:p-4 glass-effect rounded-lg">
               <h3 className="text-base sm:text-lg font-bold mb-3">Place Your Order</h3>
               
+              {/* Customer Information */}
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium mb-1">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                    placeholder="Enter your phone number"
+                    required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Wilaya</label>
+                    <select
+                      value={wilaya}
+                      onChange={(e) => {
+                        setWilaya(e.target.value);
+                        setCommune('');
+                      }}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                      required
+                    >
+                      <option value="">Select Wilaya</option>
+                      {shippingData.map((data) => (
+                        <option key={data.id} value={data.wilaya}>
+                          {data.wilaya}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Commune</label>
+                    <select
+                      value={commune}
+                      onChange={(e) => setCommune(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                      required
+                      disabled={!wilaya}
+                    >
+                      <option value="">Select Commune</option>
+                      {wilaya && shippingData
+                        .find((data) => data.wilaya === wilaya)
+                        ?.communes.map((communeName) => (
+                          <option key={communeName} value={communeName}>
+                            {communeName}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-medium mb-1">Size</label>
@@ -312,22 +405,6 @@ const ProductPage = () => {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {product.description}
               </p>
-            </div>
-
-            {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 p-3 sm:p-4 glass-effect rounded-lg">
-              <div className="flex items-center space-x-2">
-                <Truck className="w-4 h-4 text-primary" />
-                <span className="text-xs sm:text-sm">Free Shipping</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Shield className="w-4 h-4 text-primary" />
-                <span className="text-xs sm:text-sm">Secure Payment</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RotateCcw className="w-4 h-4 text-primary" />
-                <span className="text-xs sm:text-sm">Easy Returns</span>
-              </div>
             </div>
 
             {/* Size and Color Information */}
