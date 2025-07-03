@@ -26,7 +26,7 @@ const ProductPage = () => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const { product, loading } = useProductById(productId || '');
-  const { shippingData } = useShippingData();
+  const { shippingData, loading: shippingLoading } = useShippingData();
   const { addOrder } = useOrders();
   const { reviews, loading: reviewsLoading } = useReviews(productId || '');
 
@@ -148,7 +148,10 @@ const ProductPage = () => {
     return rating.toFixed(1);
   };
 
-  if (loading) {
+  // Get available wilayas from shipping data
+  const availableWilayas = Object.keys(shippingData.communes || {});
+
+  if (loading || shippingLoading) {
     return <LoadingSpinner />;
   }
 
@@ -273,9 +276,9 @@ const ProductPage = () => {
                       required
                     >
                       <option value="">Select Wilaya</option>
-                      {shippingData.map((data) => (
-                        <option key={data.id} value={data.wilaya}>
-                          {data.wilaya}
+                      {availableWilayas.map((wilayaName) => (
+                        <option key={wilayaName} value={wilayaName}>
+                          {wilayaName}
                         </option>
                       ))}
                     </select>
@@ -291,13 +294,11 @@ const ProductPage = () => {
                       disabled={!wilaya}
                     >
                       <option value="">Select Commune</option>
-                      {wilaya && shippingData
-                        .find((data) => data.wilaya === wilaya)
-                        ?.communes.map((communeName) => (
-                          <option key={communeName} value={communeName}>
-                            {communeName}
-                          </option>
-                        ))}
+                      {wilaya && shippingData.communes[wilaya]?.map((communeName) => (
+                        <option key={communeName} value={communeName}>
+                          {communeName}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
