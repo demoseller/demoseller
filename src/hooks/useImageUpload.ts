@@ -21,14 +21,16 @@ export const useImageUpload = () => {
     try {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file');
-        return { success: false, error: 'Invalid file type' };
+        const error = 'Please select an image file';
+        toast.error(error);
+        return { success: false, error };
       }
 
       // Validate file size (10MB limit)
       if (file.size > 10 * 1024 * 1024) {
-        toast.error('Image size must be less than 10MB');
-        return { success: false, error: 'File too large' };
+        const error = 'Image size must be less than 10MB';
+        toast.error(error);
+        return { success: false, error };
       }
 
       const formData = new FormData();
@@ -44,8 +46,16 @@ export const useImageUpload = () => {
 
       if (error) {
         console.error('Supabase function error:', error);
-        toast.error(`Upload failed: ${error.message}`);
-        return { success: false, error: error.message };
+        let errorMessage = 'Upload failed';
+        
+        if (error.message && error.message.includes('FunctionsHttpError')) {
+          errorMessage = 'Upload service is currently unavailable. Please check your internet connection and try again.';
+        } else if (error.message) {
+          errorMessage = `Upload failed: ${error.message}`;
+        }
+        
+        toast.error(errorMessage);
+        return { success: false, error: errorMessage };
       }
 
       if (data?.success) {
@@ -57,14 +67,16 @@ export const useImageUpload = () => {
           publicId: data.publicId
         };
       } else {
+        const errorMsg = data?.error || 'Upload failed for unknown reason';
         console.error('Upload failed:', data);
-        toast.error(`Upload failed: ${data?.error || 'Unknown error'}`);
-        return { success: false, error: data?.error || 'Upload failed' };
+        toast.error(`Upload failed: ${errorMsg}`);
+        return { success: false, error: errorMsg };
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload image');
-      return { success: false, error: 'Network error' };
+      const errorMessage = 'Network error occurred during upload';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setUploading(false);
     }
