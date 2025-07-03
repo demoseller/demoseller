@@ -9,6 +9,7 @@ interface StarRatingProps {
   readonly?: boolean;
   size?: 'sm' | 'md' | 'lg';
   showText?: boolean;
+  
 }
 
 const StarRating = ({ 
