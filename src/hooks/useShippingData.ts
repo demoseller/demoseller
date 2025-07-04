@@ -25,6 +25,7 @@ export const useShippingData = () => {
 
   const loadShippingData = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('shipping_data')
         .select('*')
@@ -66,12 +67,14 @@ export const useShippingData = () => {
 
       if (error) {
         console.error('Error updating price:', error);
-        return;
+        return false;
       }
 
-      await loadShippingData();
+      await loadShippingData(); // Refresh data
+      return true;
     } catch (error) {
       console.error('Error updating price:', error);
+      return false;
     }
   };
 
@@ -84,12 +87,14 @@ export const useShippingData = () => {
 
       if (error) {
         console.error('Error updating communes:', error);
-        return;
+        return false;
       }
 
-      await loadShippingData();
+      await loadShippingData(); // Refresh data
+      return true;
     } catch (error) {
       console.error('Error updating communes:', error);
+      return false;
     }
   };
 
@@ -105,12 +110,14 @@ export const useShippingData = () => {
 
       if (error) {
         console.error('Error adding wilaya:', error);
-        return;
+        return false;
       }
 
-      await loadShippingData();
+      await loadShippingData(); // Refresh data
+      return true;
     } catch (error) {
       console.error('Error adding wilaya:', error);
+      return false;
     }
   };
 
@@ -123,12 +130,14 @@ export const useShippingData = () => {
 
       if (error) {
         console.error('Error removing wilaya:', error);
-        return;
+        return false;
       }
 
-      await loadShippingData();
+      await loadShippingData(); // Refresh data
+      return true;
     } catch (error) {
       console.error('Error removing wilaya:', error);
+      return false;
     }
   };
 
