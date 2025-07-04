@@ -33,11 +33,16 @@ const OrdersTab = () => {
 
   const handleDeleteOrder = async (orderId: string, customerName: string) => {
     if (window.confirm(`Are you sure you want to delete the order from ${customerName}?`)) {
-      const success = await deleteOrder(orderId);
-      if (success) {
-        toast.success('Order deleted successfully');
-      } else {
-        toast.error('Failed to delete order');
+      try {
+        const success = await deleteOrder(orderId);
+        if (success) {
+          toast.success('Order deleted successfully');
+        } else {
+          toast.error('Failed to delete order');
+        }
+      } catch (error) {
+        console.error('Error deleting order:', error);
+        toast.error('An error occurred while deleting the order');
       }
     }
   };
@@ -164,17 +169,15 @@ const OrdersTab = () => {
                       </button>
                     </div>
                     
-                    {order.status === 'confirmed' && (
-                      <motion.button
-                        onClick={() => handleDeleteOrder(order.id, order.customer_name)}
-                        className="p-1.5 sm:p-2 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        title="Delete completed order"
-                      >
-                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </motion.button>
-                    )}
+                    <motion.button
+                      onClick={() => handleDeleteOrder(order.id, order.customer_name)}
+                      className="p-1.5 sm:p-2 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      title="Delete order"
+                    >
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </motion.button>
                   </div>
                 </div>
               </div>
