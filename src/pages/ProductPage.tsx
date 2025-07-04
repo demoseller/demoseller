@@ -1,3 +1,4 @@
+
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -8,6 +9,8 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import StarRating from '../components/StarRating';
 import ImageGalleryPagination from '../components/ImageGalleryPagination';
 import ImageLightbox from '../components/ImageLightbox';
+import Navbar from '../components/Navbar';
+import { Checkbox } from '../components/ui/checkbox';
 import { toast } from 'sonner';
 
 const ProductPage = () => {
@@ -22,6 +25,7 @@ const ProductPage = () => {
   const [customerPhone, setCustomerPhone] = useState('');
   const [wilaya, setWilaya] = useState('');
   const [commune, setCommune] = useState('');
+  const [shipToHome, setShipToHome] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -67,6 +71,21 @@ const ProductPage = () => {
     }
   };
 
+  // Calculate shipping cost based on "Ship to Home" option
+  const calculateShippingCost = () => {
+    if (!wilaya || !shippingData.shippingPrices[wilaya]) return 0;
+    const baseShippingPrice = shippingData.shippingPrices[wilaya];
+    return shipToHome ? Math.round(baseShippingPrice * 1.3) : baseShippingPrice;
+  };
+
+  // Calculate total price
+  const calculateTotalPrice = () => {
+    if (!product) return 0;
+    const basePrice = product.base_price * quantity;
+    const shippingCost = calculateShippingCost();
+    return basePrice + shippingCost;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim()) {
@@ -81,8 +100,8 @@ const ProductPage = () => {
       toast.error('Please select your wilaya');
       return;
     }
-    if (!commune.trim()) {
-      toast.error('Please select your commune');
+    if (shipToHome && !commune.trim()) {
+      toast.error('Please select your commune for home delivery');
       return;
     }
     if (!size || !color) {
@@ -103,12 +122,12 @@ const ProductPage = () => {
         color: color,
         quantity: quantity,
         base_price: product.base_price,
-        total_price: product.base_price * quantity,
+        total_price: calculateTotalPrice(),
         customer_name: customerName,
         customer_phone: customerPhone,
         wilaya: wilaya,
-        commune: commune,
-        full_address: `${commune}, ${wilaya}`,
+        commune: shipToHome ? commune : 'Pickup',
+        full_address: shipToHome ? `${commune}, ${wilaya}` : `Pickup from ${wilaya}`,
         status: 'pending' as const,
         image_url: product.image_url
       };
@@ -150,6 +169,7 @@ const ProductPage = () => {
   if (shippingError) {
     return (
       <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
+        <Navbar />
         <div className="text-center">
           <h2 className="text-lg sm:text-xl font-bold mb-4">Error Loading Shipping Data</h2>
           <p className="text-muted-foreground mb-4">{shippingError}</p>
@@ -164,6 +184,7 @@ const ProductPage = () => {
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
+        <Navbar />
         <div className="text-center">
           <h2 className="text-lg sm:text-xl font-bold mb-4">Product not found</h2>
           <button onClick={() => navigate(-1)} className="btn-gradient px-4 py-2 rounded-lg text-sm">
@@ -176,9 +197,11 @@ const ProductPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
+      
       {/* Back Button */}
       <motion.div 
-        className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b p-2 sm:p-3" 
+        className="sticky top-16 z-40 bg-background/80 backdrop-blur-sm border-b p-2 sm:p-3" 
         initial={{ y: -20, opacity: 0 }} 
         animate={{ y: 0, opacity: 1 }}
       >
@@ -250,29 +273,47 @@ const ProductPage = () => {
                   />
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium mb-1">Wilaya</label>
+                  <select 
+                    value={wilaya} 
+                    onChange={(e) => {
+                      setWilaya(e.target.value);
+                      setCommune(''); // Reset commune when wilaya changes
+                    }} 
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
+                    required
+                  >
+                    <option value="">Select Wilaya</option>
+                    {availableWilayas.map((wilayaName) => (
+                      <option key={wilayaName} value={wilayaName}>
+                        {wilayaName} ({shippingData.shippingPrices[wilayaName]} DA)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Ship to Home Checkbox */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="shipToHome"
+                    checked={shipToHome}
+                    onCheckedChange={(checked) => {
+                      setShipToHome(checked as boolean);
+                      if (!checked) {
+                        setCommune(''); // Clear commune if unchecking
+                      }
+                    }}
+                  />
+                  <label htmlFor="shipToHome" className="text-xs font-medium">
+                    Ship to Home (+30% shipping cost)
+                  </label>
+                </div>
+
+                {/* Commune field - only show when Ship to Home is checked */}
+                {shipToHome && (
                   <div>
-                    <label className="block text-xs font-medium mb-1">Wilaya</label>
-                    <select 
-                      value={wilaya} 
-                      onChange={(e) => {
-                        setWilaya(e.target.value);
-                        setCommune(''); // Reset commune when wilaya changes
-                      }} 
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
-                      required
-                    >
-                      <option value="">Select Wilaya</option>
-                      {availableWilayas.map((wilayaName) => (
-                        <option key={wilayaName} value={wilayaName}>
-                          {wilayaName} ({shippingData.shippingPrices[wilayaName]} DA)
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Commune</label>
+                    <label className="block text-xs font-medium mb-1">Commune (Town)</label>
                     <select 
                       value={commune} 
                       onChange={(e) => setCommune(e.target.value)} 
@@ -288,7 +329,7 @@ const ProductPage = () => {
                       ))}
                     </select>
                   </div>
-                </div>
+                )}
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -320,6 +361,25 @@ const ProductPage = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Price Breakdown */}
+              {product && wilaya && (
+                <div className="bg-muted/50 p-3 rounded-lg space-y-2">
+                  <h4 className="text-sm font-semibold">Price Breakdown:</h4>
+                  <div className="flex justify-between text-xs">
+                    <span>Base Price ({quantity}x):</span>
+                    <span>{product.base_price * quantity} DA</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span>Shipping{shipToHome ? ' (Home Delivery)' : ''}:</span>
+                    <span>{calculateShippingCost()} DA</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-bold border-t pt-2">
+                    <span>Total:</span>
+                    <span>{calculateTotalPrice()} DA</span>
+                  </div>
+                </div>
+              )}
               
               <button 
                 type="submit" 
