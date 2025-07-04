@@ -9,6 +9,7 @@ import StarRating from '../components/StarRating';
 import ImageGalleryPagination from '../components/ImageGalleryPagination';
 import ImageLightbox from '../components/ImageLightbox';
 import { toast } from 'sonner';
+
 const ProductPage = () => {
   const {
     productId
@@ -24,49 +25,48 @@ const ProductPage = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const {
-    product,
-    loading
-  } = useProductById(productId || '');
-  const {
-    shippingData,
-    loading: shippingLoading
-  } = useShippingData();
-  const {
-    addOrder
-  } = useOrders();
-  const {
-    reviews,
-    loading: reviewsLoading
-  } = useReviews(productId || '');
+
+  const { product, loading } = useProductById(productId || '');
+  const { shippingData, loading: shippingLoading, error: shippingError } = useShippingData();
+  const { addOrder } = useOrders();
+  const { reviews, loading: reviewsLoading } = useReviews(productId || '');
+
   const averageRating = reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
   const incrementQuantity = () => {
     setQuantity(prevQuantity => prevQuantity + 1);
   };
+
   const decrementQuantity = () => {
     if (quantity > 1) {
       setQuantity(prevQuantity => prevQuantity - 1);
     }
   };
+
   const handleSizeChange = e => {
     setSize(e.target.value);
   };
+
   const handleColorChange = e => {
     setColor(e.target.value);
   };
+
   const nextImage = () => {
     if (product?.images) {
       setCurrentImageIndex(prev => (prev + 1) % product.images.length);
     }
   };
+
   const prevImage = () => {
     if (product?.images) {
       setCurrentImageIndex(prev => (prev - 1 + product.images.length) % product.images.length);
     }
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim()) {
@@ -93,6 +93,7 @@ const ProductPage = () => {
       toast.error('Product details are not available');
       return;
     }
+
     setIsPlacingOrder(true);
     try {
       const orderData = {
@@ -111,6 +112,7 @@ const ProductPage = () => {
         status: 'pending' as const,
         image_url: product.image_url
       };
+
       const newOrder = await addOrder(orderData);
       if (newOrder) {
         navigate('/confirmation', {
@@ -132,35 +134,58 @@ const ProductPage = () => {
       setIsPlacingOrder(false);
     }
   };
+
   const formatAverageRating = (rating: number) => {
     return rating.toFixed(1);
   };
 
   // Get available wilayas from shipping data
-  const availableWilayas = Object.keys(shippingData.communes || {});
+  const availableWilayas = Object.keys(shippingData.shippingPrices || {});
+  const availableCommunes = wilaya ? (shippingData.communes[wilaya] || []) : [];
+
   if (loading || shippingLoading) {
     return <LoadingSpinner />;
   }
+
+  if (shippingError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
+        <div className="text-center">
+          <h2 className="text-lg sm:text-xl font-bold mb-4">Error Loading Shipping Data</h2>
+          <p className="text-muted-foreground mb-4">{shippingError}</p>
+          <button onClick={() => window.location.reload()} className="btn-gradient px-4 py-2 rounded-lg text-sm">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!product) {
-    return <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
+    return (
+      <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
         <div className="text-center">
           <h2 className="text-lg sm:text-xl font-bold mb-4">Product not found</h2>
           <button onClick={() => navigate(-1)} className="btn-gradient px-4 py-2 rounded-lg text-sm">
             Go Back
           </button>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-background">
+
+  return (
+    <div className="min-h-screen bg-background">
       {/* Back Button */}
-      <motion.div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b p-2 sm:p-3" initial={{
-      y: -20,
-      opacity: 0
-    }} animate={{
-      y: 0,
-      opacity: 1
-    }}>
-        <button onClick={() => navigate(-1)} className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
+      <motion.div 
+        className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b p-2 sm:p-3" 
+        initial={{ y: -20, opacity: 0 }} 
+        animate={{ y: 0, opacity: 1 }}
+      >
+        <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back</span>
         </button>
@@ -169,15 +194,12 @@ const ProductPage = () => {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6">
         <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Column - Image Gallery and Order Form */}
-          <motion.div className="space-y-4" initial={{
-          opacity: 0,
-          x: -20
-        }} animate={{
-          opacity: 1,
-          x: 0
-        }} transition={{
-          delay: 0.1
-        }}>
+          <motion.div 
+            className="space-y-4" 
+            initial={{ opacity: 0, x: -20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ delay: 0.1 }}
+          >
             {/* Image Gallery */}
             <div className="relative group">
               <div className="aspect-square bg-muted rounded-lg overflow-hidden relative">
@@ -206,35 +228,64 @@ const ProductPage = () => {
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-medium mb-1">Full Name</label>
-                  <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Enter your full name" required />
+                  <input 
+                    type="text" 
+                    value={customerName} 
+                    onChange={(e) => setCustomerName(e.target.value)} 
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
+                    placeholder="Enter your full name" 
+                    required 
+                  />
                 </div>
                 
                 <div>
                   <label className="block text-xs font-medium mb-1">Phone Number</label>
-                  <input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Enter your phone number" required />
+                  <input 
+                    type="tel" 
+                    value={customerPhone} 
+                    onChange={(e) => setCustomerPhone(e.target.value)} 
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
+                    placeholder="Enter your phone number" 
+                    required 
+                  />
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium mb-1">Wilaya</label>
-                    <select value={wilaya} onChange={e => {
-                    setWilaya(e.target.value);
-                    setCommune('');
-                  }} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required>
+                    <select 
+                      value={wilaya} 
+                      onChange={(e) => {
+                        setWilaya(e.target.value);
+                        setCommune(''); // Reset commune when wilaya changes
+                      }} 
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
+                      required
+                    >
                       <option value="">Select Wilaya</option>
-                      {availableWilayas.map(wilayaName => <option key={wilayaName} value={wilayaName}>
-                          {wilayaName}
-                        </option>)}
+                      {availableWilayas.map((wilayaName) => (
+                        <option key={wilayaName} value={wilayaName}>
+                          {wilayaName} ({shippingData.shippingPrices[wilayaName]} DA)
+                        </option>
+                      ))}
                     </select>
                   </div>
                   
                   <div>
                     <label className="block text-xs font-medium mb-1">Commune</label>
-                    <select value={commune} onChange={e => setCommune(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required disabled={!wilaya}>
+                    <select 
+                      value={commune} 
+                      onChange={(e) => setCommune(e.target.value)} 
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
+                      required 
+                      disabled={!wilaya}
+                    >
                       <option value="">Select Commune</option>
-                      {wilaya && shippingData.communes[wilaya]?.map(communeName => <option key={communeName} value={communeName}>
+                      {availableCommunes.map((communeName) => (
+                        <option key={communeName} value={communeName}>
                           {communeName}
-                        </option>)}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -270,28 +321,28 @@ const ProductPage = () => {
                 </div>
               </div>
               
-              <button type="submit" disabled={isPlacingOrder} className="w-full btn-gradient py-2.5 sm:py-3 rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
-                {isPlacingOrder ? <>
+              <button 
+                type="submit" 
+                disabled={isPlacingOrder} 
+                className="w-full btn-gradient py-2.5 sm:py-3 rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                {isPlacingOrder ? (
+                  <>
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
                     <span>Placing Order...</span>
-                  </> : <>
+                  </>
+                ) : (
+                  <>
                     <ShoppingCart className="w-4 h-4" />
                     <span>Place Order</span>
-                  </>}
+                  </>
+                )}
               </button>
             </form>
           </motion.div>
 
           {/* Right Column - Product Information */}
-          <motion.div className="space-y-3 sm:space-y-4" initial={{
-          opacity: 0,
-          x: 20
-        }} animate={{
-          opacity: 1,
-          x: 0
-        }} transition={{
-          delay: 0.2
-        }}>
+          <motion.div className="space-y-3 sm:space-y-4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
             <div>
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-2 sm:mb-3">
@@ -342,15 +393,7 @@ const ProductPage = () => {
         </div>
 
         {/* Reviews Section */}
-        {reviews.length > 0 && <motion.div className="mt-6 sm:mt-8" initial={{
-        opacity: 0,
-        y: 30
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        delay: 0.5
-      }}>
+        {reviews.length > 0 && <motion.div className="mt-6 sm:mt-8" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Customer Reviews</h3>
             <div className="space-y-3">
               {reviews.map(review => <div key={review.id} className="p-3 glass-effect rounded-lg">
@@ -371,6 +414,8 @@ const ProductPage = () => {
 
       {/* Image Lightbox */}
       <ImageLightbox src={product.images?.[currentImageIndex] || product.image_url || '/placeholder.svg'} alt={product.name} isOpen={isLightboxOpen} onClose={() => setIsLightboxOpen(false)} />
-    </div>;
+    </div>
+  );
 };
+
 export default ProductPage;

@@ -14,7 +14,7 @@ import {
 } from '../ui/table';
 
 const ShippingTab = () => {
-  const { shippingData, loading, updateWilayaPrice, updateWilayaCommunes, addWilaya, removeWilaya } = useShippingData();
+  const { shippingData, loading, error, updateWilayaPrice, updateWilayaCommunes, addWilaya, removeWilaya } = useShippingData();
   const [editingWilaya, setEditingWilaya] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState<string>('');
   const [editingCommunes, setEditingCommunes] = useState<string>('');
@@ -32,21 +32,26 @@ const ShippingTab = () => {
   const handleEditSave = async () => {
     if (!editingWilaya) return;
     
-    const price = parseFloat(editingPrice);
-    if (isNaN(price) || price < 0) {
-      toast.error('Please enter a valid price');
-      return;
-    }
+    try {
+      const price = parseFloat(editingPrice);
+      if (isNaN(price) || price < 0) {
+        toast.error('Please enter a valid price');
+        return;
+      }
 
-    const communes = editingCommunes.split(',').map(c => c.trim()).filter(c => c.length > 0);
-    
-    await updateWilayaPrice(editingWilaya, price);
-    await updateWilayaCommunes(editingWilaya, communes);
-    
-    setEditingWilaya(null);
-    setEditingPrice('');
-    setEditingCommunes('');
-    toast.success('Shipping information updated successfully');
+      const communes = editingCommunes.split(',').map(c => c.trim()).filter(c => c.length > 0);
+      
+      await updateWilayaPrice(editingWilaya, price);
+      await updateWilayaCommunes(editingWilaya, communes);
+      
+      setEditingWilaya(null);
+      setEditingPrice('');
+      setEditingCommunes('');
+      toast.success('Shipping information updated successfully');
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast.error('Failed to update shipping information');
+    }
   };
 
   const handleEditCancel = () => {
@@ -72,20 +77,30 @@ const ShippingTab = () => {
       return;
     }
 
-    const communes = newWilayaCommunes.split(',').map(c => c.trim()).filter(c => c.length > 0);
-    
-    await addWilaya(newWilayaName, price, communes);
-    setNewWilayaName('');
-    setNewWilayaPrice('');
-    setNewWilayaCommunes('');
-    setShowAddForm(false);
-    toast.success('Wilaya added successfully');
+    try {
+      const communes = newWilayaCommunes.split(',').map(c => c.trim()).filter(c => c.length > 0);
+      
+      await addWilaya(newWilayaName, price, communes);
+      setNewWilayaName('');
+      setNewWilayaPrice('');
+      setNewWilayaCommunes('');
+      setShowAddForm(false);
+      toast.success('Wilaya added successfully');
+    } catch (error) {
+      console.error('Error adding wilaya:', error);
+      toast.error('Failed to add wilaya');
+    }
   };
 
   const handleRemoveWilaya = async (wilaya: string) => {
     if (window.confirm(`Are you sure you want to remove ${wilaya}?`)) {
-      await removeWilaya(wilaya);
-      toast.success('Wilaya removed successfully');
+      try {
+        await removeWilaya(wilaya);
+        toast.success('Wilaya removed successfully');
+      } catch (error) {
+        console.error('Error removing wilaya:', error);
+        toast.error('Failed to remove wilaya');
+      }
     }
   };
 
@@ -93,6 +108,20 @@ const ShippingTab = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <p className="text-red-500">Error loading shipping data: {error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="btn-gradient px-4 py-2 rounded-lg"
+        >
+          Retry
+        </button>
       </div>
     );
   }

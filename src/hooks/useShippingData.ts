@@ -22,10 +22,13 @@ export const useShippingData = () => {
     communes: {}
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const loadShippingData = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('shipping_data')
         .select('*')
@@ -33,6 +36,7 @@ export const useShippingData = () => {
 
       if (error) {
         console.error('Error loading shipping data:', error);
+        setError(error.message);
         return;
       }
 
@@ -42,13 +46,15 @@ export const useShippingData = () => {
 
         data.forEach((row: ShippingDataRow) => {
           shippingPrices[row.wilaya] = row.base_price;
-          communes[row.wilaya] = row.communes;
+          communes[row.wilaya] = row.communes || [];
         });
 
         setShippingData({ shippingPrices, communes });
+        console.log('Loaded shipping data:', { shippingPrices, communes });
       }
     } catch (error) {
       console.error('Error loading shipping data:', error);
+      setError('Failed to load shipping data');
       setShippingData({
         shippingPrices: {},
         communes: {}
@@ -62,19 +68,22 @@ export const useShippingData = () => {
     try {
       const { error } = await supabase
         .from('shipping_data')
-        .update({ base_price: price, updated_at: new Date().toISOString() })
+        .update({ 
+          base_price: price, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('wilaya', wilaya);
 
       if (error) {
         console.error('Error updating price:', error);
-        return false;
+        throw error;
       }
 
-      await loadShippingData(); // Refresh data
+      await loadShippingData();
       return true;
     } catch (error) {
       console.error('Error updating price:', error);
-      return false;
+      throw error;
     }
   };
 
@@ -82,19 +91,22 @@ export const useShippingData = () => {
     try {
       const { error } = await supabase
         .from('shipping_data')
-        .update({ communes, updated_at: new Date().toISOString() })
+        .update({ 
+          communes, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('wilaya', wilaya);
 
       if (error) {
         console.error('Error updating communes:', error);
-        return false;
+        throw error;
       }
 
-      await loadShippingData(); // Refresh data
+      await loadShippingData();
       return true;
     } catch (error) {
       console.error('Error updating communes:', error);
-      return false;
+      throw error;
     }
   };
 
@@ -110,14 +122,14 @@ export const useShippingData = () => {
 
       if (error) {
         console.error('Error adding wilaya:', error);
-        return false;
+        throw error;
       }
 
-      await loadShippingData(); // Refresh data
+      await loadShippingData();
       return true;
     } catch (error) {
       console.error('Error adding wilaya:', error);
-      return false;
+      throw error;
     }
   };
 
@@ -130,14 +142,14 @@ export const useShippingData = () => {
 
       if (error) {
         console.error('Error removing wilaya:', error);
-        return false;
+        throw error;
       }
 
-      await loadShippingData(); // Refresh data
+      await loadShippingData();
       return true;
     } catch (error) {
       console.error('Error removing wilaya:', error);
-      return false;
+      throw error;
     }
   };
 
@@ -148,6 +160,7 @@ export const useShippingData = () => {
   return {
     shippingData,
     loading,
+    error,
     updateWilayaPrice,
     updateWilayaCommunes,
     addWilaya,
