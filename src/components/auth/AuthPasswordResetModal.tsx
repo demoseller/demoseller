@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -15,16 +14,16 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, Key } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { toast } from '@/components/ui/sonner';
 
-interface PasswordResetModalProps {
+interface AuthPasswordResetModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 type ResetStep = 'email' | 'otp' | 'password';
 
-const PasswordResetModal = ({ isOpen, onClose }: PasswordResetModalProps) => {
-  const { user } = useAuth();
+const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps) => {
   const [step, setStep] = useState<ResetStep>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -39,13 +38,6 @@ const PasswordResetModal = ({ isOpen, onClose }: PasswordResetModalProps) => {
     setIsLoading(true);
     setMessage('');
     setError('');
-
-    // Check if the entered email matches the current user's email
-    if (email !== user?.email) {
-      setError('This is not a valid email for your account.');
-      setIsLoading(false);
-      return;
-    }
 
     try {
       // Send OTP for password reset
@@ -114,10 +106,8 @@ const PasswordResetModal = ({ isOpen, onClose }: PasswordResetModalProps) => {
 
       if (error) throw error;
 
-      setMessage('Password updated successfully! You can now sign in with your new password.');
-      setTimeout(() => {
-        handleClose();
-      }, 2000);
+      toast.success('Password updated successfully! You can now sign in with your new password.');
+      handleClose();
     } catch (error: any) {
       setError(error.message || 'An error occurred while updating password.');
     } finally {
@@ -150,14 +140,11 @@ const PasswordResetModal = ({ isOpen, onClose }: PasswordResetModalProps) => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="Enter your registered email"
                   className="pl-10"
                   required
                 />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Current account: {user?.email}
-              </p>
             </div>
 
             <div className="flex gap-2">
@@ -300,4 +287,4 @@ const PasswordResetModal = ({ isOpen, onClose }: PasswordResetModalProps) => {
   );
 };
 
-export default PasswordResetModal;
+export default AuthPasswordResetModal;

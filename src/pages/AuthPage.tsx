@@ -2,27 +2,27 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, UserPlus, LogIn } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, LogIn, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/sonner';
+import AuthPasswordResetModal from '@/components/auth/AuthPasswordResetModal';
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isPasswordResetOpen, setIsPasswordResetOpen] = useState(false);
   const [searchParams] = useSearchParams();
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
   // Check if this is a password reset flow
@@ -36,7 +36,6 @@ const AuthPage = () => {
 
   useEffect(() => {
     if (isPasswordReset) {
-      setIsLogin(false); // Show password update form
       toast.success('Please enter your new password');
     }
   }, [isPasswordReset]);
@@ -47,20 +46,43 @@ const AuthPage = () => {
     setError('');
 
     try {
-      if (isLogin) {
-        const { error } = await signIn(email, password);
-        if (error) throw error;
-        toast.success('Signed in successfully!');
-        navigate('/dashboard');
-      } else {
-        if (password !== confirmPassword) {
-          throw new Error('Passwords do not match');
-        }
-        
-        const { error } = await signUp(email, password, fullName);
-        if (error) throw error;
-        toast.success('Account created successfully! Please check your email for verification.');
-      }
+      const { error } = await signIn(email, password);
+      if (error) throw error;
+      toast.success('Signed in successfully!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      setError(error.message);
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase.auth.updateUser({
+        password: password
+      });
+
+      if (error) throw error;
+
+      toast.success('Password updated successfully!');
+      navigate('/dashboard');
     } catch (error: any) {
       setError(error.message);
       toast.error(error.message);
@@ -85,20 +107,18 @@ const AuthPage = () => {
               transition={{ delay: 0.2 }}
             >
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {isPasswordReset ? 'Update Password' : isLogin ? 'Welcome Back' : 'Create Account'}
+                {isPasswordReset ? 'Update Password' : 'Welcome Back'}
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
                 {isPasswordReset 
                   ? 'Enter your new password below' 
-                  : isLogin 
-                    ? 'Sign in to your account' 
-                    : 'Join us today'
+                  : 'Sign in to your account'
                 }
               </p>
             </motion.div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={isPasswordReset ? handlePasswordReset : handleSubmit} className="space-y-6">
             {!isPasswordReset && (
               <motion.div
                 initial={{ x: -20, opacity: 0 }}
@@ -121,32 +141,10 @@ const AuthPage = () => {
               </motion.div>
             )}
 
-            {!isLogin && !isPasswordReset && (
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                <Label htmlFor="fullName">Full Name</Label>
-                <div className="relative mt-1">
-                  <UserPlus className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10"
-                    placeholder="Enter your full name"
-                    required={!isLogin}
-                  />
-                </div>
-              </motion.div>
-            )}
-
             <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: isLogin ? 0.4 : 0.5 }}
+              transition={{ delay: 0.4 }}
             >
               <Label htmlFor="password">
                 {isPasswordReset ? 'New Password' : 'Password'}
@@ -172,7 +170,7 @@ const AuthPage = () => {
               </div>
             </motion.div>
 
-            {(!isLogin || isPasswordReset) && (
+            {isPasswordReset && (
               <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -188,7 +186,7 @@ const AuthPage = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="pl-10 pr-12"
                     placeholder="Confirm your password"
-                    required={!isLogin || isPasswordReset}
+                    required
                   />
                   <button
                     type="button"
@@ -222,15 +220,10 @@ const AuthPage = () => {
                   'Loading...'
                 ) : isPasswordReset ? (
                   'Update Password'
-                ) : isLogin ? (
+                ) : (
                   <>
                     <LogIn className="w-4 h-4 mr-2" />
                     Sign In
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Create Account
                   </>
                 )}
               </Button>
@@ -246,24 +239,21 @@ const AuthPage = () => {
             >
               <button
                 type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError('');
-                  setEmail('');
-                  setPassword('');
-                  setConfirmPassword('');
-                  setFullName('');
-                }}
-                className="text-blue-600 hover:text-blue-500 font-medium"
+                onClick={() => setIsPasswordResetOpen(true)}
+                className="text-blue-600 hover:text-blue-500 font-medium flex items-center justify-center gap-2 mx-auto"
               >
-                {isLogin
-                  ? "Don't have an account? Sign up"
-                  : 'Already have an account? Sign in'}
+                <KeyRound className="w-4 h-4" />
+                Forgot your password?
               </button>
             </motion.div>
           )}
         </div>
       </motion.div>
+
+      <AuthPasswordResetModal
+        isOpen={isPasswordResetOpen}
+        onClose={() => setIsPasswordResetOpen(false)}
+      />
     </div>
   );
 };
