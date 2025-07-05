@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -88,6 +87,8 @@ const ProductPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Starting order submission...');
+    
     if (!customerName.trim()) {
       toast.error('Please enter your full name');
       return;
@@ -128,11 +129,13 @@ const ProductPage = () => {
         wilaya: wilaya,
         commune: shipToHome ? commune : 'Pickup',
         full_address: shipToHome ? `${commune}, ${wilaya}` : `Pickup from ${wilaya}`,
-        status: 'pending' as const,
-        image_url: product.image_url
+        status: 'pending' as const
       };
 
+      console.log('Order data:', orderData);
       const newOrder = await addOrder(orderData);
+      console.log('Order created:', newOrder);
+      
       if (newOrder) {
         navigate('/confirmation', {
           state: {
@@ -148,6 +151,7 @@ const ProductPage = () => {
         toast.error('Failed to place order');
       }
     } catch (error) {
+      console.error('Order submission error:', error);
       toast.error('An error occurred while placing the order');
     } finally {
       setIsPlacingOrder(false);
@@ -215,6 +219,67 @@ const ProductPage = () => {
       </motion.div>
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6">
+        {/* Mobile: Product Info First */}
+        <div className="block lg:hidden mb-4">
+          <motion.div 
+            className="space-y-3 sm:space-y-4" 
+            initial={{ opacity: 0, x: 20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ delay: 0.2 }}
+          >
+            <div>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-2 sm:mb-3">
+                {product.base_price} DA
+              </p>
+              
+              {/* Rating Section */}
+              <div className="flex items-center space-x-2 mb-3 sm:mb-4">
+                <div className="flex items-center">
+                  <StarRating rating={averageRating} readonly size="lg" />
+                </div>
+                <span className="text-sm font-medium ml-1">
+                  {formatAverageRating(averageRating)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
+                </span>
+              </div>
+              
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                {product.description}
+              </p>
+            </div>
+
+            {/* Size and Color Information */}
+            <div className="space-y-3 p-3 sm:p-4 glass-effect rounded-lg">
+              <h3 className="text-base font-semibold mb-2">Available Options</h3>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-2">Sizes Available:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes && product.sizes.map((s, index) => 
+                    <span key={index} className="px-2 py-1 bg-muted rounded text-xs">
+                      {s}
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-2">Colors Available:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors && product.colors.map((c, index) => 
+                    <span key={index} className="px-2 py-1 bg-muted rounded text-xs">
+                      {c}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Column - Image Gallery and Order Form */}
           <motion.div 
@@ -243,166 +308,168 @@ const ProductPage = () => {
               {product.images && product.images.length > 1 && <ImageGalleryPagination images={product.images} currentIndex={currentImageIndex} onIndexChange={setCurrentImageIndex} />}
             </div>
 
-            {/* Order Form */}
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 p-3 sm:p-4 glass-effect rounded-lg justify-center ">
-              <h3 className="text-base sm:text-lg font-bold mb-3">Place Your Order</h3>
-              
-              {/* Customer Information */}
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium mb-1">Full Name</label>
-                  <input 
-                    type="text" 
-                    value={customerName} 
-                    onChange={(e) => setCustomerName(e.target.value)} 
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
-                    placeholder="Enter your full name" 
-                    required 
-                  />
-                </div>
+            {/* Order Form - Centered on Mobile */}
+            <div className="flex justify-center lg:justify-start">
+              <form onSubmit={handleSubmit} className="w-full max-w-md lg:max-w-none space-y-3 sm:space-y-4 p-3 sm:p-4 glass-effect rounded-lg">
+                <h3 className="text-base sm:text-lg font-bold mb-3">Place Your Order</h3>
                 
-                <div>
-                  <label className="block text-xs font-medium mb-1">Phone Number</label>
-                  <input 
-                    type="tel" 
-                    value={customerPhone} 
-                    onChange={(e) => setCustomerPhone(e.target.value)} 
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
-                    placeholder="Enter your phone number" 
-                    required 
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-medium mb-1">Wilaya</label>
-                  <select 
-                    value={wilaya} 
-                    onChange={(e) => {
-                      setWilaya(e.target.value);
-                      setCommune(''); // Reset commune when wilaya changes
-                    }} 
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
-                    required
-                  >
-                    <option value="">Select Wilaya</option>
-                    {availableWilayas.map((wilayaName) => (
-                      <option key={wilayaName} value={wilayaName}>
-                        {wilayaName} ({shippingData.shippingPrices[wilayaName]} DA)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Ship to Home Checkbox */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="shipToHome"
-                    checked={shipToHome}
-                    onCheckedChange={(checked) => {
-                      setShipToHome(checked as boolean);
-                      if (!checked) {
-                        setCommune(''); // Clear commune if unchecking
-                      }
-                    }}
-                  />
-                  <label htmlFor="shipToHome" className="text-xs font-medium">
-                    Ship to Home (+30% shipping cost)
-                  </label>
-                </div>
-
-                {/* Commune field - only show when Ship to Home is checked */}
-                {shipToHome && (
+                {/* Customer Information */}
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium mb-1">Commune (Town)</label>
-                    <select 
-                      value={commune} 
-                      onChange={(e) => setCommune(e.target.value)} 
+                    <label className="block text-xs font-medium mb-1">Full Name</label>
+                    <input 
+                      type="text" 
+                      value={customerName} 
+                      onChange={(e) => setCustomerName(e.target.value)} 
                       className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
+                      placeholder="Enter your full name" 
                       required 
-                      disabled={!wilaya}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Phone Number</label>
+                    <input 
+                      type="tel" 
+                      value={customerPhone} 
+                      onChange={(e) => setCustomerPhone(e.target.value)} 
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
+                      placeholder="Enter your phone number" 
+                      required 
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Wilaya</label>
+                    <select 
+                      value={wilaya} 
+                      onChange={(e) => {
+                        setWilaya(e.target.value);
+                        setCommune(''); // Reset commune when wilaya changes
+                      }} 
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
+                      required
                     >
-                      <option value="">Select Commune</option>
-                      {availableCommunes.map((communeName) => (
-                        <option key={communeName} value={communeName}>
-                          {communeName}
+                      <option value="">Select Wilaya</option>
+                      {availableWilayas.map((wilayaName) => (
+                        <option key={wilayaName} value={wilayaName}>
+                          {wilayaName} ({shippingData.shippingPrices[wilayaName]} DA)
                         </option>
                       ))}
                     </select>
                   </div>
-                )}
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-xs font-medium mb-1">Size</label>
-                  <select value={size} onChange={handleSizeChange} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required>
-                    <option value="">Select Size</option>
-                    {product.sizes && product.sizes.map((s, index) => <option key={index} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Color</label>
-                  <select value={color} onChange={handleColorChange} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required>
-                    <option value="">Select Color</option>
-                    {product.colors && product.colors.map((c, index) => <option key={index} value={c}>{c}</option>)}
-                  </select>
-                </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-medium mb-1">Quantity</label>
-                <div className="flex items-center space-x-3">
-                  <button type="button" onClick={decrementQuantity} className="px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm" disabled={quantity <= 1}>
-                    -
-                  </button>
-                  <span className="text-sm">{quantity}</span>
-                  <button type="button" onClick={incrementQuantity} className="px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50 transition-colors text-sm">
-                    +
-                  </button>
-                </div>
-              </div>
+                  {/* Ship to Home Checkbox */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="shipToHome"
+                      checked={shipToHome}
+                      onCheckedChange={(checked) => {
+                        setShipToHome(checked as boolean);
+                        if (!checked) {
+                          setCommune(''); // Clear commune if unchecking
+                        }
+                      }}
+                    />
+                    <label htmlFor="shipToHome" className="text-xs font-medium">
+                      Ship to Home (+30% shipping cost)
+                    </label>
+                  </div>
 
-              {/* Price Breakdown */}
-              {product && wilaya && (
-                <div className="bg-muted/50 p-3 rounded-lg space-y-2">
-                  <h4 className="text-sm font-semibold">Price Breakdown:</h4>
-                  <div className="flex justify-between text-xs">
-                    <span>Base Price ({quantity}x):</span>
-                    <span>{product.base_price * quantity} DA</span>
+                  {/* Commune field - only show when Ship to Home is checked */}
+                  {shipToHome && (
+                    <div>
+                      <label className="block text-xs font-medium mb-1">Commune (Town)</label>
+                      <select 
+                        value={commune} 
+                        onChange={(e) => setCommune(e.target.value)} 
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
+                        required 
+                        disabled={!wilaya}
+                      >
+                        <option value="">Select Commune</option>
+                        {availableCommunes.map((communeName) => (
+                          <option key={communeName} value={communeName}>
+                            {communeName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Size</label>
+                    <select value={size} onChange={handleSizeChange} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required>
+                      <option value="">Select Size</option>
+                      {product.sizes && product.sizes.map((s, index) => <option key={index} value={s}>{s}</option>)}
+                    </select>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span>Shipping{shipToHome ? ' (Home Delivery)' : ''}:</span>
-                    <span>{calculateShippingCost()} DA</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-bold border-t pt-2">
-                    <span>Total:</span>
-                    <span>{calculateTotalPrice()} DA</span>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Color</label>
+                    <select value={color} onChange={handleColorChange} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required>
+                      <option value="">Select Color</option>
+                      {product.colors && product.colors.map((c, index) => <option key={index} value={c}>{c}</option>)}
+                    </select>
                   </div>
                 </div>
-              )}
-              
-              <button 
-                type="submit" 
-                disabled={isPlacingOrder} 
-                className="w-full btn-gradient py-2.5 sm:py-3 rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-              >
-                {isPlacingOrder ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                    <span>Placing Order...</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="w-4 h-4" />
-                    <span>Place Order</span>
-                  </>
+
+                <div>
+                  <label className="block text-xs font-medium mb-1">Quantity</label>
+                  <div className="flex items-center space-x-3">
+                    <button type="button" onClick={decrementQuantity} className="px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm" disabled={quantity <= 1}>
+                      -
+                    </button>
+                    <span className="text-sm">{quantity}</span>
+                    <button type="button" onClick={incrementQuantity} className="px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50 transition-colors text-sm">
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Price Breakdown */}
+                {product && wilaya && (
+                  <div className="bg-muted/50 p-3 rounded-lg space-y-2">
+                    <h4 className="text-sm font-semibold">Price Breakdown:</h4>
+                    <div className="flex justify-between text-xs">
+                      <span>Base Price ({quantity}x):</span>
+                      <span>{product.base_price * quantity} DA</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>Shipping{shipToHome ? ' (Home Delivery)' : ''}:</span>
+                      <span>{calculateShippingCost()} DA</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-bold border-t pt-2">
+                      <span>Total:</span>
+                      <span>{calculateTotalPrice()} DA</span>
+                    </div>
+                  </div>
                 )}
-              </button>
-            </form>
+                
+                <button 
+                  type="submit" 
+                  disabled={isPlacingOrder} 
+                  className="w-full btn-gradient py-2.5 sm:py-3 rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {isPlacingOrder ? (
+                    <>
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      <span>Placing Order...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>Place Order</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
           </motion.div>
 
-          {/* Right Column - Product Information */}
-          <motion.div className="space-y-3 sm:space-y-4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+          {/* Right Column - Product Information (Desktop Only) */}
+          <motion.div className="hidden lg:block space-y-3 sm:space-y-4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
             <div>
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-2 sm:mb-3">
