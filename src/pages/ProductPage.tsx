@@ -204,7 +204,7 @@ const ProductPage = () => {
         </button>
       </motion.div>
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6 ">
         {/* Mobile: Product Info First */}
         <div className="block lg:hidden mb-4">
           <motion.div className="space-y-3 sm:space-y-4" initial={{
