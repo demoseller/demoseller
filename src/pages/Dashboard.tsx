@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Package, ShoppingCart, Settings, Key } from 'lucide-react';
+import { Package, ShoppingCart, Settings, Key, LogOut } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Button } from '../components/ui/button';
 import OrdersTab from '../components/dashboard/OrdersTab';
@@ -9,10 +9,25 @@ import ProductsTab from '../components/dashboard/ProductsTab';
 import ShippingTab from '../components/dashboard/ShippingTab';
 import PasswordResetModal from '../components/dashboard/PasswordResetModal';
 import Navbar from '../components/Navbar';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/sonner';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const [isPasswordResetOpen, setIsPasswordResetOpen] = useState(false);
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success('Logged out successfully');
+      navigate('/auth');
+    } catch (error) {
+      toast.error('Error logging out');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,14 +50,25 @@ const Dashboard = () => {
                 </p>
               </div>
               
-              <Button
-                onClick={() => setIsPasswordResetOpen(true)}
-                variant="outline"
-                className="flex items-center gap-2 w-fit"
-              >
-                <Key className="w-4 h-4" />
-                Reset Password
-              </Button>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  onClick={() => setIsPasswordResetOpen(true)}
+                  variant="outline"
+                  className="flex items-center gap-2 w-fit"
+                >
+                  <Key className="w-4 h-4" />
+                  Reset Password
+                </Button>
+                
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="flex items-center gap-2 w-fit"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </Button>
+              </div>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
