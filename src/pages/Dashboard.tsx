@@ -1,15 +1,18 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Package, ShoppingCart, Settings } from 'lucide-react';
+import { Package, ShoppingCart, Settings, Key } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Button } from '../components/ui/button';
 import OrdersTab from '../components/dashboard/OrdersTab';
 import ProductsTab from '../components/dashboard/ProductsTab';
 import ShippingTab from '../components/dashboard/ShippingTab';
+import PasswordResetModal from '../components/dashboard/PasswordResetModal';
 import Navbar from '../components/Navbar';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('orders');
+  const [isPasswordResetOpen, setIsPasswordResetOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -22,13 +25,24 @@ const Dashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4 sm:space-y-6 md:space-y-8"
           >
-            <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-2">
-                Dashboard
-              </h1>
-              <p className="text-muted-foreground text-sm sm:text-base">
-                Manage your e-commerce business from one place
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-2">
+                  Dashboard
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-base">
+                  Manage your e-commerce business from one place
+                </p>
+              </div>
+              
+              <Button
+                onClick={() => setIsPasswordResetOpen(true)}
+                variant="outline"
+                className="flex items-center gap-2 w-fit"
+              >
+                <Key className="w-4 h-4" />
+                Reset Password
+              </Button>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -62,6 +76,11 @@ const Dashboard = () => {
           </motion.div>
         </div>
       </div>
+
+      <PasswordResetModal
+        isOpen={isPasswordResetOpen}
+        onClose={() => setIsPasswordResetOpen(false)}
+      />
     </div>
   );
 };
