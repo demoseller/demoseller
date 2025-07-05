@@ -11,7 +11,7 @@ const Navbar = () => {
   }} animate={{
     y: 0
   }} className="fixed top-0 left-0 right-0 z-50 glass-effect">
-      <div className="w-full px-3 sm:px-2 py-0 sm:py-3 md:py-4 flex items-center justify-between  ">
+      <div className="w-full px-5 sm:px-2 py-2 sm:py-3 md:py-4 flex items-center justify-between ">
         <Link to="/">
           <motion.div className="text-lg sm:text-xl md:text-2xl font-bold gradient-text" whileHover={{
           scale: 1.05
