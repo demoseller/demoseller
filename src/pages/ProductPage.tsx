@@ -265,7 +265,7 @@ const ProductPage = () => {
           </motion.div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+        <div className="grid lg:grid-cols-2 gap-5 sm:gap-6 lg:gap-8 ">
           {/* Left Column - Image Gallery and Order Form */}
           <motion.div className="space-y-4" initial={{
           opacity: 0,
