@@ -197,7 +197,7 @@ const ProductPage = () => {
     }} animate={{
       y: 0,
       opacity: 1
-    }} className="sticky top-12 top-14 backdrop-blur-sm border-background p-5 sm:p-2 p-2 \n">
+    }} className="sticky top-12 backdrop-blur-sm border-background p-5 sm:p-2 p-2 p-2 \n">
         <button onClick={() => navigate(-1)} className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back</span>
