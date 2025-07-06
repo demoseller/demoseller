@@ -22,7 +22,7 @@ interface AuthPasswordResetModalProps {
 
 const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps) => {
   const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
