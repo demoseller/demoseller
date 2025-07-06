@@ -36,16 +36,31 @@ const AuthPage = () => {
   }, [user, navigate, isPasswordReset]);
 
   useEffect(() => {
-    if (isPasswordReset) {
-      // Check if we have a valid session for password reset
-      if (!session) {
-        toast.error('Password reset session expired. Please request a new reset link.');
-        navigate('/auth');
-        return;
+    const handlePasswordReset = async () => {
+      if (isPasswordReset) {
+        // Get the current session to check if we have valid recovery session
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !currentSession) {
+          toast.error('Password reset link has expired. Please request a new one.');
+          navigate('/auth');
+          return;
+        }
+
+        // Check if this is actually a recovery session
+        const accessToken = currentSession.access_token;
+        if (!accessToken) {
+          toast.error('Invalid password reset session. Please request a new reset link.');
+          navigate('/auth');
+          return;
+        }
+
+        toast.success('Please enter your new password below');
       }
-      toast.success('Please enter your new password');
-    }
-  }, [isPasswordReset, session, navigate]);
+    };
+
+    handlePasswordReset();
+  }, [isPasswordReset, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,7 +144,7 @@ const AuthPage = () => {
               transition={{ delay: 0.2 }}
             >
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {isPasswordReset ? 'Update Password' : 'Welcome Back'}
+                {isPasswordReset ? 'Reset Your Password' : 'Welcome Back'}
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
                 {isPasswordReset 
@@ -198,7 +213,7 @@ const AuthPage = () => {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
                 <div className="relative mt-1">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
@@ -207,7 +222,7 @@ const AuthPage = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="pl-10 pr-12"
-                    placeholder="Confirm your password"
+                    placeholder="Confirm your new password"
                     required
                   />
                   <button

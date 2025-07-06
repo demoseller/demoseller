@@ -28,29 +28,32 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
 
   const checkEmailExists = async (email: string): Promise<boolean> => {
     try {
-      // Try to get user by email - this will not expose if user exists for security
-      // but we can use the password reset response to determine if email exists
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?type=recovery`,
+      // Use signInWithPassword with a dummy password to check if email exists
+      // This will fail but give us info about whether the email is registered
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: 'dummy-password-for-check-only'
       });
 
-      // If no error, email exists and reset link was sent
-      if (!error) {
+      // If error message indicates invalid credentials, email exists but password is wrong
+      if (error && error.message.includes('Invalid login credentials')) {
         return true;
       }
 
-      // Check for specific error messages that indicate user doesn't exist
-      if (error.message.includes('User not found') || 
-          error.message.includes('Invalid email') ||
-          error.message.includes('Email not confirmed') ||
-          error.message.toLowerCase().includes('not found')) {
+      // If error message indicates email not confirmed or user not found
+      if (error && (
+        error.message.includes('Email not confirmed') ||
+        error.message.includes('User not found') ||
+        error.message.includes('Invalid email')
+      )) {
         return false;
       }
 
-      // For any other error, we assume there might be a temporary issue
-      throw error;
+      // For any other error, we assume email doesn't exist
+      return false;
     } catch (error: any) {
-      throw error;
+      console.error('Error checking email:', error);
+      return false;
     }
   };
 
@@ -74,12 +77,22 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
     setError('');
 
     try {
+      // First check if email exists
       const emailExists = await checkEmailExists(email);
       
       if (!emailExists) {
         setError('This email address is not registered. Please check your email or sign up for a new account.');
         toast.error('Email not found');
         return;
+      }
+
+      // If email exists, send reset link
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
+      });
+
+      if (error) {
+        throw error;
       }
 
       setMessage('Password reset link has been sent to your email. Please check your inbox and follow the instructions.');
