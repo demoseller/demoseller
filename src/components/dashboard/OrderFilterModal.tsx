@@ -24,9 +24,18 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
   const [filters, setFilters] = useState<FilterOptions>(currentFilters);
 
   const wilayas = [
-    'Algiers', 'Oran', 'Constantine', 'Batna', 'Biskra', 'Blida', 'Bouira',
-    'Tlemcen', 'Sétif', 'Sidi Bel Abbès', 'Annaba', 'Guelma', 'Jijel'
-  ];
+  'Adrar', 'Chlef', 'Laghouat', 'Oum El Bouaghi', 'Batna', 'Béjaïa',
+  'Biskra', 'Béchar', 'Blida', 'Bouira', 'Tamanrasset', 'Tébessa',
+  'Tlemcen', 'Tiaret', 'Tizi Ouzou', 'Alger', 'Djelfa', 'Jijel',
+  'Sétif', 'Saïda', 'Skikda', 'Sidi Bel Abbès', 'Annaba', 'Guelma',
+  'Constantine', 'Médéa', 'Mostaganem', 'M\'Sila', 'Mascara',
+  'Ouargla', 'Oran', 'El Bayadh', 'Illizi', 'Bordj Bou Arreridj',
+  'Boumerdès', 'El Tarf', 'Tindouf', 'Tissemsilt', 'El Oued',
+  'Khenchela', 'Souk Ahras', 'Tipaza', 'Mila', 'Ain Defla', 'Naâma',
+  'Ain Témouchent', 'Ghardaïa', 'Relizane', 'Timimoun',
+  'Bordj Badji Mokhtar', 'Ouled Djellal', 'Béni Abbès', 'In Salah',
+  'In Guezzam', 'Touggourt', 'Djanet', 'El M\'ghair', 'El Meniaa'
+];
 
   const handleApply = () => {
     onApplyFilters(filters);
