@@ -26,31 +26,71 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      // Try to get user by email - this will not expose if user exists for security
+      // but we can use the password reset response to determine if email exists
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
+      });
+
+      // If no error, email exists and reset link was sent
+      if (!error) {
+        return true;
+      }
+
+      // Check for specific error messages that indicate user doesn't exist
+      if (error.message.includes('User not found') || 
+          error.message.includes('Invalid email') ||
+          error.message.includes('Email not confirmed') ||
+          error.message.toLowerCase().includes('not found')) {
+        return false;
+      }
+
+      // For any other error, we assume there might be a temporary issue
+      throw error;
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
   const handleSendResetLink = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     setIsLoading(true);
     setMessage('');
     setError('');
 
     try {
-      // First, check if the email exists by attempting to send reset email
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?type=recovery`,
-      });
-
-      if (error) {
-        // If the error indicates the user doesn't exist, show a custom message
-        if (error.message.includes('User not found') || error.message.includes('Invalid email')) {
-          setError('This email is not registered. Please enter a valid registered email address.');
-        } else {
-          throw error;
-        }
-      } else {
-        setMessage('Password reset link has been sent to your email. Please check your inbox.');
-        toast.success('Password reset link sent successfully!');
+      const emailExists = await checkEmailExists(email);
+      
+      if (!emailExists) {
+        setError('This email address is not registered. Please check your email or sign up for a new account.');
+        toast.error('Email not found');
+        return;
       }
+
+      setMessage('Password reset link has been sent to your email. Please check your inbox and follow the instructions.');
+      toast.success('Password reset link sent successfully!');
+      
+      // Clear the form
+      setEmail('');
+      
     } catch (error: any) {
-      setError(error.message || 'An error occurred while sending the reset link.');
+      console.error('Password reset error:', error);
+      setError('Unable to send password reset link. Please try again later.');
       toast.error('Failed to send password reset link');
     } finally {
       setIsLoading(false);
@@ -101,6 +141,7 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
                 placeholder="Enter your registered email"
                 className="pl-10"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>

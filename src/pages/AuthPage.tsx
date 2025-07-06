@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/sonner';
 import AuthPasswordResetModal from '@/components/auth/AuthPasswordResetModal';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
   const [email, setEmail] = useState('');
@@ -22,7 +23,7 @@ const AuthPage = () => {
   const [isPasswordResetOpen, setIsPasswordResetOpen] = useState(false);
   const [searchParams] = useSearchParams();
   
-  const { signIn, user } = useAuth();
+  const { signIn, user, session } = useAuth();
   const navigate = useNavigate();
 
   // Check if this is a password reset flow
@@ -36,9 +37,15 @@ const AuthPage = () => {
 
   useEffect(() => {
     if (isPasswordReset) {
+      // Check if we have a valid session for password reset
+      if (!session) {
+        toast.error('Password reset session expired. Please request a new reset link.');
+        navigate('/auth');
+        return;
+      }
       toast.success('Please enter your new password');
     }
-  }, [isPasswordReset]);
+  }, [isPasswordReset, session, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +67,7 @@ const AuthPage = () => {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -74,7 +82,13 @@ const AuthPage = () => {
     setError('');
 
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
+      // Verify we have a valid session
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !currentSession) {
+        throw new Error('Password reset session expired. Please request a new reset link.');
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: password
       });
@@ -84,8 +98,16 @@ const AuthPage = () => {
       toast.success('Password updated successfully!');
       navigate('/dashboard');
     } catch (error: any) {
+      console.error('Password reset error:', error);
       setError(error.message);
       toast.error(error.message);
+      
+      // If session expired, redirect to main auth page
+      if (error.message.includes('session') || error.message.includes('expired')) {
+        setTimeout(() => {
+          navigate('/auth');
+        }, 2000);
+      }
     } finally {
       setIsLoading(false);
     }
