@@ -81,8 +81,8 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
       const emailExists = await checkEmailExists(email);
       
       if (!emailExists) {
-        setError('This email address is not registered. Please check your email or sign up for a new account.');
-        toast.error('Email not found');
+        setError('This email is not registered. Please enter a valid email or sign up for a new account.');
+        toast.error('Email not registered');
         return;
       }
 

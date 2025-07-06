@@ -41,8 +41,6 @@ export interface OrderData {
   base_price: number;
   total_price: number;
   status: 'pending' | 'confirmed';
-  product_type_id: string;
-  image_url?: string;
 }
 
 export const useProductById = (productId: string) => {
@@ -141,9 +139,25 @@ export const useReviews = (productId: string) => {
 
 export const useOrders = () => {
   const addOrder = async (orderData: OrderData) => {
+    console.log('Adding order with data:', orderData);
+    
+    // Ensure all required fields are present
+    const completeOrderData = {
+      customer_name: orderData.customer_name,
+      customer_phone: orderData.customer_phone,
+      wilaya: orderData.wilaya,
+      commune: orderData.commune,
+      full_address: orderData.full_address,
+      product_name: orderData.product_name,
+      size: orderData.size,
+      color: orderData.color,
+      total_price: orderData.total_price,
+      status: orderData.status || 'pending'
+    };
+
     const { data, error } = await supabase
       .from('orders')
-      .insert([orderData])
+      .insert([completeOrderData])
       .select()
       .single();
 
@@ -152,6 +166,7 @@ export const useOrders = () => {
       throw error;
     }
 
+    console.log('Order successfully created:', data);
     return data;
   };
 
