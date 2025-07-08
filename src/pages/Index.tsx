@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
+import { Search } from 'lucide-react';
+
 import Navbar from '../components/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import GenericCarousel from '../components/GenericCarousel';
@@ -11,6 +13,8 @@ import HeroImageCard from '../components/HeroImageCard';
 import { useProductTypes, useProducts } from '../hooks/useSupabaseStore';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
+
 
 // Define your hero images
 const heroImages = [
@@ -24,55 +28,30 @@ const Index = () => {
   const { productTypes, loading: typesLoading } = useProductTypes();
   const { products, loading: productsLoading } = useProducts('');
   
-  // State for search filters and display logic
-  const [searchTerm, setSearchTerm] = useState('');
+  // State for search and filtering
+  const [productTypeSearchTerm, setProductTypeSearchTerm] = useState('');
+  const [productSearchTerm, setProductSearchTerm] = useState('');
   const [searchPrice, setSearchPrice] = useState('');
   const [searchColor, setSearchColor] = useState('');
   const [searchSize, setSearchSize] = useState('');
-  const [isShowingAll, setIsShowingAll] = useState(false);
+  
+  // State for incremental loading
+  const [displayCount, setDisplayCount] = useState(0);
+  
+  const filteredProductTypes = useMemo(() => {
+    if (!productTypeSearchTerm) return productTypes;
+    return productTypes.filter(type => 
+      type.name.toLowerCase().includes(productTypeSearchTerm.toLowerCase())
+    );
+  }, [productTypeSearchTerm, productTypes]);
 
-  // Memoize the initial "smart" list of products to display
-  const initialProductList = useMemo(() => {
-    if (products.length === 0 || productTypes.length === 0) return [];
-    
-    const includedProductIds = new Set<string>();
-    const initialList = [];
-
-    // 1. Ensure at least one product from each type is included
-    for (const type of productTypes) {
-      const productForType = products.find(p => p.product_type_id === type.id);
-      if (productForType && !includedProductIds.has(productForType.id)) {
-        initialList.push(productForType);
-        includedProductIds.add(productForType.id);
-      }
-    }
-    
-    // 2. Calculate the 50% display limit
-    const limit = Math.max(initialList.length, Math.ceil(products.length / 2));
-
-    // 3. Fill the rest with other products until the limit is reached
-    for (const product of products) {
-      if (initialList.length >= limit) break;
-      if (!includedProductIds.has(product.id)) {
-        initialList.push(product);
-        includedProductIds.add(product.id);
-      }
-    }
-    
-    return initialList;
-  }, [products, productTypes]);
-
-  // Memoize the final list of products to be displayed based on search and "show more" state
-  const displayedProducts = useMemo(() => {
-    const lowerSearchTerm = searchTerm.toLowerCase().trim();
+  const filteredProducts = useMemo(() => {
+    const lowerSearchTerm = productSearchTerm.toLowerCase().trim();
     const lowerSearchColor = searchColor.toLowerCase().trim();
     const lowerSearchSize = searchSize.toLowerCase().trim();
     const numericSearchPrice = parseFloat(searchPrice);
-    
-    const hasSearchCriteria = lowerSearchTerm || searchPrice || lowerSearchColor || lowerSearchSize;
 
-    // Filter products based on an "AND" condition for all filled search fields
-    const results = products.filter(product => {
+    return products.filter(product => {
       const nameMatch = !lowerSearchTerm || product.name.toLowerCase().includes(lowerSearchTerm);
       const priceMatch = isNaN(numericSearchPrice) || product.base_price <= numericSearchPrice;
       const colorMatch = !lowerSearchColor || product.options.colors.some(c => c.name.toLowerCase().includes(lowerSearchColor));
@@ -80,17 +59,21 @@ const Index = () => {
       
       return nameMatch && priceMatch && colorMatch && sizeMatch;
     });
+  }, [productSearchTerm, searchPrice, searchColor, searchSize, products]);
 
-    if (hasSearchCriteria) {
-      return results; // If searching, show all results that match
+  // Set initial display count
+  useEffect(() => {
+    if (filteredProducts.length > 0) {
+      setDisplayCount(Math.ceil(filteredProducts.length * 0.20));
     }
+  }, [filteredProducts]);
 
-    return isShowingAll ? results : initialProductList; // Otherwise, show initial list or all products
-    
-  }, [searchTerm, searchPrice, searchColor, searchSize, products, initialProductList, isShowingAll]);
-
-  // Determine if the "Show More" button should be visible
-  const shouldShowMoreButton = !isShowingAll && initialProductList.length < products.length && !searchTerm && !searchPrice && !searchColor && !searchSize;
+  const handleShowMore = () => {
+    const increment = Math.ceil(products.length * 0.20);
+    setDisplayCount(prevCount => Math.min(prevCount + increment, filteredProducts.length));
+  };
+  
+  const shouldShowMoreButton = displayCount < filteredProducts.length;
 
   if (typesLoading || productsLoading) {
     return <LoadingSpinner />;
@@ -100,9 +83,8 @@ const Index = () => {
     <div className="min-h-screen w-full">
       <Navbar />
       
-      {/* Hero Section */}
       <motion.section 
-        className="pt-14 sm:pt-16 md:pt-20 lg:pt-24 pb-8 sm:pb-12 md:pb-16 px-2 sm:px-4 space-y-8 md:space-y-12"
+        className="pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-6 sm:pb-8 md:pb-10 px-2 sm:px-4 space-y-6 md:space-y-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
@@ -118,68 +100,91 @@ const Index = () => {
         <div className="w-full">
            <GenericCarousel
               items={heroImages}
+              slideClassName="w-full"
               renderSlide={(image) => <HeroImageCard imageUrl={image.url} />}
             />
         </div>
       </motion.section>
       
-      {/* Product Types Carousel Section */}
       <motion.section 
-        className="py-8 sm:py-12 md:py-20 px-3 sm:px-4"
+        className="py-0 sm:py-8 md:py-12 px-3 sm:px-4"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
         <div className="w-full max-w-7xl mx-auto">
-          <motion.h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-center mb-6 sm:mb-8 md:mb-16 gradient-text" initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
+          <motion.h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-center mb-6 gradient-text" initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
             إكتشف أنواع المنتجات
           </motion.h2>
-          {productTypes.length > 0 ? (
+
+          <div className="max-w-md mx-auto mb-8 md:mb-12">
+            <Input 
+              placeholder="...ابحث عن نوع منتج"
+              value={productTypeSearchTerm}
+              onChange={(e) => setProductTypeSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {filteredProductTypes.length > 0 ? (
             <GenericCarousel 
-              items={productTypes}
+              items={filteredProductTypes}
               renderSlide={(type) => <ProductTypeCard id={type.id} name={type.name} imageUrl={type.image_url || '/placeholder.svg'} />}
             />
           ) : (
             <div className="text-center py-12">
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground">لاتوجد أنواع منتجات لعرضها</p>
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground">لا توجد أنواع منتجات تطابق بحثك</p>
             </div>
           )}
         </div>
       </motion.section>
 
-      {/* NEW: All Products Section */}
       <motion.section 
-        className="py-8 sm:py-12 md:py-20 px-3 sm:px-4"
+        className="py-6 sm:py-8 md:py-12 px-3 sm:px-4"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
         <div className="w-full max-w-7xl mx-auto">
-          <motion.h2
-            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-center mb-4 gradient-text"
-            initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            تصفح جميع المنتجات
-          </motion.h2>
-
-          {/* Search Bar */}
-          <div className="max-w-4xl mx-auto mb-8 md:mb-12 p-4 glass-effect rounded-xl">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <Input placeholder="اسم المنتج..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-              <Input type="number" placeholder="السعر الأقصى..." value={searchPrice} onChange={(e) => setSearchPrice(e.target.value)} />
-              <Input placeholder="اللون..." value={searchColor} onChange={(e) => setSearchColor(e.target.value)} />
-              <Input placeholder="المقاس..." value={searchSize} onChange={(e) => setSearchSize(e.target.value)} />
-            </div>
+          <div className="flex justify-center items-center gap-4 mb-8 md:mb-12">
+            <motion.h2
+              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-center gradient-text"
+              initial={{ y: 30, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              تصفح جميع المنتجات
+            </motion.h2>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">بحث متقدم</h4>
+                    <p className="text-sm text-muted-foreground">
+                      ابحث عن منتجاتك بمعايير محددة.
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <Input placeholder="اسم المنتج..." value={productSearchTerm} onChange={(e) => setProductSearchTerm(e.target.value)} />
+                    <Input type="number" placeholder="السعر الأقصى..." value={searchPrice} onChange={(e) => setSearchPrice(e.target.value)} />
+                    <Input placeholder="اللون..." value={searchColor} onChange={(e) => setSearchColor(e.target.value)} />
+                    <Input placeholder="المقاس..." value={searchSize} onChange={(e) => setSearchSize(e.target.value)} />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
           
-          {displayedProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-              {displayedProducts.map((product) => (
+          {filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-6">
+              {filteredProducts.slice(0, displayCount).map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
@@ -193,10 +198,9 @@ const Index = () => {
             </div>
           )}
 
-          {/* Show More Button */}
           {shouldShowMoreButton && (
             <div className="text-center mt-8 md:mt-12">
-              <Button onClick={() => setIsShowingAll(true)} className="btn-gradient">
+              <Button onClick={handleShowMore} className="btn-gradient">
                 عرض المزيد
               </Button>
             </div>
@@ -204,7 +208,6 @@ const Index = () => {
         </div>
       </motion.section>
       
-      {/* Footer */}
       <motion.footer className="py-6 sm:py-8 md:py-12 px-3 sm:px-4 mt-8 sm:mt-12 md:mt-20 glass-effect" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
         <div className="w-full max-w-7xl mx-auto text-center">
           <p className="text-xs sm:text-sm md:text-base text-muted-foreground">

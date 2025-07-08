@@ -3,13 +3,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils'; // Make sure cn is imported from your utils
 
+// Define the shape of your props
 interface GenericCarouselProps<T> {
   items: T[];
   renderSlide: (item: T) => React.ReactNode;
+  // This new optional prop will control the slide width
+  slideClassName?: string; 
 }
 
-const GenericCarousel = <T extends { id: string | number }>({ items, renderSlide }: GenericCarouselProps<T>) => {
+const GenericCarousel = <T extends { id: string | number }>({ 
+  items, 
+  renderSlide, 
+  // Set a default value for the new prop
+  slideClassName = "w-3/4 sm:w-1/2 md:w-2/5 lg:w-1/3" 
+}: GenericCarouselProps<T>) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
   const [scrollProgress, setScrollProgress] = useState(0);
   const [slideStyles, setSlideStyles] = useState<(React.CSSProperties | undefined)[]>([]);
@@ -45,7 +54,11 @@ const GenericCarousel = <T extends { id: string | number }>({ items, renderSlide
           {items.map((item, index) => (
             <motion.div
               key={item.id}
-              className="flex-shrink-0 w-3/4 sm:w-1/2 md:w-2/5 lg:w-1/3 min-w-0 pl-4"
+              // The cn utility now correctly combines the default classes with the prop
+              className={cn(
+                "flex-shrink-0 min-w-0 pl-4",
+                slideClassName
+              )}
               style={slideStyles[index]}
               transition={{ type: 'spring', stiffness: 200, damping: 30 }}
             >
