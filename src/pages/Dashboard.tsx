@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Package, ShoppingCart, Settings, Key, LogOut } from 'lucide-react';
@@ -22,10 +21,10 @@ const Dashboard = () => {
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success('Logged out successfully');
+      toast.success('تم تسجيل الخروج بنجاح');
       navigate('/auth');
     } catch (error) {
-      toast.error('Error logging out');
+      toast.error('خطأ في تسجيل الخروج');
     }
   };
 
@@ -34,7 +33,7 @@ const Dashboard = () => {
       <Navbar />
       
       <div className="pt-16">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 md:py-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -43,10 +42,10 @@ const Dashboard = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-2">
-                  Dashboard
+                  لوحة التحكم
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base">
-                  Manage your e-commerce business from one place
+                  إدارة أعمالك التجارية الإلكترونية من مكان واحد
                 </p>
               </div>
               
@@ -57,7 +56,7 @@ const Dashboard = () => {
                   className="flex items-center gap-2 w-fit"
                 >
                   <Key className="w-4 h-4" />
-                  Reset Password
+                  إعادة تعيين كلمة المرور
                 </Button>
                 
                 <Button
@@ -66,7 +65,7 @@ const Dashboard = () => {
                   className="flex items-center gap-2 w-fit"
                 >
                   <LogOut className="w-4 h-4" />
-                  Logout
+                  تسجيل الخروج
                 </Button>
               </div>
             </div>
@@ -75,15 +74,15 @@ const Dashboard = () => {
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="orders" className="flex items-center space-x-1 sm:space-x-2">
                   <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm">Orders</span>
+                  <span className="text-xs sm:text-sm">الطلبات</span>
                 </TabsTrigger>
                 <TabsTrigger value="products" className="flex items-center space-x-1 sm:space-x-2">
                   <Package className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm">Products</span>
+                  <span className="text-xs sm:text-sm">المنتجات</span>
                 </TabsTrigger>
                 <TabsTrigger value="shipping" className="flex items-center space-x-1 sm:space-x-2">
                   <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm">Shipping</span>
+                  <span className="text-xs sm:text-sm">الشحن</span>
                 </TabsTrigger>
               </TabsList>
 

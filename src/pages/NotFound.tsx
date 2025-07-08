@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
@@ -27,7 +26,7 @@ const NotFound = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          Page Not Found
+          الصفحة غير موجودة
         </motion.h2>
         
         <motion.p
@@ -36,7 +35,7 @@ const NotFound = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
         >
-          The page you're looking for doesn't exist or has been moved.
+          الصفحة التي تبحث عنها غير موجودة أو تم نقلها.
         </motion.p>
         
         <motion.div
@@ -52,7 +51,7 @@ const NotFound = () => {
               whileTap={{ scale: 0.95 }}
             >
               <Home className="w-5 h-5" />
-              <span>Go Home</span>
+              <span>الصفحة الرئيسية</span>
             </motion.button>
           </Link>
           
@@ -63,7 +62,7 @@ const NotFound = () => {
             whileTap={{ scale: 0.95 }}
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>Go Back</span>
+            <span>الرجوع</span>
           </motion.button>
         </motion.div>
       </motion.div>

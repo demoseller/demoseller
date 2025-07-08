@@ -1,29 +1,27 @@
+// src/pages/ProductsPage.tsx
 
 import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { ArrowLeft } from 'lucide-react';
 import { useProducts, useProductTypes } from '../hooks/useSupabaseStore';
+import GenericCarousel from '../components/GenericCarousel';
+import ProductCard from '../components/ProductCard';
 
 const ProductsPage = () => {
-  const { typeId } = useParams();
-  const [loading, setLoading] = useState(true);
-  const { products, loading: productsLoading } = useProducts();
+  const { typeId = '' } = useParams();
+  
+  // 1. Fetch products by typeId using the hook
+  const { products, loading: productsLoading } = useProducts(typeId);
   const { productTypes, loading: typesLoading } = useProductTypes();
   
-  const currentProductType = productTypes.find(type => type.id === typeId);
+  // Products are already filtered by the hook, but we keep this for safety
   const filteredProducts = products.filter(product => product.product_type_id === typeId);
 
-  useEffect(() => {
-    if (!productsLoading && !typesLoading) {
-      const timer = setTimeout(() => setLoading(false), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [productsLoading, typesLoading]);
+  const currentProductType = productTypes.find(type => type.id === typeId);
 
-  if (loading || productsLoading || typesLoading) {
+  if (productsLoading || typesLoading) {
     return <LoadingSpinner />;
   }
 
@@ -33,9 +31,9 @@ const ProductsPage = () => {
       
       <motion.div
         className="pt-20 md:pt-32 pb-12 md:pb-20 px-4"
-        initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -100 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         transition={{ duration: 0.6 }}
       >
         <div className="container mx-auto max-w-full">
@@ -53,7 +51,7 @@ const ProductsPage = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
-                <span>Back to Home</span>
+                <span>العودة إلى الصفحة الرئيسية</span>
               </motion.button>
             </Link>
           </motion.div>
@@ -65,72 +63,18 @@ const ProductsPage = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {currentProductType?.name || 'Products'}
+            {currentProductType?.name || 'المنتجات'}
           </motion.h1>
           
-          {/* Products Grid */}
+          {/* Products Carousel now receives the CORRECTLY filtered list */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="group relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg md:shadow-xl card-hover w-full max-w-sm mx-auto"
-                >
-                  <Link to={`/products/${typeId}/${product.id}`}>
-                    <div className="relative h-64 sm:h-72 md:h-80 w-full overflow-hidden">
-                      <motion.img
-                        src={product.images[0] || '/placeholder.svg'}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                      />
-                      
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                      
-                      <motion.div
-                        className="absolute inset-0 glass-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        whileHover={{ rotateY: 2, rotateX: 1 }}
-                        style={{ transformStyle: "preserve-3d" }}
-                      >
-                        <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 right-4 md:right-6">
-                          <motion.h3
-                            className="text-lg sm:text-xl font-bold text-white mb-2 leading-tight"
-                            initial={{ y: 20, opacity: 0 }}
-                            whileInView={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                          >
-                            {product.name}
-                          </motion.h3>
-                          
-                          <motion.p
-                            className="text-base sm:text-lg font-semibold text-white mb-3"
-                            initial={{ y: 20, opacity: 0 }}
-                            whileInView={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.3 }}
-                          >
-                            {product.base_price} DA
-                          </motion.p>
-                          
-                          <motion.div
-                            className="w-8 md:w-12 h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full"
-                            initial={{ width: 0 }}
-                            whileInView={{ width: window.innerWidth < 768 ? 32 : 48 }}
-                            transition={{ delay: 0.4, duration: 0.6 }}
-                          />
-                        </div>
-                      </motion.div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+            <GenericCarousel
+              items={filteredProducts}
+              renderSlide={(product) => <ProductCard product={product} typeId={typeId} />}
+            />
           ) : (
             <div className="text-center py-12">
-              <p className="text-lg md:text-xl text-muted-foreground px-4">No products available in this category yet.</p>
+              <p className="text-lg md:text-xl text-muted-foreground px-4">لا توجد منتجات متاحة في هذه الفئة حالياً.</p>
             </div>
           )}
         </div>

@@ -122,7 +122,7 @@ const ImageLightbox = ({ src, alt, isOpen, onClose }: ImageLightboxProps) => {
 
         {/* Instructions */}
         <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-white/60 text-sm text-center">
-          <p>Click outside to close • Use zoom controls • Drag to pan when zoomed</p>
+          <p>انقر بالخارج للإغلاق • استخدم عناصر التحكم في التكبير والتصغير • اسحب للتحريك عند التكبير والتصغير</p>
         </div>
       </motion.div>
     </AnimatePresence>

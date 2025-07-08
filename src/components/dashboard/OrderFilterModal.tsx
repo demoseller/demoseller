@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { X, Filter } from 'lucide-react';
@@ -65,7 +64,7 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
         <div className="flex justify-between items-center mb-4 sm:mb-6">
           <h3 className="text-lg sm:text-xl font-bold flex items-center space-x-2">
             <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>Filter Orders</span>
+            <span>تصفية الطلبات</span>
           </h3>
           <button
             onClick={onClose}
@@ -77,26 +76,27 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
 
         <div className="space-y-3 sm:space-y-4">
           <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Status</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">الحالة</label>
             <select
               value={filters.status}
               onChange={(e) => setFilters({...filters, status: e.target.value as FilterOptions['status']})}
               className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
             >
-              <option value="all">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
+              <option value="all">كل الحالات</option>
+              <option value="pending">قيد الانتظار</option>
+              <option value="confirmed">مؤكد</option>
+              
             </select>
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Product Type</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">نوع المنتج</label>
             <select
               value={filters.productType}
               onChange={(e) => setFilters({...filters, productType: e.target.value})}
               className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
             >
-              <option value="">All Product Types</option>
+              <option value="">كل أنواع المنتجات</option>
               {productTypes.map(type => (
                 <option key={type.id} value={type.name}>{type.name}</option>
               ))}
@@ -104,13 +104,13 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Product Name</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">اسم المنتج</label>
             <select
               value={filters.product}
               onChange={(e) => setFilters({...filters, product: e.target.value})}
               className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
             >
-              <option value="">All Products</option>
+              <option value="">كل المنتجات</option>
               {products.map(product => (
                 <option key={product.id} value={product.name}>{product.name}</option>
               ))}
@@ -118,13 +118,13 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Wilaya</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">الولاية</label>
             <select
               value={filters.wilaya}
               onChange={(e) => setFilters({...filters, wilaya: e.target.value})}
               className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
             >
-              <option value="">All Wilayas</option>
+              <option value="">كل الولايات</option>
               {wilayas.map(wilaya => (
                 <option key={wilaya} value={wilaya}>{wilaya}</option>
               ))}
@@ -137,13 +137,13 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
             onClick={handleReset}
             className="flex-1 px-3 py-2 sm:px-4 sm:py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors text-xs sm:text-sm"
           >
-            Reset
+            إعادة تعيين
           </button>
           <button
             onClick={handleApply}
             className="flex-1 btn-gradient py-2 rounded-lg text-xs sm:text-sm"
           >
-            Apply Filters
+            تطبيق الفلاتر
           </button>
         </div>
       </motion.div>

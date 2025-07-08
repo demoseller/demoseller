@@ -32,12 +32,12 @@ const ThemeToggle = () => {
   return (
     <motion.button
       onClick={toggleTheme}
-      className="relative w-10 h-6 sm:w-12 sm:h-7 md:w-14 md:h-8 rounded-full bg-gradient-primary dark:bg-gradient-primary-dark p-0.5 sm:p-1 shadow-lg"
+      className="relative w-0 h-0 sm:w-12 sm:h-7 md:w-14 md:h-8 rounded-full bg-gradient-primary dark:bg-gradient-primary-dark p-0.5 sm:p-1 shadow-lg my-0.05 flex items-center"
       whileTap={{ scale: 0.95 }}
     >
       <motion.div
-        className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full bg-white shadow-md flex items-center justify-center"
-        animate={{ x: isDark ? (window.innerWidth < 640 ? 16 : window.innerWidth < 768 ? 20 : 24) : 0 }}
+        className="w-6 h-6 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full bg-white shadow-md flex items-center justify-center"
+        animate={{ x: isDark ? (window.innerWidth < 640 ? 8 : window.innerWidth < 768 ? 20 : 24) : 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         <motion.div

@@ -96,7 +96,7 @@
   }
 
   body {
-    @apply bg-gradient-light dark:bg-gradient-dark text-foreground font-poppins;
+    @apply bg-gradient-light dark:bg-gradient-dark text-foreground font-poppins px-0 sm:px-6 lg:px-8;
     font-family: 'Poppins', sans-serif;
     width: 100%;
     overflow-x: hidden;
@@ -111,19 +111,20 @@
   /* Mobile-first responsive typography */
   @media (max-width: 640px) {
     html {
-      font-size: 14px;
+      font-size: 17px;
+      font-weight: 1000;
     }
   }
 
   @media (min-width: 768px) {
     html {
-      font-size: 15px;
+      font-size: 17px;
     }
   }
 
   @media (min-width: 1024px) {
     html {
-      font-size: 16px;
+      font-size: 17px;
     }
   }
 
@@ -198,6 +199,13 @@
 img {
   height: auto;
   max-width: 100%;
+}
+
+/* src/index.css */
+
+/* Add this for your Embla Carousel */
+.embla__slide {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 /* Improve touch targets for mobile */

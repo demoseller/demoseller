@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
@@ -100,7 +99,7 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
     e.preventDefault();
     
     if (!productName.trim() || !basePrice || !productTypeId) {
-      toast.error('Please fill in all required fields');
+      toast.error('الرجاء ملء جميع الحقول المطلوبة');
       return;
     }
 
@@ -121,17 +120,17 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
 
       if (editingProduct) {
         await updateProduct(editingProduct.id, productData);
-        toast.success('Product updated successfully!');
+        toast.success('تم تحديث المنتج بنجاح!');
       } else {
         await addProduct(productData);
-        toast.success('Product added successfully!');
+        toast.success('تمت إضافة المنتج بنجاح!');
       }
 
       resetForm();
       onClose();
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error('Failed to save product. Please try again.');
+      toast.error('فشل حفظ المنتج. يرجى المحاولة مرة أخرى.');
     } finally {
       setLoading(false);
     }
@@ -152,7 +151,7 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
       >
         <div className="flex justify-between items-center mb-4 sm:mb-6">
           <h3 className="text-lg sm:text-xl font-bold">
-            {editingProduct ? 'Edit Product' : 'Add New Product'}
+            {editingProduct ? 'تعديل المنتج' : 'إضافة منتج جديد'}
           </h3>
           <button
             onClick={onClose}
@@ -167,21 +166,21 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
-                Product Name *
+                اسم المنتج *
               </label>
               <input
                 type="text"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
                 className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
-                placeholder="e.g., Basic T-Shirt"
+                placeholder="مثال: قميص أساسي"
                 required
               />
             </div>
 
             <div>
               <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
-                Base Price (DA) *
+                السعر الأساسي (دج) *
               </label>
               <input
                 type="number"
@@ -198,7 +197,7 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
 
           <div>
             <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
-              Product Type *
+              نوع المنتج *
             </label>
             <select
               value={productTypeId}
@@ -206,7 +205,7 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
               className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
               required
             >
-              <option value="">Select a product type</option>
+              <option value="">اختر نوع المنتج</option>
               {productTypes.map(type => (
                 <option key={type.id} value={type.id}>{type.name}</option>
               ))}
@@ -215,20 +214,20 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
 
           <div>
             <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
-              Description
+              الوصف
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
-              placeholder="Product description..."
+              placeholder="وصف المنتج..."
               rows={3}
             />
           </div>
 
           {/* Images */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium mb-2">Product Images</label>
+            <label className="block text-xs sm:text-sm font-medium mb-2">صور المنتج</label>
             <div className="space-y-3">
               <ImageUpload
                 onImageUploaded={handleImageUploaded}
@@ -261,14 +260,14 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
           {/* Sizes */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-xs sm:text-sm font-medium">Sizes</label>
+              <label className="block text-xs sm:text-sm font-medium">المقاسات</label>
               <button
                 type="button"
                 onClick={addSize}
                 className="flex items-center space-x-1 text-primary hover:text-primary/80 text-xs sm:text-sm"
               >
                 <Plus className="w-3 h-3" />
-                <span>Add Size</span>
+                <span>إضافة مقاس</span>
               </button>
             </div>
             <div className="space-y-2">
@@ -279,14 +278,14 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
                     value={size.name}
                     onChange={(e) => updateSize(index, 'name', e.target.value)}
                     className="flex-1 px-2 py-1.5 rounded border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
-                    placeholder="Size name (e.g., S, M, L)"
+                    placeholder="اسم المقاس (مثال: S, M, L)"
                   />
                   <input
                     type="number"
                     value={size.priceModifier}
                     onChange={(e) => updateSize(index, 'priceModifier', parseFloat(e.target.value) || 0)}
                     className="w-20 px-2 py-1.5 rounded border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
-                    placeholder="Price modifier"
+                    placeholder="معدل السعر"
                     step="0.01"
                   />
                   <button
@@ -304,14 +303,14 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
           {/* Colors */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-xs sm:text-sm font-medium">Colors</label>
+              <label className="block text-xs sm:text-sm font-medium">الألوان</label>
               <button
                 type="button"
                 onClick={addColor}
                 className="flex items-center space-x-1 text-primary hover:text-primary/80 text-xs sm:text-sm"
               >
                 <Plus className="w-3 h-3" />
-                <span>Add Color</span>
+                <span>إضافة لون</span>
               </button>
             </div>
             <div className="space-y-2">
@@ -322,14 +321,14 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
                     value={color.name}
                     onChange={(e) => updateColor(index, 'name', e.target.value)}
                     className="flex-1 px-2 py-1.5 rounded border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
-                    placeholder="Color name (e.g., Red, Blue, Green)"
+                    placeholder="اسم اللون (مثال: أحمر، أزرق، أخضر)"
                   />
                   <input
                     type="number"
                     value={color.priceModifier}
                     onChange={(e) => updateColor(index, 'priceModifier', parseFloat(e.target.value) || 0)}
                     className="w-20 px-2 py-1.5 rounded border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
-                    placeholder="Price modifier"
+                    placeholder="معدل السعر"
                     step="0.01"
                   />
                   <button
@@ -352,14 +351,14 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
               className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 text-sm sm:text-base"
               disabled={loading}
             >
-              Cancel
+              إلغاء
             </button>
             <button
               type="submit"
               className="flex-1 btn-gradient py-2 rounded-lg disabled:opacity-50 text-sm sm:text-base"
               disabled={loading}
             >
-              {loading ? 'Saving...' : (editingProduct ? 'Update Product' : 'Add Product')}
+              {loading ? 'جارٍ الحفظ...' : (editingProduct ? 'تحديث المنتج' : 'إضافة المنتج')}
             </button>
           </div>
         </form>

@@ -191,7 +191,7 @@ export const useProductTypes = () => {
   };
 };
 
-export const useProducts = () => {
+export const useProducts = (typeId: string) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 

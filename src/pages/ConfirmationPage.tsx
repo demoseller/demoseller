@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, ShoppingBag } from 'lucide-react';
@@ -32,7 +31,7 @@ const ConfirmationPage = () => {
     console.log('Submit review called with rating:', rating);
     
     if (rating === 0) {
-      toast.error('Please select a rating');
+      toast.error('يرجى اختيار تقييم');
       return;
     }
     
@@ -43,16 +42,16 @@ const ConfirmationPage = () => {
         product_id: productId,
         rating: rating,
         comment: comment,
-        reviewer_name: reviewerName || 'Anonymous'
+        reviewer_name: reviewerName || 'مجهول'
       });
       
       setReviewSubmitted(true);
       setRating(0);
       setComment('');
       setReviewerName('');
-      toast.success('Review submitted successfully!');
+      toast.success('تم إرسال التقييم بنجاح!');
     } catch (error) {
-      toast.error('Failed to submit review');
+      toast.error('فشل في إرسال التقييم');
     } finally {
       setIsSubmittingReview(false);
     }
@@ -93,7 +92,7 @@ const ConfirmationPage = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          Thank You! Your order has been placed.
+          شكراً لك! تم تقديم طلبك.
         </motion.h1>
 
         <motion.p
@@ -102,8 +101,7 @@ const ConfirmationPage = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          Your item has been successfully placed and will be shipped soon. 
-          You'll receive a confirmation call within 24 hours.
+          تم تقديم طلبك بنجاح وسيتم شحنه قريباً. ستتلقى مكالمة تأكيد خلال 24 ساعة.
         </motion.p>
 
         {/* Order Details */}
@@ -113,19 +111,19 @@ const ConfirmationPage = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
-          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 gradient-text">What's Next?</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 gradient-text">ما الخطوة التالية؟</h3>
           <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-muted-foreground">
             <li className="flex items-start space-x-2 sm:space-x-3">
               <div className="w-2 h-2 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
-              <span>Our team will contact you within 24 hours to confirm your order details</span>
+              <span>سيتصل بك فريقنا خلال 24 ساعة لتأكيد تفاصيل طلبك</span>
             </li>
             <li className="flex items-start space-x-2 sm:space-x-3">
               <div className="w-2 h-2 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
-              <span>Your order will be prepared and shipped within 2-3 business days</span>
+              <span>سيتم تجهيز طلبك وشحنه خلال 2-3 أيام عمل</span>
             </li>
             <li className="flex items-start space-x-2 sm:space-x-3">
               <div className="w-2 h-2 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
-              <span>You'll receive tracking information once your order ships</span>
+              <span>ستتلقى معلومات التتبع بمجرد شحن طلبك</span>
             </li>
           </ul>
         </motion.div>
@@ -142,7 +140,7 @@ const ConfirmationPage = () => {
                 transition={{ duration: 0.6, delay: 1 }}
               >
                 <h3 className="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6 gradient-text">
-                  How would you rate your new product?
+                  كيف تقيّم منتجك الجديد؟
                 </h3>
                 
                 {productImage && (
@@ -163,17 +161,17 @@ const ConfirmationPage = () => {
 
                 <form onSubmit={handleSubmitReview} className="space-y-3 sm:space-y-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Your Name (Optional)</label>
+                    <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">اسمك (اختياري)</label>
                     <input
                       type="text"
                       value={reviewerName}
                       onChange={(e) => setReviewerName(e.target.value)}
                       className="w-full bg-background border border-border rounded-lg px-3 py-2 sm:px-4 sm:py-3 focus:ring-2 focus:ring-primary/50 outline-none text-sm sm:text-base"
-                      placeholder="Enter your name"
+                      placeholder="أدخل اسمك"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Your Rating</label>
+                    <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">تقييمك</label>
                     <div className="flex justify-center">
                       <StarRating
                         rating={rating}
@@ -184,13 +182,13 @@ const ConfirmationPage = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Comment (Optional)</label>
+                    <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">تعليق (اختياري)</label>
                     <textarea
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       className="w-full bg-background border border-border rounded-lg px-3 py-2 sm:px-4 sm:py-3 focus:ring-2 focus:ring-primary/50 outline-none text-sm sm:text-base"
                       rows={3}
-                      placeholder="Share your experience with this product..."
+                      placeholder="شارك تجربتك مع هذا المنتج..."
                     />
                   </div>
                   
@@ -204,10 +202,10 @@ const ConfirmationPage = () => {
                     {isSubmittingReview ? (
                       <div className="flex items-center space-x-2">
                         <div className="animate-spin w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                        <span>Submitting...</span>
+                        <span>جاري الإرسال...</span>
                       </div>
                     ) : (
-                      'Submit Review'
+                      'إرسال التقييم'
                     )}
                   </motion.button>
                 </form>
@@ -223,7 +221,7 @@ const ConfirmationPage = () => {
                 transition={{ duration: 0.5 }}
               >
                 <p className="text-green-600 dark:text-green-400 font-semibold text-sm sm:text-base">
-                  Thank you for your review! It helps other customers make informed decisions.
+                  شكراً على تقييمك! يساعد ذلك العملاء الآخرين على اتخاذ قرارات مستنيرة.
                 </p>
               </motion.div>
             )}
@@ -237,11 +235,11 @@ const ConfirmationPage = () => {
                 transition={{ duration: 0.6, delay: reviewSubmitted ? 0.5 : 1.4 }}
               >
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className="text-base sm:text-lg md:text-xl font-semibold">Customer Reviews</h3>
+                  <h3 className="text-base sm:text-lg md:text-xl font-semibold">تقييمات العملاء</h3>
                   <div className="flex items-center space-x-1 sm:space-x-2">
                     <StarRating rating={averageRating} readonly size="sm" />
                     <span className="text-xs sm:text-sm text-muted-foreground">
-                      ({reviews.length} reviews)
+                      ({reviews.length} تقييمات)
                     </span>
                   </div>
                 </div>
@@ -251,7 +249,7 @@ const ConfirmationPage = () => {
                     <div key={review.id} className="p-3 sm:p-4 bg-muted/10 rounded-lg">
                       <div className="flex items-center justify-between mb-1 sm:mb-2">
                         <div className="flex items-center space-x-1 sm:space-x-2">
-                          <span className="font-medium text-sm sm:text-base">{review.reviewer_name || 'Anonymous'}</span>
+                          <span className="font-medium text-sm sm:text-base">{review.reviewer_name || 'مجهول'}</span>
                           <StarRating rating={review.rating} readonly size="sm" />
                         </div>
                         <span className="text-xs sm:text-sm text-muted-foreground">
@@ -267,7 +265,7 @@ const ConfirmationPage = () => {
                 
                 {reviews.length > 5 && (
                   <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4 text-center">
-                    Showing 5 of {reviews.length} reviews
+                    عرض 5 من {reviews.length} تقييمات
                   </p>
                 )}
               </motion.div>
@@ -288,7 +286,7 @@ const ConfirmationPage = () => {
               whileTap={{ scale: 0.95 }}
             >
               <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Continue Shopping</span>
+              <span>مواصلة التسوق</span>
             </motion.button>
           </Link>
         </motion.div>
@@ -305,7 +303,7 @@ const ConfirmationPage = () => {
               className="text-sm sm:text-base text-muted-foreground hover:gradient-text transition-colors cursor-pointer"
               whileHover={{ scale: 1.05 }}
             >
-              Return to Home
+              العودة إلى الصفحة الرئيسية
             </motion.span>
           </Link>
         </motion.div>

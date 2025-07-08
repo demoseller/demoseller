@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { MapPin, Plus, Edit2, Trash2, Save, X } from 'lucide-react';
@@ -35,7 +34,7 @@ const ShippingTab = () => {
     try {
       const price = parseFloat(editingPrice);
       if (isNaN(price) || price < 0) {
-        toast.error('Please enter a valid price');
+        toast.error('الرجاء إدخال سعر صحيح');
         return;
       }
 
@@ -47,10 +46,10 @@ const ShippingTab = () => {
       setEditingWilaya(null);
       setEditingPrice('');
       setEditingCommunes('');
-      toast.success('Shipping information updated successfully');
+      toast.success('تم تحديث معلومات الشحن بنجاح');
     } catch (error) {
       console.error('Error saving changes:', error);
-      toast.error('Failed to update shipping information');
+      toast.error('فشل تحديث معلومات الشحن');
     }
   };
 
@@ -62,18 +61,18 @@ const ShippingTab = () => {
 
   const handleAddWilaya = async () => {
     if (!newWilayaName.trim()) {
-      toast.error('Please enter a wilaya name');
+      toast.error('الرجاء إدخال اسم الولاية');
       return;
     }
 
     const price = parseFloat(newWilayaPrice);
     if (isNaN(price) || price < 0) {
-      toast.error('Please enter a valid price');
+      toast.error('الرجاء إدخال سعر صحيح');
       return;
     }
 
     if (shippingData.shippingPrices[newWilayaName]) {
-      toast.error('This wilaya already exists');
+      toast.error('هذه الولاية موجودة بالفعل');
       return;
     }
 
@@ -85,21 +84,21 @@ const ShippingTab = () => {
       setNewWilayaPrice('');
       setNewWilayaCommunes('');
       setShowAddForm(false);
-      toast.success('Wilaya added successfully');
+      toast.success('تمت إضافة الولاية بنجاح');
     } catch (error) {
       console.error('Error adding wilaya:', error);
-      toast.error('Failed to add wilaya');
+      toast.error('فشل إضافة الولاية');
     }
   };
 
   const handleRemoveWilaya = async (wilaya: string) => {
-    if (window.confirm(`Are you sure you want to remove ${wilaya}?`)) {
+    if (window.confirm(`هل أنت متأكد أنك تريد إزالة ${wilaya}؟`)) {
       try {
         await removeWilaya(wilaya);
-        toast.success('Wilaya removed successfully');
+        toast.success('تمت إزالة الولاية بنجاح');
       } catch (error) {
         console.error('Error removing wilaya:', error);
-        toast.error('Failed to remove wilaya');
+        toast.error('فشل إزالة الولاية');
       }
     }
   };
@@ -115,12 +114,12 @@ const ShippingTab = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <p className="text-red-500">Error loading shipping data: {error}</p>
+        <p className="text-red-500">خطأ في تحميل بيانات الشحن: {error}</p>
         <button 
           onClick={() => window.location.reload()} 
           className="btn-gradient px-4 py-2 rounded-lg"
         >
-          Retry
+          إعادة المحاولة
         </button>
       </div>
     );
@@ -137,9 +136,9 @@ const ShippingTab = () => {
         animate={{ opacity: 1, y: 0 }}
       >
         <div>
-          <h2 className="text-2xl font-bold gradient-text">Shipping Management</h2>
+          <h2 className="text-2xl font-bold gradient-text">إدارة الشحن</h2>
           <p className="text-muted-foreground mt-1">
-            Manage shipping prices and available cities/communes
+            إدارة أسعار الشحن والمدن/البلديات المتاحة
           </p>
         </div>
         <motion.button
@@ -149,7 +148,7 @@ const ShippingTab = () => {
           whileTap={{ scale: 0.95 }}
         >
           <Plus className="w-4 h-4" />
-          <span>Add Wilaya</span>
+          <span>إضافة ولاية</span>
         </motion.button>
       </motion.div>
 
@@ -161,38 +160,38 @@ const ShippingTab = () => {
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
         >
-          <h3 className="text-lg font-semibold mb-4 text-foreground">Add New Wilaya</h3>
+          <h3 className="text-lg font-semibold mb-4 text-foreground">إضافة ولاية جديدة</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Wilaya Name</label>
+              <label className="block text-sm font-medium mb-2 text-foreground">اسم الولاية</label>
               <input
                 type="text"
                 value={newWilayaName}
                 onChange={(e) => setNewWilayaName(e.target.value)}
                 className="w-full bg-background border border-border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary/50 outline-none"
-                placeholder="Enter wilaya name"
+                placeholder="أدخل اسم الولاية"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Shipping Price (DA)</label>
+              <label className="block text-sm font-medium mb-2 text-foreground">سعر الشحن (دج)</label>
               <input
                 type="number"
                 value={newWilayaPrice}
                 onChange={(e) => setNewWilayaPrice(e.target.value)}
                 className="w-full bg-background border border-border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary/50 outline-none"
-                placeholder="Enter price"
+                placeholder="أدخل السعر"
                 min="0"
                 step="0.01"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">Communes (comma separated)</label>
+              <label className="block text-sm font-medium mb-2 text-foreground">البلديات (مفصولة بفواصل)</label>
               <input
                 type="text"
                 value={newWilayaCommunes}
                 onChange={(e) => setNewWilayaCommunes(e.target.value)}
                 className="w-full bg-background border border-border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary/50 outline-none"
-                placeholder="Commune1, Commune2, ..."
+                placeholder="بلدية1، بلدية2، ..."
               />
             </div>
           </div>
@@ -202,13 +201,13 @@ const ShippingTab = () => {
               className="btn-gradient flex items-center space-x-2 px-4 py-2 rounded-lg"
             >
               <Save className="w-4 h-4" />
-              <span>Add Wilaya</span>
+              <span>إضافة ولاية</span>
             </button>
             <button
               onClick={() => setShowAddForm(false)}
               className="px-4 py-2 bg-muted/20 hover:bg-muted/40 rounded-lg transition-colors"
             >
-              Cancel
+              إلغاء
             </button>
           </div>
         </motion.div>
@@ -224,17 +223,17 @@ const ShippingTab = () => {
           <div className="p-4 border-b border-border bg-muted/20">
             <h3 className="text-lg font-semibold flex items-center space-x-2">
               <MapPin className="w-5 h-5" />
-              <span>Shipping Rules ({shippingEntries.length})</span>
+              <span>قواعد الشحن ({shippingEntries.length})</span>
             </h3>
           </div>
           
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px]">Wilaya</TableHead>
-                <TableHead className="w-[150px]">Price (DA)</TableHead>
-                <TableHead>Available Communes</TableHead>
-                <TableHead className="w-[120px]">Actions</TableHead>
+                <TableHead className="w-[200px]">الولاية </TableHead>
+                <TableHead className="w-[150px]">سعر الشحن (DA)</TableHead>
+                <TableHead>البلديات</TableHead>
+                <TableHead className="w-[120px]">التغييرات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -310,12 +309,12 @@ const ShippingTab = () => {
                             ))}
                             {shippingData.communes[wilaya].length > 3 && (
                               <span className="px-2 py-1 bg-muted/50 rounded-full text-xs">
-                                +{shippingData.communes[wilaya].length - 3} more
+                                +{shippingData.communes[wilaya].length - 3} المزيد
                               </span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground text-sm">No communes</span>
+                          <span className="text-muted-foreground text-sm">لاتوجد بلديات</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -354,15 +353,15 @@ const ShippingTab = () => {
           animate={{ opacity: 1 }}
         >
           <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">No Shipping Areas</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2">لا توجد مناطق شحن</h3>
           <p className="text-muted-foreground mb-4">
-            Add your first wilaya to start managing shipping prices and locations.
+            أضف أول ولاية للبدء في إدارة أسعار ومواقع الشحن.
           </p>
           <button
             onClick={() => setShowAddForm(true)}
             className="btn-gradient px-4 py-2 rounded-lg"
           >
-            Add First Wilaya
+            إضافة أول ولاية
           </button>
         </motion.div>
       )}

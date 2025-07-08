@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -61,14 +60,14 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
     e.preventDefault();
     
     if (!email.trim()) {
-      setError('Please enter your email address.');
+      setError('الرجاء إدخال عنوان بريدك الإلكتروني.');
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address.');
+      setError('الرجاء إدخال عنوان بريد إلكتروني صالح.');
       return;
     }
 
@@ -81,8 +80,8 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
       const emailExists = await checkEmailExists(email);
       
       if (!emailExists) {
-        setError('This email is not registered. Please enter a valid email or sign up for a new account.');
-        toast.error('Email not registered');
+        setError('هذا البريد الإلكتروني غير مسجل. الرجاء إدخال بريد إلكتروني صالح أو التسجيل لحساب جديد.');
+        toast.error('البريد الإلكتروني غير مسجل');
         return;
       }
 
@@ -95,16 +94,16 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
         throw error;
       }
 
-      setMessage('Password reset link has been sent to your email. Please check your inbox and follow the instructions.');
-      toast.success('Password reset link sent successfully!');
+      setMessage('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد الخاص بك واتباع التعليمات.');
+      toast.success('تم إرسال رابط إعادة تعيين كلمة المرور بنجاح!');
       
       // Clear the form
       setEmail('');
       
     } catch (error: any) {
       console.error('Password reset error:', error);
-      setError('Unable to send password reset link. Please try again later.');
-      toast.error('Failed to send password reset link');
+      setError('تعذر إرسال رابط إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى لاحقًا.');
+      toast.error('فشل إرسال رابط إعادة تعيين كلمة المرور');
     } finally {
       setIsLoading(false);
     }
@@ -121,9 +120,9 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Reset Password</DialogTitle>
+          <DialogTitle>إعادة تعيين كلمة المرور</DialogTitle>
           <DialogDescription>
-            Enter your registered email address to receive a password reset link.
+            أدخل عنوان بريدك الإلكتروني المسجل لتلقي رابط إعادة تعيين كلمة المرور.
           </DialogDescription>
         </DialogHeader>
 
@@ -143,7 +142,7 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
 
         <form onSubmit={handleSendResetLink} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">عنوان البريد الإلكتروني</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
@@ -151,7 +150,7 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your registered email"
+                placeholder="أدخل بريدك الإلكتروني المسجل"
                 className="pl-10"
                 required
                 disabled={isLoading}
@@ -161,10 +160,10 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
 
           <div className="flex gap-2">
             <Button type="submit" disabled={isLoading} className="flex-1">
-              {isLoading ? 'Sending...' : 'Send Reset Link'}
+              {isLoading ? 'جارٍ الإرسال...' : 'إرسال رابط إعادة التعيين'}
             </Button>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              Cancel
+              إلغاء
             </Button>
           </div>
         </form>

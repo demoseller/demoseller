@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Plus, Package, Edit, Trash2, ChevronDown, ChevronUp, Eye } from 'lucide-react';
@@ -40,13 +39,13 @@ const ProductsTab = () => {
       try {
         if (deleteTarget.type === 'productType') {
           await deleteProductType(deleteTarget.id);
-          toast.success('Product type deleted successfully!');
+          toast.success('تم حذف نوع المنتج بنجاح!');
         } else {
           await deleteProduct(deleteTarget.id);
-          toast.success('Product deleted successfully!');
+          toast.success('تم حذف المنتج بنجاح!');
         }
       } catch (error) {
-        toast.error('Failed to delete. Please try again.');
+        toast.error('فشل الحذف. يرجى المحاولة مرة أخرى.');
       }
       setDeleteTarget(null);
       setShowDeleteConfirm(false);
@@ -78,7 +77,7 @@ const ProductsTab = () => {
             name: typeName,
             image_url: finalImageUrl
           });
-          toast.success('Product type updated successfully!');
+          toast.success('تم تحديث نوع المنتج بنجاح!');
           setShowEditTypeModal(false);
           setEditingType(null);
         } else {
@@ -86,11 +85,11 @@ const ProductsTab = () => {
             name: typeName,
             image_url: finalImageUrl
           });
-          toast.success('Product type added successfully!');
+          toast.success('تمت إضافة نوع المنتج بنجاح!');
           setShowAddTypeModal(false);
         }
       } catch (error) {
-        toast.error('Failed to save product type. Please try again.');
+        toast.error('فشل حفظ نوع المنتج. يرجى المحاولة مرة أخرى.');
       } finally {
         setLoading(false);
         setTypeName('');
@@ -110,22 +109,22 @@ const ProductsTab = () => {
           animate={{ scale: 1, opacity: 1 }}
         >
           <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
-            {editingType ? 'Edit Product Type' : 'Add New Product Type'}
+            {editingType ? 'تعديل نوع المنتج' : 'إضافة نوع منتج جديد'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div>
-              <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Type Name</label>
+              <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">اسم النوع</label>
               <input
                 type="text"
                 value={typeName}
                 onChange={(e) => setTypeName(e.target.value)}
                 className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
-                placeholder="e.g., T-Shirts, Hoodies"
+                placeholder="مثال: قمصان، هوديس"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Image</label>
+              <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">الصورة</label>
               <ImageUpload
                 onImageUploaded={handleImageUploaded}
                 currentImage={imageUrl}
@@ -147,14 +146,14 @@ const ProductsTab = () => {
                 className="flex-1 px-3 py-2 sm:px-4 sm:py-2 border border-border rounded-lg hover:bg-muted/50 text-xs sm:text-sm"
                 disabled={loading}
               >
-                Cancel
+                إلغاء
               </button>
               <button
                 type="submit"
                 className="flex-1 btn-gradient py-2 rounded-lg disabled:opacity-50 text-xs sm:text-sm"
                 disabled={loading}
               >
-                {loading ? 'Saving...' : (editingType ? 'Update Type' : 'Add Type')}
+                {loading ? 'جارٍ الحفظ...' : (editingType ? 'تحديث النوع' : 'إضافة نوع')}
               </button>
             </div>
           </form>
@@ -174,10 +173,10 @@ const ProductsTab = () => {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
       >
-        <h3 className="text-xl font-bold mb-4 text-red-500">Confirm Deletion</h3>
+        <h3 className="text-xl font-bold mb-4 text-red-500">تأكيد الحذف</h3>
         <p className="text-muted-foreground mb-6">
-          Are you sure you want to delete this {deleteTarget?.type === 'productType' ? 'product type' : 'product'}? 
-          This action cannot be undone.
+          هل أنت متأكد أنك تريد حذف هذا {deleteTarget?.type === 'productType' ? 'نوع المنتج' : 'المنتج'}? 
+          لا يمكن التراجع عن هذا الإجراء.
         </p>
         <div className="flex space-x-3">
           <button
@@ -187,13 +186,13 @@ const ProductsTab = () => {
             }}
             className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
           >
-            Cancel
+            إلغاء
           </button>
           <button
             onClick={handleDeleteConfirm}
             className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
           >
-            Delete
+            حذف
           </button>
         </div>
       </motion.div>
@@ -211,13 +210,13 @@ const ProductsTab = () => {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
-        <h2 className="text-xl sm:text-2xl font-bold">Product Management</h2>
+        <h2 className="text-xl sm:text-2xl font-bold">إدارة المنتجات</h2>
         <button
           onClick={() => setShowAddTypeModal(true)}
           className="btn-gradient px-3 py-2 sm:px-4 sm:py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
         >
           <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-          <span>Add Type</span>
+          <span>إضافة نوع</span>
         </button>
       </div>
 
@@ -243,7 +242,7 @@ const ProductsTab = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 text-white">
                   <h3 className="text-sm sm:text-lg font-bold">{type.name}</h3>
-                  <p className="text-xs sm:text-sm opacity-90">{typeProducts.length} products</p>
+                  <p className="text-xs sm:text-sm opacity-90">{typeProducts.length} منتجات</p>
                 </div>
               </div>
               
@@ -258,7 +257,7 @@ const ProductsTab = () => {
                     className="bg-primary/10 text-primary hover:bg-primary/20 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center space-x-1"
                   >
                     <Plus className="w-3 h-3" />
-                    <span>Add</span>
+                    <span>إضافة</span>
                   </button>
                   
                   <div className="flex space-x-1">
@@ -299,7 +298,7 @@ const ProductsTab = () => {
                     exit={{ height: 0, opacity: 0 }}
                     className="border-t pt-2 sm:pt-3 space-y-1 sm:space-y-2"
                   >
-                    <h4 className="font-medium text-xs sm:text-sm">Products in this type:</h4>
+                    <h4 className="font-medium text-xs sm:text-sm">المنتجات في هذا النوع:</h4>
                     {typeProducts.length > 0 ? (
                       <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
                         {typeProducts.map(product => (
@@ -333,7 +332,7 @@ const ProductsTab = () => {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-muted-foreground text-xs sm:text-sm">No products yet</p>
+                      <p className="text-muted-foreground text-xs sm:text-sm">لا توجد منتجات بعد</p>
                     )}
                   </motion.div>
                 )}
@@ -346,13 +345,13 @@ const ProductsTab = () => {
       {productTypes.length === 0 && (
         <div className="text-center py-12">
           <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Product Types Yet</h3>
-          <p className="text-muted-foreground mb-4">Create your first product type to get started.</p>
+          <h3 className="text-lg font-semibold mb-2">لا توجد أنواع منتجات بعد</h3>
+          <p className="text-muted-foreground mb-4">قم بإنشاء أول نوع منتج للبدء.</p>
           <button
             onClick={() => setShowAddTypeModal(true)}
             className="btn-gradient px-6 py-2 rounded-lg"
           >
-            Add Product Type
+            إضافة نوع المنتج
           </button>
         </div>
       )}

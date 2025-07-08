@@ -90,27 +90,27 @@ const ProductPage = () => {
     console.log('Starting order submission...');
 
     if (!customerName.trim()) {
-      toast.error('Please enter your full name');
+      toast.error('الرجاء إدخال الاسم الكامل');
       return;
     }
     if (!customerPhone.trim()) {
-      toast.error('Please enter your phone number');
+      toast.error('الرجاء إدخال رقم الهاتف');
       return;
     }
     if (!wilaya.trim()) {
-      toast.error('Please select your wilaya');
+      toast.error('الرجاء اختيار الولاية');
       return;
     }
     if (shipToHome && !commune.trim()) {
-      toast.error('Please select your commune for home delivery');
+      toast.error('الرجاء اختيار البلدية للتوصيل المنزلي');
       return;
     }
     if (!size || !color) {
-      toast.error('Please select both size and color');
+      toast.error('الرجاء اختيار المقاس واللون');
       return;
     }
     if (!product) {
-      toast.error('Product details are not available');
+      toast.error('تفاصيل المنتج غير متوفرة');
       return;
     }
 
@@ -127,8 +127,8 @@ const ProductPage = () => {
         customer_name: customerName,
         customer_phone: customerPhone,
         wilaya: wilaya,
-        commune: shipToHome ? commune : 'Pickup',
-        full_address: shipToHome ? `${commune}, ${wilaya}` : `Pickup from ${wilaya}`,
+        commune: shipToHome ? commune : 'استلام',
+        full_address: shipToHome ? `${commune}, ${wilaya}` : `استلام من ${wilaya}`,
         status: 'pending' as const
       };
 
@@ -146,13 +146,13 @@ const ProductPage = () => {
             productImage: product.images?.[0] || product.image_url
           }
         });
-        toast.success('Order placed successfully!');
+        toast.success('تم تقديم الطلب بنجاح!');
       } else {
-        toast.error('Failed to place order');
+        toast.error('فشل في تقديم الطلب');
       }
     } catch (error) {
       console.error('Order submission error:', error);
-      toast.error('An error occurred while placing the order');
+      toast.error('حدث خطأ أثناء تقديم الطلب');
     } finally {
       setIsPlacingOrder(false);
     }
@@ -175,13 +175,13 @@ const ProductPage = () => {
       <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
         <Navbar />
         <div className="text-center">
-          <h2 className="text-lg sm:text-xl font-bold mb-4">Error Loading Shipping Data</h2>
+          <h2 className="text-lg sm:text-xl font-bold mb-4">خطأ في تحميل بيانات الشحن</h2>
           <p className="text-muted-foreground mb-4">{shippingError}</p>
           <button 
             onClick={() => window.location.reload()} 
             className="btn-gradient px-4 py-2 rounded-lg text-sm"
           >
-            Retry
+            إعادة المحاولة
           </button>
         </div>
       </div>
@@ -193,12 +193,12 @@ const ProductPage = () => {
       <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
         <Navbar />
         <div className="text-center">
-          <h2 className="text-lg sm:text-xl font-bold mb-4">Product not found</h2>
+          <h2 className="text-lg sm:text-xl font-bold mb-4">المنتج غير موجود</h2>
           <button 
             onClick={() => navigate(-1)} 
             className="btn-gradient px-4 py-2 rounded-lg text-sm"
           >
-            Go Back
+            الرجوع
           </button>
         </div>
       </div>
@@ -220,11 +220,11 @@ const ProductPage = () => {
           className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Back</span>
+          <span className="text-sm">الرجوع</span>
         </button>
       </motion.div>
 
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6">
+      <div className="max-w-5xl mx-auto px-1 sm:px-4 py-3 sm:py-4 md:py-6">
         {/* Mobile: Product Info First */}
         <div className="block lg:hidden mb-4">
           <motion.div 
@@ -236,7 +236,7 @@ const ProductPage = () => {
             <div>
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-2 sm:mb-3">
-                {product.base_price} DA
+                {product.base_price} دج
               </p>
               
               {/* Rating Section */}
@@ -248,7 +248,7 @@ const ProductPage = () => {
                   {formatAverageRating(averageRating)}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
+                  ({reviews.length} تقييم{reviews.length !== 1 ? 'ات' : ''})
                 </span>
               </div>
               
@@ -259,10 +259,10 @@ const ProductPage = () => {
 
             {/* Size and Color Information */}
             <div className="space-y-3 p-3 sm:p-4 glass-effect rounded-lg">
-              <h3 className="text-base font-semibold mb-2">Available Options</h3>
+              <h3 className="text-base font-semibold mb-2">الخيارات المتاحة</h3>
               
               <div>
-                <h4 className="text-sm font-medium mb-2">Sizes Available:</h4>
+                <h4 className="text-sm font-medium mb-2">المقاسات المتاحة:</h4>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes && product.sizes.map((s, index) => (
                     <span key={index} className="px-2 py-1 bg-muted rounded text-xs">
@@ -273,7 +273,7 @@ const ProductPage = () => {
               </div>
               
               <div>
-                <h4 className="text-sm font-medium mb-2">Colors Available:</h4>
+                <h4 className="text-sm font-medium mb-2">الألوان المتاحة:</h4>
                 <div className="flex flex-wrap gap-2">
                   {product.colors && product.colors.map((c, index) => (
                     <span key={index} className="px-2 py-1 bg-muted rounded text-xs">
@@ -336,36 +336,36 @@ const ProductPage = () => {
             {/* Order Form - Centered on Mobile */}
             <div className="flex justify-center lg:justify-start">
               <form onSubmit={handleSubmit} className="w-full max-w-md lg:max-w-none space-y-3 sm:space-y-4 p-3 sm:p-4 glass-effect rounded-lg">
-                <h3 className="text-base sm:text-lg font-bold mb-3">Place Your Order</h3>
+                <h3 className="text-base sm:text-lg font-bold mb-3">قدم طلبك</h3>
                 
                 {/* Customer Information */}
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium mb-1">Full Name</label>
+                    <label className="block text-xs font-medium mb-1">الاسم الكامل</label>
                     <input 
                       type="text" 
                       value={customerName} 
                       onChange={(e) => setCustomerName(e.target.value)} 
                       className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
-                      placeholder="Enter your full name" 
+                      placeholder="أدخل اسمك الكامل" 
                       required 
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium mb-1">Phone Number</label>
+                    <label className="block text-xs font-medium mb-1">رقم الهاتف</label>
                     <input 
                       type="tel" 
                       value={customerPhone} 
                       onChange={(e) => setCustomerPhone(e.target.value)} 
                       className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
-                      placeholder="Enter your phone number" 
+                      placeholder="أدخل رقم هاتفك" 
                       required 
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium mb-1">Wilaya</label>
+                    <label className="block text-xs font-medium mb-1">الولاية</label>
                     <select 
                       value={wilaya} 
                       onChange={(e) => {
@@ -375,10 +375,10 @@ const ProductPage = () => {
                       className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
                       required
                     >
-                      <option value="">Select Wilaya</option>
+                      <option value="">اختر الولاية</option>
                       {availableWilayas.map((wilayaName) => (
                         <option key={wilayaName} value={wilayaName}>
-                          {wilayaName} ({shippingData.shippingPrices[wilayaName]} DA)
+                          {wilayaName} ({shippingData.shippingPrices[wilayaName]} دج)
                         </option>
                       ))}
                     </select>
@@ -397,14 +397,14 @@ const ProductPage = () => {
                       }} 
                     />
                     <label htmlFor="shipToHome" className="text-xs font-medium">
-                      Ship to Home (+30% shipping cost)
+                      التوصيل إلى المنزل (+30% رسوم شحن)
                     </label>
                   </div>
 
                   {/* Commune field - only show when Ship to Home is checked */}
                   {shipToHome && (
                     <div>
-                      <label className="block text-xs font-medium mb-1">Commune (Town)</label>
+                      <label className="block text-xs font-medium mb-1">البلدية (المدينة)</label>
                       <select 
                         value={commune} 
                         onChange={(e) => setCommune(e.target.value)} 
@@ -412,7 +412,7 @@ const ProductPage = () => {
                         required 
                         disabled={!wilaya}
                       >
-                        <option value="">Select Commune</option>
+                        <option value="">اختر البلدية</option>
                         {availableCommunes.map((communeName) => (
                           <option key={communeName} value={communeName}>
                             {communeName}
@@ -425,28 +425,28 @@ const ProductPage = () => {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-xs font-medium mb-1">Size</label>
+                    <label className="block text-xs font-medium mb-1">المقاس</label>
                     <select 
                       value={size} 
                       onChange={handleSizeChange} 
                       className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
                       required
                     >
-                      <option value="">Select Size</option>
+                      <option value="">اختر المقاس</option>
                       {product.sizes && product.sizes.map((s, index) => (
                         <option key={index} value={s}>{s}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1">Color</label>
+                    <label className="block text-xs font-medium mb-1">اللون</label>
                     <select 
                       value={color} 
                       onChange={handleColorChange} 
                       className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" 
                       required
                     >
-                      <option value="">Select Color</option>
+                      <option value="">اختر اللون</option>
                       {product.colors && product.colors.map((c, index) => (
                         <option key={index} value={c}>{c}</option>
                       ))}
@@ -455,7 +455,7 @@ const ProductPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium mb-1">Quantity</label>
+                  <label className="block text-xs font-medium mb-1">الكمية</label>
                   <div className="flex items-center space-x-3">
                     <button 
                       type="button" 
@@ -479,18 +479,18 @@ const ProductPage = () => {
                 {/* Price Breakdown */}
                 {product && wilaya && (
                   <div className="bg-muted/50 p-3 rounded-lg space-y-2">
-                    <h4 className="text-sm font-semibold">Price Breakdown:</h4>
+                    <h4 className="text-sm font-semibold">تفاصيل السعر:</h4>
                     <div className="flex justify-between text-xs">
-                      <span>Base Price ({quantity}x):</span>
-                      <span>{product.base_price * quantity} DA</span>
+                      <span>السعر الأساسي ({quantity}x):</span>
+                      <span>{product.base_price * quantity} دج</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span>Shipping{shipToHome ? ' (Home Delivery)' : ''}:</span>
-                      <span>{calculateShippingCost()} DA</span>
+                      <span>الشحن{shipToHome ? ' (توصيل منزلي)' : ''}:</span>
+                      <span>{calculateShippingCost()} دج</span>
                     </div>
                     <div className="flex justify-between text-sm font-bold border-t pt-2">
-                      <span>Total:</span>
-                      <span>{calculateTotalPrice()} DA</span>
+                      <span>المجموع:</span>
+                      <span>{calculateTotalPrice()} دج</span>
                     </div>
                   </div>
                 )}
@@ -503,12 +503,12 @@ const ProductPage = () => {
                   {isPlacingOrder ? (
                     <>
                       <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                      <span>Placing Order...</span>
+                      <span>جاري تقديم الطلب...</span>
                     </>
                   ) : (
                     <>
                       <ShoppingCart className="w-4 h-4" />
-                      <span>Place Order</span>
+                      <span>تقديم الطلب</span>
                     </>
                   )}
                 </button>
@@ -526,7 +526,7 @@ const ProductPage = () => {
             <div>
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-2 sm:mb-3">
-                {product.base_price} DA
+                {product.base_price} دج
               </p>
               
               {/* Rating Section */}
@@ -538,7 +538,7 @@ const ProductPage = () => {
                   {formatAverageRating(averageRating)}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
+                  ({reviews.length} تقييم{reviews.length !== 1 ? 'ات' : ''})
                 </span>
               </div>
               
@@ -549,10 +549,10 @@ const ProductPage = () => {
 
             {/* Size and Color Information */}
             <div className="space-y-3 p-3 sm:p-4 glass-effect rounded-lg">
-              <h3 className="text-base font-semibold mb-2">Available Options</h3>
+              <h3 className="text-base font-semibold mb-2">الخيارات المتاحة</h3>
               
               <div>
-                <h4 className="text-sm font-medium mb-2">Sizes Available:</h4>
+                <h4 className="text-sm font-medium mb-2">المقاسات المتاحة:</h4>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes && product.sizes.map((s, index) => (
                     <span key={index} className="px-2 py-1 bg-muted rounded text-xs">
@@ -563,7 +563,7 @@ const ProductPage = () => {
               </div>
               
               <div>
-                <h4 className="text-sm font-medium mb-2">Colors Available:</h4>
+                <h4 className="text-sm font-medium mb-2">الألوان المتاحة:</h4>
                 <div className="flex flex-wrap gap-2">
                   {product.colors && product.colors.map((c, index) => (
                     <span key={index} className="px-2 py-1 bg-muted rounded text-xs">
@@ -584,13 +584,13 @@ const ProductPage = () => {
             animate={{ opacity: 1, y: 0 }} 
             transition={{ delay: 0.5 }}
           >
-            <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Customer Reviews</h3>
+            <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">تقييمات العملاء</h3>
             <div className="space-y-3">
               {reviews.map((review) => (
                 <div key={review.id} className="p-3 glass-effect rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium text-sm">{review.reviewer_name || 'Anonymous'}</span>
+                      <span className="font-medium text-sm">{review.reviewer_name || 'مجهول'}</span>
                       <StarRating rating={review.rating} readonly size="sm" />
                     </div>
                     <span className="text-xs text-muted-foreground">

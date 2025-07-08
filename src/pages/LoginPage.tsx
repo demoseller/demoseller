@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +20,7 @@ const LoginPage = () => {
         localStorage.setItem('seller_authenticated', 'true');
         navigate('/dashboard');
       } else {
-        alert('Invalid credentials');
+        alert('بيانات غير صحيحة');
       }
       setIsLoading(false);
     }, 1000);
@@ -42,8 +41,8 @@ const LoginPage = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <h1 className="text-3xl font-bold gradient-text mb-2">Seller Login</h1>
-            <p className="text-muted-foreground">Access your dashboard</p>
+            <h1 className="text-3xl font-bold gradient-text mb-2">تسجيل دخول البائع</h1>
+            <p className="text-muted-foreground">الوصول إلى لوحة التحكم</p>
           </motion.div>
 
           <form onSubmit={handleLogin} className="space-y-6">
@@ -52,7 +51,7 @@ const LoginPage = () => {
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <label className="block text-sm font-medium mb-2">Email</label>
+              <label className="block text-sm font-medium mb-2">البريد الإلكتروني</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 <input
@@ -71,7 +70,7 @@ const LoginPage = () => {
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              <label className="block text-sm font-medium mb-2">Password</label>
+              <label className="block text-sm font-medium mb-2">كلمة المرور</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 <input
@@ -79,7 +78,7 @@ const LoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-12 py-3 rounded-lg border border-border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="Enter your password"
+                  placeholder="أدخل كلمة المرور"
                   required
                 />
                 <button
@@ -102,7 +101,7 @@ const LoginPage = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
             </motion.button>
           </form>
 
@@ -112,7 +111,6 @@ const LoginPage = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            Demo credentials: seller@spectra.com / admin123
           </motion.p>
         </div>
       </motion.div>

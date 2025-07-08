@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import { Upload, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
@@ -26,12 +25,12 @@ const ImageUpload = ({
     setUploadError('');
     
     if (!file.type.startsWith('image/')) {
-      setUploadError('Please select an image file');
+      setUploadError('الرجاء اختيار ملف صورة');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setUploadError('Image size must be less than 10MB');
+      setUploadError('يجب أن يكون حجم الصورة أقل من 10 ميغابايت');
       return;
     }
 
@@ -39,7 +38,7 @@ const ImageUpload = ({
     if (result.success && result.imageUrl) {
       onImageUploaded(result.imageUrl);
     } else {
-      setUploadError(result.error || 'Upload failed');
+      setUploadError(result.error || 'فشل الرفع');
     }
   };
 
@@ -97,7 +96,7 @@ const ImageUpload = ({
         <div className="relative group">
           <img
             src={currentImage}
-            alt="Uploaded"
+            alt="تم الرفع"
             className="w-full h-48 object-cover rounded-lg border"
           />
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
@@ -109,7 +108,7 @@ const ImageUpload = ({
                 disabled={uploading}
               >
                 <Upload className="w-4 h-4 mr-1" />
-                Replace
+                استبدال
               </Button>
               {onImageRemoved && (
                 <Button
@@ -118,7 +117,7 @@ const ImageUpload = ({
                   onClick={handleRemoveImage}
                 >
                   <X className="w-4 h-4 mr-1" />
-                  Remove
+                  إزالة
                 </Button>
               )}
             </div>
@@ -135,18 +134,25 @@ const ImageUpload = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={handleClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleClick();
+            }
+          }}
         >
           {uploading ? (
             <div className="flex flex-col items-center space-y-2">
               <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full"></div>
-              <p className="text-sm text-muted-foreground">Uploading image...</p>
+              <p className="text-sm text-muted-foreground">جارٍ رفع الصورة...</p>
             </div>
           ) : (
             <div className="flex flex-col items-center space-y-2">
               <ImageIcon className="w-12 h-12 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Click to upload or drag and drop</p>
-                <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                <p className="text-sm font-medium">انقر للرفع أو اسحب وأفلت</p>
+                <p className="text-xs text-muted-foreground">PNG، JPG، GIF بحد أقصى 10 ميغابايت</p>
               </div>
             </div>
           )}

@@ -1,17 +1,19 @@
+// src/pages/Index.tsx
 
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import ProductTypeCard from '../components/ProductTypeCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import GenericCarousel from '../components/GenericCarousel'; // Changed import
+import ProductTypeCard from '../components/ProductTypeCard';
 import { useProductTypes } from '../hooks/useSupabaseStore';
 
 const Index = () => {
-  const [loading, setLoading] = useState(true);
   const { productTypes, loading: typesLoading } = useProductTypes();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
+    const timer = setTimeout(() => setLoading(false), 100);
     return () => clearTimeout(timer);
   }, []);
 
@@ -25,7 +27,7 @@ const Index = () => {
       
       {/* Hero Section */}
       <motion.section 
-        className="pt-14 sm:pt-16 md:pt-20 lg:pt-32 pb-8 sm:pb-12 md:pb-20 px-3 sm:px-4"
+        className="pt-14 sm:pt-16 md:pt-20 lg:pt-32 pb-8 sm:pb-12 md:pb-20 px-2 sm:px-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
@@ -37,32 +39,20 @@ const Index = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            SpectraCommerce
+            إسم المتجر
           </motion.h1>
-          
           <motion.p
-            className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-6 sm:mb-8 md:mb-12 text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+            className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-6 text-muted-foreground max-w-3xl mx-auto leading-relaxed"
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Experience the future of e-commerce with stunning visuals, fluid animations, and seamless interactions
+            أفضل المنتجات بأفضل الأسعار - التوصيل متوفر 58 ولاية
           </motion.p>
-          
-          <motion.div
-            className="inline-block"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.6, type: "spring", stiffness: 200 }}
-          >
-            <div className="btn-gradient text-xs sm:text-sm md:text-base px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4">
-              Explore Collections
-            </div>
-          </motion.div>
         </div>
       </motion.section>
       
-      {/* Product Types Grid */}
+      {/* Product Types Carousel Section */}
       <motion.section 
         className="py-8 sm:py-12 md:py-20 px-3 sm:px-4"
         initial={{ opacity: 0 }}
@@ -78,24 +68,18 @@ const Index = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            Discover Our Collections
+            إكتشف أنواع المنتجات
           </motion.h2>
           
           {productTypes.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-              {productTypes.map((type, index) => (
-                <ProductTypeCard
-                  key={type.id}
-                  id={type.id}
-                  name={type.name}
-                  imageUrl={type.image_url || '/placeholder.svg'}
-                  index={index}
-                />
-              ))}
-            </div>
+            // Using the new GenericCarousel
+            <GenericCarousel 
+              items={productTypes}
+              renderSlide={(type) => <ProductTypeCard id={type.id} name={type.name} imageUrl={type.image_url || '/placeholder.svg'} />}
+            />
           ) : (
             <div className="text-center py-12">
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground">No product types available yet.</p>
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground">لاتوجد أنواع منتجات لعرضها</p>
             </div>
           )}
         </div>
@@ -111,7 +95,7 @@ const Index = () => {
       >
         <div className="w-full max-w-7xl mx-auto text-center">
           <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-            © 2024 SpectraCommerce. The Zenith of Interactive E-commerce.
+            © 2024 جميع الحقوق محفوظة
           </p>
         </div>
       </motion.footer>

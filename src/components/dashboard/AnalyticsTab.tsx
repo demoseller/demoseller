@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { TrendingUp, ShoppingCart, DollarSign, Package } from 'lucide-react';
@@ -69,17 +68,17 @@ const AnalyticsTab = () => {
       productTypesData,
       productSales,
       keyMetrics: [
-        { title: 'Total Revenue', value: `${totalRevenue.toLocaleString()} DA`, icon: DollarSign, change: '+12.5%' },
-        { title: 'Total Orders', value: totalOrders.toString(), icon: ShoppingCart, change: '+8.2%' },
-        { title: 'Average Order', value: `${Math.round(averageOrder).toLocaleString()} DA`, icon: TrendingUp, change: '+4.1%' },
-        { title: 'Total Products', value: totalProducts.toString(), icon: Package, change: '+15.3%' },
+        { title: 'إجمالي الإيرادات', value: `${totalRevenue.toLocaleString()} دج`, icon: DollarSign, change: '+12.5%' },
+        { title: 'إجمالي الطلبات', value: totalOrders.toString(), icon: ShoppingCart, change: '+8.2%' },
+        { title: 'متوسط الطلب', value: `${Math.round(averageOrder).toLocaleString()} دج`, icon: TrendingUp, change: '+4.1%' },
+        { title: 'إجمالي المنتجات', value: totalProducts.toString(), icon: Package, change: '+15.3%' },
       ]
     };
   }, [orders, products, productTypes]);
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <h2 className="text-xl sm:text-2xl font-bold">Analytics & Statistics</h2>
+      <h2 className="text-xl sm:text-2xl font-bold">التحليلات والإحصائيات</h2>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
@@ -112,7 +111,7 @@ const AnalyticsTab = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Orders Per Day (Last 7 Days)</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">الطلبات اليومية (آخر 7 أيام)</h3>
           <div className="w-full" style={{ marginLeft: '-20px' }}>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={analyticsData.ordersPerDay}>
@@ -160,7 +159,7 @@ const AnalyticsTab = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Sales by Product Type</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">المبيعات حسب نوع المنتج</h3>
           {analyticsData.productTypesData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={250}>
@@ -203,7 +202,7 @@ const AnalyticsTab = () => {
             </>
           ) : (
             <div className="flex items-center justify-center h-[250px] text-muted-foreground text-sm">
-              No sales data available yet
+              لا توجد بيانات مبيعات متاحة حتى الآن
             </div>
           )}
         </motion.div>
@@ -216,7 +215,7 @@ const AnalyticsTab = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Top Selling Products</h3>
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">المنتجات الأكثر مبيعاً</h3>
         {analyticsData.productSales.length > 0 && analyticsData.productSales[0].sales > 0 ? (
           <div className="w-full" style={{ marginLeft: '-20px' }}>
             <ResponsiveContainer width="100%" height={300}>
@@ -245,7 +244,7 @@ const AnalyticsTab = () => {
           </div>
         ) : (
           <div className="flex items-center justify-center h-[300px] text-muted-foreground text-sm">
-            No sales data available yet
+            لا توجد بيانات منتجات متاحة حتى الآن
           </div>
         )}
       </motion.div>

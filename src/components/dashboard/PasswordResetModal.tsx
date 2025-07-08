@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,7 +25,7 @@ const PasswordResetModal = ({ isOpen, onClose }: PasswordResetModalProps) => {
 
   const handleSendResetLink = async () => {
     if (!user?.email) {
-      setError('No user email found.');
+      setError('لم يتم العثور على بريد إلكتروني للمستخدم.');
       return;
     }
 
@@ -41,11 +40,11 @@ const PasswordResetModal = ({ isOpen, onClose }: PasswordResetModalProps) => {
 
       if (error) throw error;
 
-      setMessage('Password reset link has been sent to your email.');
-      toast.success('Password reset link sent to your email!');
+      setMessage('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.');
+      toast.success('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني!');
     } catch (error: any) {
-      setError(error.message || 'An error occurred while sending the reset link.');
-      toast.error('Failed to send password reset link');
+      setError(error.message || 'حدث خطأ أثناء إرسال رابط إعادة التعيين.');
+      toast.error('فشل إرسال رابط إعادة تعيين كلمة المرور');
     } finally {
       setIsLoading(false);
     }
@@ -61,9 +60,9 @@ const PasswordResetModal = ({ isOpen, onClose }: PasswordResetModalProps) => {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Reset Password</DialogTitle>
+          <DialogTitle>إعادة تعيين كلمة المرور</DialogTitle>
           <DialogDescription>
-            A password reset link will be sent to your registered email address: {user?.email}
+            سيتم إرسال رابط إعادة تعيين كلمة المرور إلى عنوان بريدك الإلكتروني المسجل: {user?.email}
           </DialogDescription>
         </DialogHeader>
 
@@ -83,10 +82,10 @@ const PasswordResetModal = ({ isOpen, onClose }: PasswordResetModalProps) => {
 
         <div className="flex gap-2">
           <Button onClick={handleSendResetLink} disabled={isLoading} className="flex-1">
-            {isLoading ? 'Sending...' : 'Send Reset Link'}
+            {isLoading ? 'جارٍ الإرسال...' : 'إرسال رابط إعادة التعيين'}
           </Button>
           <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-            Cancel
+            إلغاء
           </Button>
         </div>
       </DialogContent>

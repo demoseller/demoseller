@@ -50,12 +50,12 @@ const AuthPage = () => {
         // Check if this is actually a recovery session
         const accessToken = currentSession.access_token;
         if (!accessToken) {
-          toast.error('Invalid password reset session. Please request a new reset link.');
+          toast.error('جلسة إعادة تعيين كلمة المرور غير صالحة. يُرجى طلب رابط إعادة تعيين جديد.');
           navigate('/auth');
           return;
         }
 
-        toast.success('Please enter your new password below');
+        toast.success('الرجاء إدخال كلمة المرور الجديدة أدناه');
       }
     };
 
@@ -70,11 +70,12 @@ const AuthPage = () => {
     try {
       const { error } = await signIn(email, password);
       if (error) throw error;
-      toast.success('Signed in successfully!');
+      toast.success('تم تسجيل الدخول بنجاح!');
       navigate('/dashboard');
-    } catch (error: any) {
-      setError(error.message);
-      toast.error(error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -84,12 +85,12 @@ const AuthPage = () => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('كلمات المرور غير متطابقة');
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('يجب أن تكون كلمة المرور مكونة من 6 أحرف على الأقل');
       return;
     }
 
@@ -101,7 +102,7 @@ const AuthPage = () => {
       const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !currentSession) {
-        throw new Error('Password reset session expired. Please request a new reset link.');
+        throw new Error('انتهت صلاحية جلسة إعادة تعيين كلمة المرور. يُرجى طلب رابط إعادة تعيين جديد.');
       }
 
       const { error } = await supabase.auth.updateUser({
@@ -110,18 +111,20 @@ const AuthPage = () => {
 
       if (error) throw error;
 
-      toast.success('Password updated successfully!');
-      navigate('/dashboard');
-    } catch (error: any) {
+      toast.success('تم تحديث كلمة المرور بنجاح!');
+    } catch (error: unknown) {
       console.error('Password reset error:', error);
-      setError(error.message);
-      toast.error(error.message);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError(errorMessage);
+      toast.error(errorMessage);
       
       // If session expired, redirect to main auth page
-      if (error.message.includes('session') || error.message.includes('expired')) {
-        setTimeout(() => {
-          navigate('/auth');
-        }, 2000);
+      if (error instanceof Error && (errorMessage.includes('session') || errorMessage.includes('expired'))) {
+        if (error.message.includes('session') || error.message.includes('expired')) {
+          setTimeout(() => {
+            navigate('/auth');
+          }, 2000);
+        }
       }
     } finally {
       setIsLoading(false);
@@ -144,12 +147,12 @@ const AuthPage = () => {
               transition={{ delay: 0.2 }}
             >
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {isPasswordReset ? 'Reset Your Password' : 'Welcome Back'}
+                {isPasswordReset ? 'إعادة تعيين كلمة المرور' : 'مرحبا بك مجددا'}
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
                 {isPasswordReset 
-                  ? 'Enter your new password below' 
-                  : 'Sign in to your account'
+                  ? 'أدخل كلمة المرور الجديدة أدناه' 
+                  : 'تسجيل الدخول إلى حسابك'
                 }
               </p>
             </motion.div>
@@ -171,7 +174,7 @@ const AuthPage = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
-                    placeholder="Enter your email"
+                    placeholder="أدخل بريدك الإلكتروني"
                     required
                   />
                 </div>
@@ -183,8 +186,8 @@ const AuthPage = () => {
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              <Label htmlFor="password">
-                {isPasswordReset ? 'New Password' : 'Password'}
+              <Label htmlFor="كلمة المرور">
+                {isPasswordReset ? 'كلمة المرور الجديدة' : 'كلمة المرور'}
               </Label>
               <div className="relative mt-1">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -194,7 +197,7 @@ const AuthPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-12"
-                  placeholder={isPasswordReset ? 'Enter new password' : 'Enter your password'}
+                  placeholder={isPasswordReset ? 'أدخل كلمة المرور الجديدة' : 'أدخل كلمة المرور الخاصة بك'}
                   required
                 />
                 <button
@@ -213,7 +216,7 @@ const AuthPage = () => {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword">تأكيد كلمة المرور الجديدة</Label>
                 <div className="relative mt-1">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
@@ -222,7 +225,7 @@ const AuthPage = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="pl-10 pr-12"
-                    placeholder="Confirm your new password"
+                    placeholder="أكد كلمة المرور الجديدة"
                     required
                   />
                   <button
@@ -254,13 +257,13 @@ const AuthPage = () => {
                 size="lg"
               >
                 {isLoading ? (
-                  'Loading...'
+                  'تحميل...'
                 ) : isPasswordReset ? (
-                  'Update Password'
+                  'تغيير كلمة المرور'
                 ) : (
                   <>
                     <LogIn className="w-4 h-4 mr-2" />
-                    Sign In
+                    تسجيل الدخول
                   </>
                 )}
               </Button>
@@ -280,7 +283,7 @@ const AuthPage = () => {
                 className="text-blue-600 hover:text-blue-500 font-medium flex items-center justify-center gap-2 mx-auto"
               >
                 <KeyRound className="w-4 h-4" />
-                Forgot your password?
+                نسيت كلمة السر؟
               </button>
             </motion.div>
           )}
