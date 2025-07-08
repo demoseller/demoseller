@@ -13,7 +13,7 @@ interface AddProductModalProps {
 }
 
 const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: AddProductModalProps) => {
-  const { addProduct, updateProduct } = useProducts();
+  const { addProduct, updateProduct } = useProducts(selectedTypeId);
   const { productTypes } = useProductTypes();
   const [loading, setLoading] = useState(false);
   

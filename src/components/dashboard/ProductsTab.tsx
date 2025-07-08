@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 const ProductsTab = () => {
   const { productTypes, loading: typesLoading, addProductType, updateProductType, deleteProductType } = useProductTypes();
-  const { products, loading: productsLoading, deleteProduct } = useProducts();
+  const { products, loading: productsLoading, deleteProduct } = useProducts('');
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditTypeModal, setShowEditTypeModal] = useState(false);

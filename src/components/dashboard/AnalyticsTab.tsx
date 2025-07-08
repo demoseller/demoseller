@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 
 const AnalyticsTab = () => {
   const { orders } = useOrders();
-  const { products } = useProducts();
+  const { products } = useProducts('');
   const { productTypes } = useProductTypes();
 
   // Calculate analytics data from real database data

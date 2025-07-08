@@ -19,7 +19,7 @@ interface OrderFilterModalProps {
 
 const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: OrderFilterModalProps) => {
   const { productTypes } = useProductTypes();
-  const { products } = useProducts();
+  const { products } = useProducts('');
   const [filters, setFilters] = useState<FilterOptions>(currentFilters);
 
   const wilayas = [
