@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye } from 'lucide-react';
-import ImageLightbox from './ImageLightbox'; // Import the lightbox component
+import ImageLightbox from './ImageLightbox'; // We need to import the lightbox
 
 interface ProductCardProps {
   typeId: string;
@@ -21,10 +21,11 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
 
   const mainImageUrl = product.images?.[0] || '/placeholder.svg';
 
-  // Function to open the lightbox and prevent navigation
+  // This function opens the lightbox and crucially stops the card's
+  // main link from being triggered.
   const handleViewClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // This stops the Link from navigating
-    e.stopPropagation(); // This stops any other parent click events
+    e.preventDefault(); // Prevents navigating to the product page
+    e.stopPropagation(); // Stops the event from bubbling up to the <Link>
     setIsLightboxOpen(true);
   };
 
@@ -39,11 +40,11 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
               className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-            
-            {/* 2. Add the view icon button */}
+
+            {/* View Icon Button */}
             <button
               onClick={handleViewClick}
-              className="absolute top-2 right-2 z-10 p-2 bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/60"
+              className="absolute top-3 right-3 z-10 p-3 bg-black/40 text-white rounded-full  transition-opacity duration-300 hover:bg-black/60 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white"
               aria-label="View image in full screen"
             >
               <Eye className="w-4 h-4" />
@@ -61,7 +62,8 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
         </Link>
       </div>
 
-      {/* 3. Add the Lightbox component, controlled by our state */}
+      {/* Lightbox Component */}
+      {/* This component will only render when isLightboxOpen is true */}
       <ImageLightbox
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}

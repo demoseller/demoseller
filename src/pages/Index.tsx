@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Facebook, Instagram, Send, Phone } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -15,8 +15,7 @@ import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 
-
-// Define your hero images
+// --- (Keep your heroImages array and component logic as it is) ---
 const heroImages = [
   { id: 1, url: '/bg1.jpg' },
   { id: 2, url: '/bg2.jpg' },
@@ -25,64 +24,61 @@ const heroImages = [
 ];
 
 const Index = () => {
-  const { productTypes, loading: typesLoading } = useProductTypes();
-  const { products, loading: productsLoading } = useProducts('');
-  
-  // State for search and filtering
-  const [productTypeSearchTerm, setProductTypeSearchTerm] = useState('');
-  const [productSearchTerm, setProductSearchTerm] = useState('');
-  const [searchPrice, setSearchPrice] = useState('');
-  const [searchColor, setSearchColor] = useState('');
-  const [searchSize, setSearchSize] = useState('');
-  
-  // State for incremental loading
-  const [displayCount, setDisplayCount] = useState(0);
-  
-  const filteredProductTypes = useMemo(() => {
-    if (!productTypeSearchTerm) return productTypes;
-    return productTypes.filter(type => 
-      type.name.toLowerCase().includes(productTypeSearchTerm.toLowerCase())
-    );
-  }, [productTypeSearchTerm, productTypes]);
+    // --- (Keep all your existing hooks and state variables) ---
+    const { productTypes, loading: typesLoading } = useProductTypes();
+    const { products, loading: productsLoading } = useProducts('');
+    const [productTypeSearchTerm, setProductTypeSearchTerm] = useState('');
+    const [productSearchTerm, setProductSearchTerm] = useState('');
+    const [searchPrice, setSearchPrice] = useState('');
+    const [searchColor, setSearchColor] = useState('');
+    const [searchSize, setSearchSize] = useState('');
+    const [displayCount, setDisplayCount] = useState(0);
 
-  const filteredProducts = useMemo(() => {
-    const lowerSearchTerm = productSearchTerm.toLowerCase().trim();
-    const lowerSearchColor = searchColor.toLowerCase().trim();
-    const lowerSearchSize = searchSize.toLowerCase().trim();
-    const numericSearchPrice = parseFloat(searchPrice);
+    const filteredProductTypes = useMemo(() => {
+        if (!productTypeSearchTerm) return productTypes;
+        return productTypes.filter(type => 
+        type.name.toLowerCase().includes(productTypeSearchTerm.toLowerCase())
+        );
+    }, [productTypeSearchTerm, productTypes]);
 
-    return products.filter(product => {
-      const nameMatch = !lowerSearchTerm || product.name.toLowerCase().includes(lowerSearchTerm);
-      const priceMatch = isNaN(numericSearchPrice) || product.base_price <= numericSearchPrice;
-      const colorMatch = !lowerSearchColor || product.options.colors.some(c => c.name.toLowerCase().includes(lowerSearchColor));
-      const sizeMatch = !lowerSearchSize || product.options.sizes.some(s => s.name.toLowerCase().includes(lowerSearchSize));
-      
-      return nameMatch && priceMatch && colorMatch && sizeMatch;
-    });
-  }, [productSearchTerm, searchPrice, searchColor, searchSize, products]);
+    const filteredProducts = useMemo(() => {
+        const lowerSearchTerm = productSearchTerm.toLowerCase().trim();
+        const lowerSearchColor = searchColor.toLowerCase().trim();
+        const lowerSearchSize = searchSize.toLowerCase().trim();
+        const numericSearchPrice = parseFloat(searchPrice);
 
-  // Set initial display count
-  useEffect(() => {
-    if (filteredProducts.length > 0) {
-      setDisplayCount(Math.ceil(filteredProducts.length * 0.20));
+        return products.filter(product => {
+        const nameMatch = !lowerSearchTerm || product.name.toLowerCase().includes(lowerSearchTerm);
+        const priceMatch = isNaN(numericSearchPrice) || product.base_price <= numericSearchPrice;
+        const colorMatch = !lowerSearchColor || product.options.colors.some(c => c.name.toLowerCase().includes(lowerSearchColor));
+        const sizeMatch = !lowerSearchSize || product.options.sizes.some(s => s.name.toLowerCase().includes(lowerSearchSize));
+        
+        return nameMatch && priceMatch && colorMatch && sizeMatch;
+        });
+    }, [productSearchTerm, searchPrice, searchColor, searchSize, products]);
+
+    useEffect(() => {
+        if (filteredProducts.length > 0) {
+        setDisplayCount(Math.ceil(filteredProducts.length * 0.20));
+        }
+    }, [filteredProducts]);
+
+    const handleShowMore = () => {
+        const increment = Math.ceil(products.length * 0.20);
+        setDisplayCount(prevCount => Math.min(prevCount + increment, filteredProducts.length));
+    };
+  
+    const shouldShowMoreButton = displayCount < filteredProducts.length;
+
+    if (typesLoading || productsLoading) {
+        return <LoadingSpinner />;
     }
-  }, [filteredProducts]);
-
-  const handleShowMore = () => {
-    const increment = Math.ceil(products.length * 0.20);
-    setDisplayCount(prevCount => Math.min(prevCount + increment, filteredProducts.length));
-  };
-  
-  const shouldShowMoreButton = displayCount < filteredProducts.length;
-
-  if (typesLoading || productsLoading) {
-    return <LoadingSpinner />;
-  }
 
   return (
     <div className="min-h-screen w-full">
       <Navbar />
-      
+
+      {/* --- (Your existing Hero and Carousel sections remain the same) --- */}
       <motion.section 
         className="pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-6 sm:pb-8 md:pb-10 px-2 sm:px-4 space-y-6 md:space-y-8"
         initial={{ opacity: 0 }}
@@ -117,7 +113,6 @@ const Index = () => {
           <motion.h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-center mb-6 gradient-text" initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
             إكتشف أنواع المنتجات
           </motion.h2>
-
           <div className="max-w-md mx-auto mb-8 md:mb-12">
             <Input 
               placeholder="...ابحث عن نوع منتج"
@@ -125,7 +120,6 @@ const Index = () => {
               onChange={(e) => setProductTypeSearchTerm(e.target.value)}
             />
           </div>
-
           {filteredProductTypes.length > 0 ? (
             <GenericCarousel 
               items={filteredProductTypes}
@@ -183,7 +177,7 @@ const Index = () => {
           </div>
           
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-4 sm:gap-6">
               {filteredProducts.slice(0, displayCount).map((product) => (
                 <ProductCard
                   key={product.id}
@@ -207,9 +201,39 @@ const Index = () => {
           )}
         </div>
       </motion.section>
+
+      {/* NEW: Sticky WhatsApp Button */}
+      <a 
+        href="tel:+213667441637" // <-- REPLACE WITH YOUR PHONE NUMBER
+        className="fixed bottom-6 right-6 z-50 p-3 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-colors"
+        aria-label="Contact us via WhatsApp"
+      >
+        <Phone className="w-6 h-6 text-white" />
+      </a>
       
-      <motion.footer className="py-6 sm:py-8 md:py-12 px-3 sm:px-4 mt-8 sm:mt-12 md:mt-20 glass-effect" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
+      {/* Footer */}
+      <motion.footer
+        className="py-2 sm:py-8 md:py-12 px-0 sm:px-4 mt-0 sm:mt-12 md:mt-20 glass-effect"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
         <div className="w-full max-w-7xl mx-auto text-center">
+          {/* NEW: Social Media Links Section */}
+          <div className="flex justify-center items-center space-x-6 mb-6">
+            <a href="https://facebook.com/your-page" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+              <Facebook className="w-6 h-6" />
+            </a>
+            <a href="https://www.instagram.com/abdrhmn.baat/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+              <Instagram className="w-6 h-6" />
+            </a>
+            
+            <a href="https://t.me/abdrhmn_baat" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+              <Send className="w-6 h-6" />
+            </a>
+          </div>
+
           <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
             © 2024 جميع الحقوق محفوظة
           </p>
