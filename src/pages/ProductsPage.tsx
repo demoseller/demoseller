@@ -1,7 +1,7 @@
 // src/pages/ProductsPage.tsx
 
 import { motion } from 'framer-motion';
-import { useParams, Link } from 'react-router-dom';
+import { useParams,useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { ArrowLeft } from 'lucide-react';
@@ -9,9 +9,10 @@ import { useProducts, useProductTypes } from '../hooks/useSupabaseStore';
 import GenericCarousel from '../components/GenericCarousel';
 import ProductCard from '../components/ProductCard';
 
+
 const ProductsPage = () => {
   const { typeId = '' } = useParams();
-  
+  const navigate = useNavigate();
   // 1. Fetch products by typeId using the hook
   const { products, loading: productsLoading } = useProducts(typeId);
   const { productTypes, loading: typesLoading } = useProductTypes();
@@ -36,23 +37,21 @@ const ProductsPage = () => {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="container mx-auto max-w-full">
+        <div className="container mx-0 my-0 max-w-full">
           {/* Back Button */}
           <motion.div
-            className="mb-6 md:mb-8"
+            className="mb-0 md:mb-8 mt-0 md:mt-4"
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
             <Link to="/">
-              <motion.button
-                className="flex items-center space-x-2 glass-effect px-3 py-2 md:px-4 md:py-2 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-sm md:text-base"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
-                <span>العودة إلى الصفحة الرئيسية</span>
-              </motion.button>
+              <div className="sticky top-12 backdrop-blur-sm border-background p-0 sm:p-10 z-40">
+        <button onClick={() => navigate(-1)} className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm">الرجوع</span>
+        </button>
+      </div>
             </Link>
           </motion.div>
           

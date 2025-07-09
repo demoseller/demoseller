@@ -21,6 +21,7 @@ export interface Product {
   name: string;
   description: string;
   base_price: number;
+  price_before_discount?: number | null;
   images: string[];
   product_type_id: string;
   options: {
@@ -223,6 +224,8 @@ export const useProducts = (typeId: string) => {
         name: product.name,
         description: product.description,
         base_price: product.base_price,
+        price_before_discount: product.price_before_discount, // <-- THIS LINE WAS MISSING
+
         images: product.images,
         product_type_id: product.product_type_id,
         options: product.options
