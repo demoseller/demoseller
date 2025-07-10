@@ -23,7 +23,7 @@ const steps = [
 
 const HowToOrder = () => {
   return (
-    <div className="w-full max-w-4xl mx-auto glass-effect p-6 sm:p-8 rounded-2xl border">
+    <div className="w-full max-w-4xl mx-auto glass-effect p-6 sm:p-8 rounded-2xl my-auto border">
       <div className="space-y-6">
         {steps.map((step, index) => (
           <motion.div

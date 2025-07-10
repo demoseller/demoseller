@@ -43,7 +43,7 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
             {/* View Icon Button */}
             <button
               onClick={handleViewClick}
-              className="absolute top-3 right-3 z-10 p-2 bg-black/40 text-white rounded-full transition-colors duration-300 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white"
+              className="absolute top-3 right-3 z-10 p-3 bg-black/40 text-white rounded-full transition-colors duration-300 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white"
               aria-label="View image in full screen"
             >
               <Eye className="w-4 h-4" />

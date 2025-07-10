@@ -1,9 +1,12 @@
+// src/App.tsx
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from './hooks/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
+import MainLayout from './components/MainLayout'; // <-- Import the new layout
+
 import Index from './pages/Index';
 import ProductsPage from './pages/ProductsPage';
 import ProductPage from './pages/ProductPage';
@@ -22,10 +25,13 @@ function App() {
         <Router>
           <div className="min-h-screen bg-background text-foreground">
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/products/:typeId" element={<ProductsPage />} />
-              <Route path="/products/:typeId/:productId" element={<ProductPage />} />
-              <Route path="/confirmation" element={<ConfirmationPage />} />
+              {/* Public routes wrapped in MainLayout */}
+              <Route path="/" element={<MainLayout><Index /></MainLayout>} />
+              <Route path="/products/:typeId" element={<MainLayout><ProductsPage /></MainLayout>} />
+              <Route path="/products/:typeId/:productId" element={<MainLayout><ProductPage /></MainLayout>} />
+              <Route path="/confirmation" element={<MainLayout><ConfirmationPage /></MainLayout>} />
+
+              {/* Routes without the main footer and sticky button */}
               <Route 
                 path="/dashboard" 
                 element={
@@ -35,7 +41,8 @@ function App() {
                 } 
               />
               <Route path="/auth" element={<AuthPage />} />
-              <Route path="*" element={<NotFound />} />
+              
+              <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
             </Routes>
             <Toaster />
           </div>

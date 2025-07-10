@@ -68,13 +68,16 @@ const GenericCarousel = <T extends { id: string | number }>({
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="w-48 h-1 bg-muted rounded-full mx-auto mt-8 sm:mt-12">
-        <div
-          className="h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full"
-          style={{ width: `${scrollProgress}%` }}
-        />
-      </div>
+      
+      {!window.location.pathname.includes('/product') && (
+        <div className="w-48 h-1 bg-muted rounded-full mx-auto mt-8 sm:mt-12">
+          <div
+            className="h-1 bg-gradient-primary dark:bg-gradient-primary-dark rounded-full"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
+      )}
+      
     </div>
   );
 };

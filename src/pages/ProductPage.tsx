@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProductById, useReviews, useOrders } from '../hooks/useProductData';
@@ -12,53 +12,20 @@ import Navbar from '../components/Navbar';
 import { Checkbox } from '../components/ui/checkbox';
 import { toast } from 'sonner';
 import { Product } from '@/store/appStore';
+import GenericCarousel from '@/components/GenericCarousel';
+import useEmblaCarousel from 'embla-carousel-react';
 
-// Helper Component for Image Gallery
-const ProductImageGallery = ({ product, onOpenLightbox }: { product: any; onOpenLightbox: () => void; }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const nextImage = () => {
-    if (product.images && product.images.length > 1) {
-      setCurrentIndex(prev => (prev + 1) % (product.images?.length || 1));
-    }
-  };
-
-  const prevImage = () => {
-    if (product.images && product.images.length > 1) {
-      setCurrentIndex(prev => (prev - 1 + (product.images?.length || 1)) % (product.images?.length || 1));
-    }
-  };
-
-  return (
-    <div className="relative group">
-      <div className="aspect-square bg-muted rounded-lg overflow-hidden relative">
+const ImageSlide = ({ imageUrl, alt, onImageClick }: { imageUrl: string, alt: string, onImageClick: () => void }) => (
+    <div className="aspect-square bg-muted rounded-lg overflow-hidden relative cursor-zoom-in" onClick={onImageClick}>
         <img
-          src={product.images?.[currentIndex]  || '/placeholder.svg'}
-          alt={product.name}
-          className="w-full h-full object-cover cursor-zoom-in"
-          onClick={onOpenLightbox}
+            src={imageUrl}
+            alt={alt}
+            className="w-full h-full object-cover"
         />
-        {product.images && product.images.length > 1 && (
-          <>
-            <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70">
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </>
-        )}
-      </div>
-      {product.images && product.images.length > 1 && (
-        <ImageGalleryPagination
-          images={product.images}
-          currentIndex={currentIndex}
-          onIndexChange={setCurrentIndex}
-        />
-      )}
     </div>
-  );
-};
+);
+// Helper Component for Image Gallery
+
 
 // Helper Component for Product Header
 const ProductHeader = ({ product, averageRating, reviewsCount }: { product: any; averageRating: number; reviewsCount: number; }) => (
@@ -100,10 +67,24 @@ const ProductPage = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+
   const { product, loading } = useProductById(productId || '');
   const { shippingData, loading: shippingLoading, error: shippingError } = useShippingData();
   const { addOrder } = useOrders();
   const { reviews, loading: reviewsLoading } = useReviews(productId || '');
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setCurrentImageIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on('select', onSelect);
+    return () => { emblaApi.off('select', onSelect); };
+  }, [emblaApi, onSelect]);
 
   const averageRating = reviews.length > 0
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
@@ -222,6 +203,8 @@ const ProductPage = () => {
     );
   }
 
+    const productImages = product.images?.map((url, index) => ({ id: index, url })) || [];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -238,11 +221,37 @@ const ProductPage = () => {
 
           {/* Right Column: Product Info & Order Form */}
           <motion.div className="space-y-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+            <motion.h1
+                                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold gradient-text capitalize px-2 py-3 leading-tight"
+                                        initial={{ y: 30, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ duration: 0.6, delay: 0.2 }}
+                                    >
+                                        تفاصيل المنتج
+                                    </motion.h1>
+            <GenericCarousel
+    items={productImages}
+    slideClassName="w-full" // Use full-width slides
+    renderSlide={(image) => (
+      <ImageSlide 
+        imageUrl={image.url}
+        alt={product.name}
+        onImageClick={() => setIsLightboxOpen(true)}
+      />
+    )}
+  />
+  {product.images && product.images.length > 1 && (
+    <ImageGalleryPagination
+      images={product.images}
+      currentIndex={currentImageIndex}
+      onIndexChange={(index) => emblaApi?.scrollTo(index)}
+    />
+  )}
+          </motion.div>
             <ProductHeader product={product} averageRating={averageRating} reviewsCount={reviews.length} />
             {/* Left Column: Image Gallery */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-            <ProductImageGallery product={product} onOpenLightbox={() => setIsLightboxOpen(true)} />
-          </motion.div>
+        
             
             {/* Order Form */}
             <form onSubmit={handleSubmit} className="w-full space-y-4 p-4 glass-effect rounded-lg">
@@ -349,13 +358,15 @@ const ProductPage = () => {
 
       {/* Image Lightbox */}
       <ImageLightbox
-        src={product.images?.[0]  || '/placeholder.svg'}
-        alt={product.name}
-        isOpen={isLightboxOpen}
-        onClose={() => setIsLightboxOpen(false)}
-      />
+  src={product.images?.[currentImageIndex] || '/placeholder.svg'}
+  alt={product.name}
+  isOpen={isLightboxOpen}
+  onClose={() => setIsLightboxOpen(false)}
+/>
     </div>
   );
 };
 
 export default ProductPage;
+
+
