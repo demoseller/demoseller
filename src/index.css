@@ -208,6 +208,15 @@ img {
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
+/* Custom styles for image thumbnail pagination */
+.flex-0 {
+  flex: 0 0 auto;
+}
+
+.min-w-16 {
+  min-width: 4rem;
+}
+
 /* Improve touch targets for mobile */
 @media (max-width: 768px) {
   button, 

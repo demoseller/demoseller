@@ -203,8 +203,6 @@ const ProductPage = () => {
     );
   }
 
-    const productImages = product.images?.map((url, index) => ({ id: index, url })) || [];
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -223,31 +221,34 @@ const ProductPage = () => {
           <motion.div className="space-y-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
             <motion.h1
-                                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold gradient-text capitalize px-2 py-3 leading-tight"
-                                        initial={{ y: 30, opacity: 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        transition={{ duration: 0.6, delay: 0.2 }}
-                                    >
-                                        تفاصيل المنتج
-                                    </motion.h1>
-            <GenericCarousel
-    items={productImages}
-    slideClassName="w-full" // Use full-width slides
-    renderSlide={(image) => (
-      <ImageSlide 
-        imageUrl={image.url}
-        alt={product.name}
-        onImageClick={() => setIsLightboxOpen(true)}
-      />
-    )}
-  />
-  {product.images && product.images.length > 1 && (
-    <ImageGalleryPagination
-      images={product.images}
-      currentIndex={currentImageIndex}
-      onIndexChange={(index) => emblaApi?.scrollTo(index)}
-    />
-  )}
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold gradient-text capitalize px-2 py-3 leading-tight"
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+            >
+                تفاصيل المنتج
+            </motion.h1>
+            <div ref={emblaRef} className="overflow-hidden">
+              <div className="flex">
+                {product.images?.map((image, index) => (
+                  <div key={`main-image-${index}`} className="flex-0 flex-grow-0 shrink-0 w-full">
+                    <ImageSlide 
+                      imageUrl={image}
+                      alt={product.name}
+                      onImageClick={() => setIsLightboxOpen(true)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            {product.images && product.images.length > 1 && (
+              <ImageGalleryPagination
+                images={product.images}
+                currentIndex={currentImageIndex}
+                onIndexChange={(index) => emblaApi?.scrollTo(index)}
+                productName={product.name}
+              />
+            )}
           </motion.div>
             <ProductHeader product={product} averageRating={averageRating} reviewsCount={reviews.length} />
             {/* Left Column: Image Gallery */}
