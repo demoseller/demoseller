@@ -35,6 +35,8 @@ export interface OrderData {
   commune: string;
   full_address: string;
   product_name: string;
+  product_id: string; // Add this field
+  ip_address?: string;
   size: string;
   color: string;
   quantity: number;
@@ -138,8 +140,41 @@ export const useReviews = (productId: string) => {
 };
 
 export const useOrders = () => {
+  const checkDuplicateOrder = async (productId: string, ipAddress: string): Promise<boolean> => {
+    // Calculate time 24 hours ago
+    const oneDayAgo = new Date();
+    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+    
+    const { data, error } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('product_id', productId)
+      .eq('ip_address', ipAddress)
+      .gte('order_time', oneDayAgo.toISOString())
+      .limit(1);
+    
+    if (error) {
+      console.error('Error checking for duplicate orders:', error);
+      return false; // Assume no duplicates if there's an error
+    }
+    
+    return data && data.length > 0;
+  };
+
   const addOrder = async (orderData: OrderData) => {
     console.log('Adding order with data:', orderData);
+    
+    // Get client IP address
+    const ipAddress = orderData.ip_address || 'unknown';
+    
+    // Check for duplicate orders
+    if (orderData.product_id) {
+      const isDuplicate = await checkDuplicateOrder(orderData.product_id, ipAddress);
+      
+      if (isDuplicate) {
+        throw new Error('duplicate_order');
+      }
+    }
     
     // Ensure all required fields are present
     const completeOrderData = {
@@ -149,10 +184,13 @@ export const useOrders = () => {
       commune: orderData.commune,
       full_address: orderData.full_address,
       product_name: orderData.product_name,
+      product_id: orderData.product_id, // Add the product ID
+      quantity: orderData.quantity,
       size: orderData.size,
       color: orderData.color,
       total_price: orderData.total_price,
-      status: orderData.status || 'pending'
+      status: orderData.status || 'pending',
+      ip_address: ipAddress // Add the IP address
     };
 
     const { data, error } = await supabase
@@ -172,3 +210,15 @@ export const useOrders = () => {
 
   return { addOrder };
 };
+
+
+export async function getClientIp(): Promise<string> {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    return data.ip;
+  } catch (error) {
+    console.error('Error fetching IP address:', error);
+    return 'unknown';
+  }
+}

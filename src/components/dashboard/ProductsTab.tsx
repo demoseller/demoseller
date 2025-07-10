@@ -228,114 +228,120 @@ const ProductsTab = () => {
           return (
             <motion.div
               key={type.id}
-              className="glass-effect rounded-lg sm:rounded-xl overflow-hidden border card-hover"
+              className="relative p-[3px]"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <div className="aspect-video bg-muted relative">
-                <img
-                  src={type.image_url || '/placeholder.svg'}
-                  alt={type.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 text-white">
-                  <h3 className="text-sm sm:text-lg font-bold">{type.name}</h3>
-                  <p className="text-xs sm:text-sm opacity-90">{typeProducts.length} منتجات</p>
-                </div>
-              </div>
+              {/* Gradient border wrapper */}
+              <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-primary dark:bg-gradient-primary-dark"></div>
               
-              <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
-                <div className="grid grid-cols-2 gap-1 sm:gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedTypeId(type.id);
-                      setEditingProduct(null);
-                      setShowAddProductModal(true);
-                    }}
-                    className="bg-primary/10 text-primary hover:bg-primary/20 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center space-x-1"
-                  >
-                    <Plus className="w-3 h-3" />
-                    <span>إضافة</span>
-                  </button>
-                  
-                  <div className="flex space-x-1">
-                    <button
-                      onClick={() => toggleTypeExpansion(type.id)}
-                      className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors flex items-center justify-center"
-                    >
-                      <Eye className="w-3 h-3 mr-1" />
-                      {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                    </button>
-                    
-                    <button 
-                      onClick={() => {
-                        setEditingType(type);
-                        setShowEditTypeModal(true);
-                      }}
-                      className="px-2 py-1.5 sm:px-3 sm:py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <Edit className="w-3 h-3" />
-                    </button>
-                    
-                    <button 
-                      onClick={() => {
-                        setDeleteTarget({type: 'productType', id: type.id});
-                        setShowDeleteConfirm(true);
-                      }}
-                      className="px-2 py-1.5 sm:px-3 sm:py-2 border border-border rounded-lg hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
+              {/* Card content */}
+              <div className="glass-effect rounded-lg sm:rounded-xl overflow-hidden border relative z-10 card-hover bg-background">
+                <div className="aspect-video bg-muted relative">
+                  <img
+                    src={type.image_url || '/placeholder.svg'}
+                    alt={type.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 text-white">
+                    <h3 className="text-sm sm:text-lg font-bold">{type.name}</h3>
+                    <p className="text-xs sm:text-sm opacity-90">{typeProducts.length} منتجات</p>
                   </div>
                 </div>
+                
+                <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                  <div className="grid grid-cols-2 gap-1 sm:gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedTypeId(type.id);
+                        setEditingProduct(null);
+                        setShowAddProductModal(true);
+                      }}
+                      className="bg-primary/10 text-primary hover:bg-primary/20 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center space-x-1"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>إضافة</span>
+                    </button>
+                    
+                    <div className="flex space-x-1">
+                      <button
+                        onClick={() => toggleTypeExpansion(type.id)}
+                        className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors flex items-center justify-center"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                      </button>
+                      
+                      <button 
+                        onClick={() => {
+                          setEditingType(type);
+                          setShowEditTypeModal(true);
+                        }}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <Edit className="w-3 h-3" />
+                      </button>
+                      
+                      <button 
+                        onClick={() => {
+                          setDeleteTarget({type: 'productType', id: type.id});
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 border border-border rounded-lg hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
 
-                {isExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="border-t pt-2 sm:pt-3 space-y-1 sm:space-y-2"
-                  >
-                    <h4 className="font-medium text-xs sm:text-sm">المنتجات في هذا النوع:</h4>
-                    {typeProducts.length > 0 ? (
-                      <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
-                        {typeProducts.map(product => (
-                          <div key={product.id} className="flex justify-between items-center p-1.5 sm:p-2 bg-muted/30 rounded text-xs sm:text-sm">
-                            <div>
-                              <p className="font-medium">{product.name}</p>
-                              <p className="text-muted-foreground">{product.base_price} DA</p>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="border-t pt-2 sm:pt-3 space-y-1 sm:space-y-2"
+                    >
+                      <h4 className="font-medium text-xs sm:text-sm">المنتجات في هذا النوع:</h4>
+                      {typeProducts.length > 0 ? (
+                        <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
+                          {typeProducts.map(product => (
+                            <div key={product.id} className="flex justify-between items-center p-1.5 sm:p-2 bg-muted/30 rounded text-xs sm:text-sm">
+                              <div>
+                                <p className="font-medium">{product.name}</p>
+                                <p className="text-muted-foreground">{product.base_price} DA</p>
+                              </div>
+                              <div className="flex space-x-0.5 sm:space-x-1">
+                                <button
+                                  onClick={() => {
+                                    setEditingProduct(product);
+                                    setSelectedTypeId(type.id);
+                                    setShowEditProductModal(true);
+                                  }}
+                                  className="p-0.5 sm:p-1 hover:bg-muted/50 rounded"
+                                >
+                                  <Edit className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setDeleteTarget({type: 'product', id: product.id});
+                                    setShowDeleteConfirm(true);
+                                  }}
+                                  className="p-0.5 sm:p-1 hover:bg-red-500/10 hover:text-red-500 rounded"
+                                >
+                                  <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                </button>
+                              </div>
                             </div>
-                            <div className="flex space-x-0.5 sm:space-x-1">
-                              <button
-                                onClick={() => {
-                                  setEditingProduct(product);
-                                  setSelectedTypeId(type.id);
-                                  setShowEditProductModal(true);
-                                }}
-                                className="p-0.5 sm:p-1 hover:bg-muted/50 rounded"
-                              >
-                                <Edit className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setDeleteTarget({type: 'product', id: product.id});
-                                  setShowDeleteConfirm(true);
-                                }}
-                                className="p-0.5 sm:p-1 hover:bg-red-500/10 hover:text-red-500 rounded"
-                              >
-                                <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-xs sm:text-sm">لا توجد منتجات بعد</p>
-                    )}
-                  </motion.div>
-                )}
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-xs sm:text-sm">لا توجد منتجات بعد</p>
+                      )}
+                    </motion.div>
+                  )}
+                </div>
               </div>
             </motion.div>
           );

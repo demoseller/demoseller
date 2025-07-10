@@ -23,8 +23,15 @@ const steps = [
 
 const HowToOrder = () => {
   return (
-    <div className="w-full max-w-4xl mx-auto glass-effect p-6 sm:p-8 rounded-2xl my-auto border">
-      <div className="space-y-6">
+    <div className="w-full max-w-4xl mx-auto glass-effect p-6 sm:p-8 rounded-2xl my-auto relative">
+      {/* Gradient border - outer div */}
+      <div className="absolute inset-0 rounded-2xl p-[2px] bg-gradient-primary dark:bg-gradient-primary-dark">
+        {/* Inner transparent div to create border effect */}
+        <div className="absolute inset-0 rounded-2xl bg-background/80 dark:bg-background/80"></div>
+      </div>
+      
+      {/* Content - positioned on top of the border */}
+      <div className="relative z-10 space-y-6">
         {steps.map((step, index) => (
           <motion.div
             key={index}

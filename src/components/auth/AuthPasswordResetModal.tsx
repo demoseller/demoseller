@@ -118,9 +118,12 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>إعادة تعيين كلمة المرور</DialogTitle>
+      <DialogContent className="sm:max-w-md relative p-0 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+        <div className="relative z-10 p-px bg-background m-[2px] rounded-lg">
+          <div className="p-5 sm:p-6">
+            <DialogHeader>
+              <DialogTitle>إعادة تعيين كلمة المرور</DialogTitle>
           <DialogDescription>
             أدخل عنوان بريدك الإلكتروني المسجل لتلقي رابط إعادة تعيين كلمة المرور.
           </DialogDescription>
@@ -167,6 +170,8 @@ const AuthPasswordResetModal = ({ isOpen, onClose }: AuthPasswordResetModalProps
             </Button>
           </div>
         </form>
+        </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -136,10 +136,8 @@ const ShippingTab = () => {
         animate={{ opacity: 1, y: 0 }}
       >
         <div>
-          <h2 className="text-2xl font-bold gradient-text">إدارة الشحن</h2>
-          <p className="text-muted-foreground mt-1">
-            إدارة أسعار الشحن والمدن/البلديات المتاحة
-          </p>
+          <h2 className="text-2xl font-bold gradient-text">إدارة أسعار الشحن</h2>
+          
         </div>
         <motion.button
           onClick={() => setShowAddForm(!showAddForm)}

@@ -103,11 +103,16 @@ const OrdersTab = () => {
           {filteredOrders.map((order, index) => (
             <motion.div
               key={order.id}
-              className="glass-effect p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl border"
+              className="relative p-[3px]"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
+              {/* Gradient border wrapper */}
+              <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+              
+              {/* Card content */}
+              <div className="glass-effect p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl relative z-10 bg-card dark:bg-card">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Customer Info */}
                 <div className="space-y-2 sm:space-y-3">
@@ -184,26 +189,39 @@ const OrdersTab = () => {
                   </div>
                 </div>
               </div>
+              </div>
             </motion.div>
           ))}
         </div>
       ) : orders.length > 0 ? (
-        <div className="text-center py-12">
-          <Filter className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">لا توجد طلبات تطابق فلاتر البحث</h3>
-          <p className="text-muted-foreground mb-4">حاول تعديل معايير التصفية الخاصة بك.</p>
-          <button
-            onClick={() => setFilters({ status: 'all', product: '', productType: '', wilaya: '' })}
-            className="btn-gradient px-6 py-2 rounded-lg"
-          >
-            مسح الفلاتر
-          </button>
+        <div className="relative p-[3px] max-w-lg mx-auto">
+          {/* Gradient border wrapper */}
+          <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+          
+          {/* Card content */}
+          <div className="text-center py-12 relative z-10 bg-card dark:bg-card rounded-lg sm:rounded-xl">
+            <Filter className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">لا توجد طلبات تطابق فلاتر البحث</h3>
+            <p className="text-muted-foreground mb-4">حاول تعديل معايير التصفية الخاصة بك.</p>
+            <button
+              onClick={() => setFilters({ status: 'all', product: '', productType: '', wilaya: '' })}
+              className="btn-gradient px-6 py-2 rounded-lg"
+            >
+              مسح الفلاتر
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="text-center py-12">
-          <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">لم يتم استلام أي طلبات بعد.</h3>
-          <p className="text-muted-foreground">عندما يقوم العميل بتقديم طلب، سيظهر هنا.</p>
+        <div className="relative p-[3px] max-w-lg mx-auto">
+          {/* Gradient border wrapper */}
+          <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+          
+          {/* Card content */}
+          <div className="text-center py-12 relative z-10 bg-card dark:bg-card rounded-lg sm:rounded-xl">
+            <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">لم يتم استلام أي طلبات بعد.</h3>
+            <p className="text-muted-foreground">عندما يقوم العميل بتقديم طلب، سيظهر هنا.</p>
+          </div>
         </div>
       )}
 

@@ -139,7 +139,12 @@ const AuthPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+        <div className="relative p-[3px]">
+          {/* Gradient border wrapper */}
+          <div className="absolute inset-0 rounded-2xl bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+          
+          {/* Card content */}
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl relative z-10">
           <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0.8 }}
@@ -287,6 +292,7 @@ const AuthPage = () => {
               </button>
             </motion.div>
           )}
+        </div>
         </div>
       </motion.div>
 

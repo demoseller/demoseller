@@ -32,33 +32,33 @@ const ImageGalleryPagination = ({
   return (
     <div className="mt-4">
       <div className="overflow-hidden" ref={emblaThumbsRef}>
-        <div className="flex gap-2 py-2">
-          {images.map((image, index) => (
-            <motion.button
-              key={`thumb-${image}-${index}`}
-              onClick={() => onIndexChange(index)}
-              className={cn(
-                "relative flex-0 shrink-0 cursor-pointer rounded-md overflow-hidden border-2 transition-all h-16 w-16 min-w-16",
-                index === currentIndex
-                  ? "border-primary opacity-100 scale-105"
-                  : "border-transparent opacity-70 hover:opacity-100"
-              )}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              initial={false}
-              animate={{
-                scale: index === currentIndex ? 1.05 : 1
-              }}
-              aria-label={`Go to slide ${index + 1} of ${images.length}`}
+      <div className="flex gap-2 py-2">
+        {images.map((image, index) => (
+          <div 
+            key={`thumb-${index}`} 
+            className={`relative p-[2px] flex-0 min-w-16 cursor-pointer`}
+            onClick={() => onIndexChange(index)}
+          >
+            {/* Gradient border wrapper */}
+            <div className={`absolute inset-0 rounded-md bg-gradient-primary dark:bg-gradient-primary-dark ${currentIndex === index ? 'opacity-100' : 'opacity-40'}`}></div>
+            
+            {/* Thumbnail content */}
+            <div 
+              className={`
+                relative z-10 w-16 h-16 rounded-md overflow-hidden bg-background
+                ${currentIndex === index ? 'ring-2 ring-primary' : 'opacity-70'}
+                transition-all duration-200
+              `}
             >
-              <img
-                src={image}
-                alt={`${productName} thumbnail ${index + 1}`}
-                className="h-full w-full object-cover"
+              <img 
+                src={image} 
+                alt={`${productName} - صورة ${index + 1}`} 
+                className="w-full h-full object-cover"
               />
-            </motion.button>
-          ))}
-        </div>
+            </div>
+          </div>
+        ))}
+      </div>
       </div>
     </div>
   );

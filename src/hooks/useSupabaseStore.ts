@@ -10,6 +10,8 @@ export interface Order {
   full_address: string;
   product_name: string;
   size: string;
+  product_id: string; // Add this field to link to the product
+  ip_address?: string;
   color: string;
   total_price: number;
   status: 'pending' | 'confirmed';
@@ -53,7 +55,8 @@ export const useOrders = () => {
       // Transform the data to match our Order interface
       const transformedOrders: Order[] = (data || []).map(order => ({
         ...order,
-        status: (order.status as 'pending' | 'confirmed') || 'pending'
+        status: (order.status as 'pending' | 'confirmed') || 'pending',
+        product_id: (order as any).product_id || '' // Add default value for missing product_id
       }));
       setOrders(transformedOrders);
     }

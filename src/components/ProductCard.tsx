@@ -30,14 +30,19 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
 
   return (
     <>
-      <div className="group relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg md:shadow-xl card-hover w-full">
-        <Link to={`/products/${typeId}/${product.id}`} className="block h-full w-full">
-          <div className="relative h-60 sm:h-96 w-full overflow-hidden">
-            <img
-              src={mainImageUrl}
-              alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-            />
+      <div className="relative p-[3px]">
+        {/* Gradient border wrapper */}
+        <div className="absolute -inset-0 rounded-xl md:rounded-2xl bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+        
+        {/* Card content */}
+        <div className="group relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg md:shadow-xl w-full bg-background">
+          <Link to={`/products/${typeId}/${product.id}`} className="block h-full w-full">
+            <div className="relative h-60 sm:h-96 w-full overflow-hidden">
+              <img
+                src={mainImageUrl}
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+              />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
             
             {/* View Icon Button */}
@@ -67,6 +72,8 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
           </div>
         </Link>
       </div>
+      </div>
+
 
       <ImageLightbox
         isOpen={isLightboxOpen}
