@@ -24,6 +24,10 @@ export type Database = {
           total_price: number
           updated_at: string | null
           wilaya: string
+          product_id: string // Add this field to link to the product
+          ip_address?: string // Add this field to track the IP address
+          quantity: number // Add this field to track the quantity ordered
+          order_time: string // Add this field to track the order time
         }
         Insert: {
           color: string
@@ -32,6 +36,9 @@ export type Database = {
           customer_name: string
           customer_phone: string
           full_address: string
+          product_id: string // Add this field to link to the product
+          ip_address?: string // Add this field to track the IP address
+          quantity: number // Add this field to track the quantity ordered
           id?: string
           product_name: string
           size: string

@@ -144,6 +144,7 @@ const OrdersTab = () => {
                   </div>
                   <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
                     <p><strong>المنتج:</strong> {order.product_name}</p>
+                    <p><strong>الكمية:</strong> {order.quantity}</p>
                     <p><strong>المقاس:</strong> {order.size}</p>
                     <p><strong>اللون:</strong> {order.color}</p>
                     <p><strong>الإجمالي:</strong> <span className="text-base sm:text-lg font-bold text-primary">{order.total_price} دج</span></p>

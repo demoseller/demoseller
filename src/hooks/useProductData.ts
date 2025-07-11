@@ -150,7 +150,7 @@ export const useOrders = () => {
       .select('id')
       .eq('product_id', productId)
       .eq('ip_address', ipAddress)
-      .gte('order_time', oneDayAgo.toISOString())
+      .gte('created_at', oneDayAgo.toISOString())
       .limit(1);
     
     if (error) {

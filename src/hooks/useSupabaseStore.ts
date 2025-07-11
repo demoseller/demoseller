@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,ReactNode } from 'react';
 import { supabase } from '../integrations/supabase/client';
 
 export interface Order {
+  quantity: ReactNode;
   id: string;
   customer_name: string;
   customer_phone: string;
@@ -56,7 +57,8 @@ export const useOrders = () => {
       const transformedOrders: Order[] = (data || []).map(order => ({
         ...order,
         status: (order.status as 'pending' | 'confirmed') || 'pending',
-        product_id: (order as any).product_id || '' // Add default value for missing product_id
+        product_id: (order as any).product_id || '', // Add default value for missing product_id
+        quantity: (order as any).quantity || 1 // Add default value for quantity
       }));
       setOrders(transformedOrders);
     }
