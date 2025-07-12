@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useProductById, useReviews, useOrders } from '../hooks/useProductData';
 import { useShippingData } from '../hooks/useShippingData';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -11,8 +11,6 @@ import ImageLightbox from '../components/ImageLightbox';
 import Navbar from '../components/Navbar';
 import { Checkbox } from '../components/ui/checkbox';
 import { toast } from 'sonner';
-import { Product } from '@/store/appStore';
-import GenericCarousel from '@/components/GenericCarousel';
 import useEmblaCarousel from 'embla-carousel-react';
 import { getClientIp } from '../hooks/useProductData.ts';
 
@@ -316,23 +314,22 @@ const ProductPage = () => {
               {/* Form fields remain the same */}
               <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium mb-1">الاسم الكامل</label>
+                    
                     <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" placeholder="أدخل اسمك الكامل" required />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1">رقم الهاتف</label>
+                    
                     <input 
                       type="tel" 
                       value={customerPhone} 
                       onChange={handlePhoneChange} 
                       className={`w-full px-3 py-2 rounded-lg border ${phoneError ? 'border-red-500' : 'border-border'} bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm`} 
-                      placeholder="مثال: 0599123456" 
+                      placeholder="رقم الهاتف مثال: 0599123456" 
                       required 
                     />
                     {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1">الولاية</label>
                     <select value={wilaya} onChange={(e) => { setWilaya(e.target.value); setCommune(''); }} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required>
                       <option value="">اختر الولاية</option>
                       {availableWilayas.map((wilayaName) => (
@@ -346,7 +343,7 @@ const ProductPage = () => {
                   </div>
                   {shipToHome && (
                     <div>
-                      <label className="block text-xs font-medium mb-1">البلدية (المدينة)</label>
+                      
                       <select value={commune} onChange={(e) => setCommune(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required disabled={!wilaya}>
                         <option value="">اختر البلدية</option>
                         {availableCommunes.map((communeName) => (
@@ -359,7 +356,7 @@ const ProductPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   {product.options?.sizes && product.options.sizes.length > 0 && (
                     <div>
-                      <label className="block text-xs font-medium mb-1">المقاس</label>
+                      
                       <select value={size} onChange={handleSizeChange} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required={product.options.sizes.length > 0}>
                         <option value="">اختر المقاس</option>
                         {product.options.sizes.map((s, index) => (
@@ -370,7 +367,7 @@ const ProductPage = () => {
                   )}
                   {product.options?.colors && product.options.colors.length > 0 && (
                     <div>
-                      <label className="block text-xs font-medium mb-1">اللون</label>
+                      
                       <select value={color} onChange={handleColorChange} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required={product.options.colors.length > 0}>
                         <option value="">اختر اللون</option>
                         {product.options.colors.map((c, index) => (
@@ -381,10 +378,10 @@ const ProductPage = () => {
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1">الكمية</label>
-                  <div className="flex items-center space-x-3">
+                  <label className="block text-xs font-bold mb-1">الكمية</label>
+                  <div className="flex items-center space-x-24">
                     <button type="button" onClick={decrementQuantity} className="px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50" disabled={quantity <= 1}>-</button>
-                    <span>{quantity}</span>
+                    <span className='font-bold text-sm'>{quantity}</span>
                     <button type="button" onClick={incrementQuantity} className="px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50 transition-colors">+</button>
                   </div>
                 </div>

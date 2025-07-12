@@ -92,6 +92,7 @@ export type Database = {
         Row: {
           base_price: number
           created_at: string | null
+          price_before_discount: number | null
           description: string | null
           id: string
           images: string[] | null
@@ -109,6 +110,7 @@ export type Database = {
           name: string
           options?: Json | null
           product_type_id?: string | null
+          price_before_discount?: number | null
           updated_at?: string | null
         }
         Update: {
