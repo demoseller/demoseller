@@ -134,10 +134,15 @@ const ProductPage = () => {
   
   // Calculate shipping cost based on "Ship to Home" option
   const calculateShippingCost = () => {
-    if (!wilaya || !shippingData.shippingPrices[wilaya]) return 0;
-    const baseShippingPrice = shippingData.shippingPrices[wilaya];
-    return shipToHome ? Math.round(baseShippingPrice * 1.3) : baseShippingPrice;
-  };
+  if (!wilaya || !shippingData.shippingPrices[wilaya]) return 0;
+
+  if (shipToHome) {
+    // Use the new dedicated home shipping price
+    return shippingData.shippingHomePrices[wilaya] || 0;
+  }
+  // Otherwise, use the base price (for office pickup)
+  return shippingData.shippingPrices[wilaya];
+};
 
   // Calculate total price
   const calculateTotalPrice = () => {
@@ -339,7 +344,7 @@ const ProductPage = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox id="shipToHome" checked={shipToHome} onCheckedChange={(checked) => { setShipToHome(checked as boolean); if (!checked) setCommune(''); }} />
-                    <label htmlFor="shipToHome" className="text-xs font-medium">التوصيل إلى المنزل (+30% رسوم شحن)</label>
+                    <label htmlFor="shipToHome" className="text-xs font-medium">التوصيل إلى المنزل </label>
                   </div>
                   {shipToHome && (
                     <div>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { MapPin, Plus, Edit2, Trash2, Save, X } from 'lucide-react';
 import { useShippingData } from '../../hooks/useShippingData';
 import { toast } from 'sonner';
@@ -11,41 +11,168 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
+
+// --- HELPER COMPONENTS (Defined at the top level) ---
+
+interface EditFormProps {
+  editingWilaya: string | null;
+  editingPrice: string;
+  editingHomePrice: string;
+  editingCommunes: string;
+  setEditingPrice: (value: string) => void;
+  setEditingHomePrice: (value: string) => void;
+  setEditingCommunes: (value: string) => void;
+  handleSave: () => void;
+  handleCancel: () => void;
+}
+
+const EditForm = React.memo(({
+  editingWilaya,
+  editingPrice,
+  editingHomePrice,
+  editingCommunes,
+  setEditingPrice,
+  setEditingHomePrice,
+  setEditingCommunes,
+  handleSave,
+  handleCancel
+}: EditFormProps) => (
+  <div className="p-6 space-y-6">
+    <DialogTitle className="text-xl font-bold">
+      تعديل معلومات الشحن: {editingWilaya}
+    </DialogTitle>
+    
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium mb-2 text-foreground">سعر الشحن للمكتب (DA)</label>
+        <input
+          type="number"
+          value={editingPrice}
+          onChange={(e) => setEditingPrice(e.target.value)}
+          className="w-full h-12 bg-background border border-border rounded-lg px-4 py-3 text-base focus:ring-2 focus:ring-primary/50 outline-none"
+          min="0"
+          step="0.01"
+        />
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium mb-2 text-foreground">سعر الشحن للمنزل (DA)</label>
+        <input
+          type="number"
+          value={editingHomePrice}
+          onChange={(e) => setEditingHomePrice(e.target.value)}
+          className="w-full h-12 bg-background border border-border rounded-lg px-4 py-3 text-base focus:ring-2 focus:ring-primary/50 outline-none"
+          min="0"
+          step="0.01"
+          placeholder="سعر التوصيل للمنزل"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2 text-foreground">البلديات (مفصولة بفواصل)</label>
+        <textarea
+          value={editingCommunes}
+          onChange={(e) => setEditingCommunes(e.target.value)}
+          className="w-full min-h-[120px] bg-background border border-border rounded-lg px-4 py-3 text-base focus:ring-2 focus:ring-primary/50 outline-none"
+          placeholder="بلدية1، بلدية2، ..."
+        />
+      </div>
+    </div>
+    
+    <div className="flex space-x-3 pt-4">
+      <motion.button
+        onClick={handleSave}
+        className="flex-1 btn-gradient flex items-center justify-center space-x-2 py-3 rounded-lg"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        type="button"
+      >
+        <Save className="w-4 h-4" />
+        <span>حفظ التغييرات</span>
+      </motion.button>
+      <motion.button
+        onClick={handleCancel}
+        className="flex-1 bg-muted/20 hover:bg-muted/40 flex items-center justify-center space-x-2 py-3 rounded-lg transition-colors"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        type="button"
+      >
+        <X className="w-4 h-4" />
+        <span>إلغاء</span>
+      </motion.button>
+    </div>
+  </div>
+));
+
+interface EditModalProps extends EditFormProps {
+  showEditModal: boolean;
+}
+
+const EditModal = React.memo(({ showEditModal, handleCancel, ...props }: EditModalProps) => (
+  <Dialog
+    open={showEditModal}
+    onOpenChange={(open) => {
+      if (!open) {
+        handleCancel();
+      }
+    }}
+  >
+    <DialogContent
+      className="sm:max-w-md p-0 overflow-hidden bg-background"
+      onPointerDownOutside={(e) => e.preventDefault()}
+      onEscapeKeyDown={(e) => e.preventDefault()}
+      forceMount
+    >
+      <EditForm {...props} handleCancel={handleCancel} />
+    </DialogContent>
+  </Dialog>
+));
+
+// --- MAIN COMPONENT ---
 
 const ShippingTab = () => {
-  const { shippingData, loading, error, updateWilayaPrice, updateWilayaCommunes, addWilaya, removeWilaya } = useShippingData();
+  const { shippingData, loading, error, updateWilayaPrice, updateWilayaHomePrice, addWilaya, removeWilaya, updateWilayaCommunes } = useShippingData();
   const [editingWilaya, setEditingWilaya] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState<string>('');
+  const [editingHomePrice, setEditingHomePrice] = useState<string>('');
   const [editingCommunes, setEditingCommunes] = useState<string>('');
   const [newWilayaName, setNewWilayaName] = useState('');
   const [newWilayaPrice, setNewWilayaPrice] = useState('');
+  const [newWilayaHomePrice, setNewWilayaHomePrice] = useState('');
   const [newWilayaCommunes, setNewWilayaCommunes] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleEditStart = (wilaya: string) => {
     setEditingWilaya(wilaya);
     setEditingPrice(shippingData.shippingPrices[wilaya]?.toString() || '');
+    setEditingHomePrice(shippingData.shippingHomePrices[wilaya]?.toString() || '');
     setEditingCommunes(shippingData.communes[wilaya]?.join(', ') || '');
+    setShowEditModal(true);
   };
 
-  const handleEditSave = async () => {
+  const handleModalSave = async () => {
     if (!editingWilaya) return;
     
     try {
       const price = parseFloat(editingPrice);
       if (isNaN(price) || price < 0) {
-        toast.error('الرجاء إدخال سعر صحيح');
+        toast.error('الرجاء إدخال سعر صحيح للشحن');
         return;
       }
-
+      const homePrice = parseFloat(editingHomePrice);
+      if (isNaN(homePrice) || homePrice < 0) {
+        toast.error('الرجاء إدخال سعر صحيح للتوصيل المنزلي');
+        return;
+      }
       const communes = editingCommunes.split(',').map(c => c.trim()).filter(c => c.length > 0);
       
       await updateWilayaPrice(editingWilaya, price);
+      await updateWilayaHomePrice(editingWilaya, homePrice);
       await updateWilayaCommunes(editingWilaya, communes);
       
-      setEditingWilaya(null);
-      setEditingPrice('');
-      setEditingCommunes('');
+      handleModalCancel();
       toast.success('تم تحديث معلومات الشحن بنجاح');
     } catch (error) {
       console.error('Error saving changes:', error);
@@ -53,10 +180,12 @@ const ShippingTab = () => {
     }
   };
 
-  const handleEditCancel = () => {
+  const handleModalCancel = () => {
     setEditingWilaya(null);
     setEditingPrice('');
+    setEditingHomePrice('');
     setEditingCommunes('');
+    setShowEditModal(false);
   };
 
   const handleAddWilaya = async () => {
@@ -70,6 +199,12 @@ const ShippingTab = () => {
       toast.error('الرجاء إدخال سعر صحيح');
       return;
     }
+    
+    const homePrice = parseFloat(newWilayaHomePrice);
+    if (isNaN(homePrice) || homePrice < 0) {
+      toast.error('الرجاء إدخال سعر صحيح للتوصيل المنزلي');
+      return;
+    }
 
     if (shippingData.shippingPrices[newWilayaName]) {
       toast.error('هذه الولاية موجودة بالفعل');
@@ -79,9 +214,11 @@ const ShippingTab = () => {
     try {
       const communes = newWilayaCommunes.split(',').map(c => c.trim()).filter(c => c.length > 0);
       
-      await addWilaya(newWilayaName, price, communes);
+      await addWilaya(newWilayaName, price, communes, homePrice);
+
       setNewWilayaName('');
       setNewWilayaPrice('');
+      setNewWilayaHomePrice('');
       setNewWilayaCommunes('');
       setShowAddForm(false);
       toast.success('تمت إضافة الولاية بنجاح');
@@ -115,8 +252,8 @@ const ShippingTab = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
         <p className="text-red-500">خطأ في تحميل بيانات الشحن: {error}</p>
-        <button 
-          onClick={() => window.location.reload()} 
+        <button
+          onClick={() => window.location.reload()}
           className="btn-gradient px-4 py-2 rounded-lg"
         >
           إعادة المحاولة
@@ -129,7 +266,6 @@ const ShippingTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <motion.div
         className="flex justify-between items-center"
         initial={{ opacity: 0, y: -20 }}
@@ -137,7 +273,6 @@ const ShippingTab = () => {
       >
         <div>
           <h2 className="text-2xl font-bold gradient-text">إدارة أسعار الشحن</h2>
-          
         </div>
         <motion.button
           onClick={() => setShowAddForm(!showAddForm)}
@@ -150,7 +285,6 @@ const ShippingTab = () => {
         </motion.button>
       </motion.div>
 
-      {/* Add New Wilaya Form */}
       {showAddForm && (
         <motion.div
           className="glass-effect p-6 rounded-xl"
@@ -159,7 +293,7 @@ const ShippingTab = () => {
           exit={{ opacity: 0, height: 0 }}
         >
           <h3 className="text-lg font-semibold mb-4 text-foreground">إضافة ولاية جديدة</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2 text-foreground">اسم الولاية</label>
               <input
@@ -171,13 +305,25 @@ const ShippingTab = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2 text-foreground">سعر الشحن (دج)</label>
+              <label className="block text-sm font-medium mb-2 text-foreground">سعر الشحن للمكتب (دج)</label>
               <input
                 type="number"
                 value={newWilayaPrice}
                 onChange={(e) => setNewWilayaPrice(e.target.value)}
                 className="w-full bg-background border border-border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary/50 outline-none"
                 placeholder="أدخل السعر"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 text-foreground">سعر التوصيل للمنزل (دج)</label>
+              <input
+                type="number"
+                value={newWilayaHomePrice}
+                onChange={(e) => setNewWilayaHomePrice(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary/50 outline-none"
+                placeholder="أدخل سعر التوصيل للمنزل"
                 min="0"
                 step="0.01"
               />
@@ -211,7 +357,6 @@ const ShippingTab = () => {
         </motion.div>
       )}
 
-      {/* Shipping Rules Table */}
       {shippingEntries.length > 0 ? (
         <motion.div
           className="glass-effect rounded-xl overflow-hidden"
@@ -225,124 +370,50 @@ const ShippingTab = () => {
             </h3>
           </div>
           
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[200px]">الولاية </TableHead>
-                <TableHead className="w-[150px]">سعر الشحن (DA)</TableHead>
-                <TableHead>البلديات</TableHead>
-                <TableHead className="w-[120px]">التغييرات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {shippingEntries.map(([wilaya, price]) => (
-                <TableRow key={wilaya}>
-                  {editingWilaya === wilaya ? (
-                    // Edit Mode
-                    <>
-                      <TableCell>
-                        <span className="font-medium">{wilaya}</span>
-                      </TableCell>
-                      <TableCell>
-                        <input
-                          type="number"
-                          value={editingPrice}
-                          onChange={(e) => setEditingPrice(e.target.value)}
-                          className="w-full bg-background border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary/50 outline-none"
-                          min="0"
-                          step="0.01"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <input
-                          type="text"
-                          value={editingCommunes}
-                          onChange={(e) => setEditingCommunes(e.target.value)}
-                          className="w-full bg-background border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary/50 outline-none"
-                          placeholder="Commune1, Commune2, ..."
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <motion.button
-                            onClick={handleEditSave}
-                            className="p-1 hover:bg-green-500/20 text-green-600 rounded transition-colors"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            title="Save changes"
-                          >
-                            <Save className="w-4 h-4" />
-                          </motion.button>
-                          <motion.button
-                            onClick={handleEditCancel}
-                            className="p-1 hover:bg-red-500/20 text-red-500 rounded transition-colors"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            title="Cancel"
-                          >
-                            <X className="w-4 h-4" />
-                          </motion.button>
-                        </div>
-                      </TableCell>
-                    </>
-                  ) : (
-                    // View Mode
-                    <>
-                      <TableCell>
-                        <span className="font-medium">{wilaya}</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-semibold text-primary">{price} DA</span>
-                      </TableCell>
-                      <TableCell>
-                        {shippingData.communes[wilaya] && shippingData.communes[wilaya].length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {shippingData.communes[wilaya].slice(0, 3).map((commune) => (
-                              <span
-                                key={commune}
-                                className="px-2 py-1 bg-muted/50 rounded-full text-xs"
-                              >
-                                {commune}
-                              </span>
-                            ))}
-                            {shippingData.communes[wilaya].length > 3 && (
-                              <span className="px-2 py-1 bg-muted/50 rounded-full text-xs">
-                                +{shippingData.communes[wilaya].length - 3} المزيد
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">لاتوجد بلديات</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <motion.button
-                            onClick={() => handleEditStart(wilaya)}
-                            className="p-1 hover:bg-blue-500/20 text-blue-600 rounded transition-colors"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            title="Edit"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </motion.button>
-                          <motion.button
-                            onClick={() => handleRemoveWilaya(wilaya)}
-                            className="p-1 hover:bg-red-500/20 text-red-500 rounded transition-colors"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </motion.button>
-                        </div>
-                      </TableCell>
-                    </>
-                  )}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[150px]">الولاية </TableHead>
+                  <TableHead className="w-[150px]">للمكتب (DA)</TableHead>
+                  <TableHead className="w-[150px]">للمنزل (DA)</TableHead>
+                  <TableHead>البلديات</TableHead>
+                  <TableHead className="w-[100px]">التغييرات</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {shippingEntries.map(([wilaya, price]) => (
+                  <TableRow key={wilaya}>
+                    <TableCell><span className="font-medium">{wilaya}</span></TableCell>
+                    <TableCell><span className="font-semibold text-primary">{price} DA</span></TableCell>
+                    <TableCell><span className="font-semibold text-blue-400">{shippingData.shippingHomePrices[wilaya]} DA</span></TableCell>
+                    <TableCell>
+                      {shippingData.communes[wilaya] && shippingData.communes[wilaya].length > 0 ? (
+                        <div className="flex flex-wrap gap-1 max-w-xs">
+                          {shippingData.communes[wilaya].slice(0, 3).map((commune) => (
+                            <span key={commune} className="px-2 py-1 bg-muted/50 rounded-full text-xs">{commune}</span>
+                          ))}
+                          {shippingData.communes[wilaya].length > 3 && (
+                            <span className="px-2 py-1 bg-muted/50 rounded-full text-xs">
+                              +{shippingData.communes[wilaya].length - 3} المزيد
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">لاتوجد بلديات</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <motion.button onClick={() => handleEditStart(wilaya)} className="p-1 hover:bg-blue-500/20 text-blue-600 rounded" title="تعديل"><Edit2 className="w-4 h-4" /></motion.button>
+                        <motion.button onClick={() => handleRemoveWilaya(wilaya)} className="p-1 hover:bg-red-500/20 text-red-500 rounded" title="حذف"><Trash2 className="w-4 h-4" /></motion.button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </motion.div>
       ) : (
         <motion.div
@@ -352,16 +423,24 @@ const ShippingTab = () => {
         >
           <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">لا توجد مناطق شحن</h3>
-          <p className="text-muted-foreground mb-4">
-            أضف أول ولاية للبدء في إدارة أسعار ومواقع الشحن.
-          </p>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="btn-gradient px-4 py-2 rounded-lg"
-          >
-            إضافة أول ولاية
-          </button>
+          <p className="text-muted-foreground mb-4">أضف أول ولاية للبدء في إدارة أسعار ومواقع الشحن.</p>
+          <button onClick={() => setShowAddForm(true)} className="btn-gradient px-4 py-2 rounded-lg">إضافة أول ولاية</button>
         </motion.div>
+      )}
+
+      {showEditModal && (
+        <EditModal
+          showEditModal={showEditModal}
+          editingWilaya={editingWilaya}
+          editingPrice={editingPrice}
+          editingHomePrice={editingHomePrice}
+          editingCommunes={editingCommunes}
+          setEditingPrice={setEditingPrice}
+          setEditingHomePrice={setEditingHomePrice}
+          setEditingCommunes={setEditingCommunes}
+          handleSave={handleModalSave}
+          handleCancel={handleModalCancel}
+        />
       )}
     </div>
   );

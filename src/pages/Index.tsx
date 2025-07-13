@@ -67,12 +67,12 @@ const Index = () => {
   }, [productSearchTerm, searchPrice, searchColor, searchSize, searchDiscount, products]);
   
   useEffect(() => {
-    const initialDisplay = Math.ceil(filteredProducts.length * 0.20);
+    const initialDisplay = Math.ceil(filteredProducts.length * 0.40);
     setDisplayCount(initialDisplay > 0 ? initialDisplay : Math.min(filteredProducts.length, 4));
   }, [filteredProducts]);
 
   const handleShowMore = () => {
-    const increment = Math.ceil(products.length * 0.20);
+    const increment = Math.ceil(products.length * 0.40);
     setDisplayCount(prevCount => Math.min(prevCount + increment, filteredProducts.length));
   };
   
