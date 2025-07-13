@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
-import { Home } from 'lucide-react';
-import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
-const Navbar = () => {
-  const location = useLocation();
-  const isDashboard = location.pathname === '/dashboard';
+import React from 'react';
+
+interface NavbarProps {
+    children?: React.ReactNode;
+}
+
+const Navbar = ({children}: NavbarProps) => {
   return <motion.nav initial={{
     y: -100
   }} animate={{
@@ -23,18 +25,11 @@ const Navbar = () => {
           </motion.div>
         </Link>
         
-        <div className="flex items-center space-x-3 sm:space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 px-0  mx-0 sm:mr-2">
           <ThemeToggle />
           
-          {isDashboard && <Link to="/">
-              <motion.button className="p-1.5 sm:p-2 rounded-lg glass-effect hover:bg-white/20 dark:hover:bg-black/20 transition-colors" whileHover={{
-            scale: 1.1
-          }} whileTap={{
-            scale: 0.9
-          }} title="Go to Home">
-                <Home className="w-4 h-4 sm:w-5 sm:h-5" />
-              </motion.button>
-            </Link>}
+          
+            {children}
         </div>
       </div>
     </motion.nav>;

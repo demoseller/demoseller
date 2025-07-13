@@ -70,66 +70,32 @@ export const useShippingData = () => {
     }
   };
 
-  const updateWilayaPrice = async (wilaya: string, price: number) => {
+  const updateWilaya = async (
+    wilaya: string,
+    price: number,
+    homePrice: number,
+    communes: string[]
+  ) => {
     try {
       const { error } = await supabase
         .from('shipping_data')
-        .update({ 
-          base_price: price, 
-          updated_at: new Date().toISOString() 
+        .update({
+          base_price: price,
+          shipping_home_price: homePrice,
+          communes,
+          updated_at: new Date().toISOString(),
         })
         .eq('wilaya', wilaya);
 
       if (error) {
-        console.error('Error updating price:', error);
+        console.error('Error updating wilaya:', error);
         throw error;
       }
 
       await loadShippingData();
       return true;
     } catch (error) {
-      console.error('Error updating price:', error);
-      throw error;
-    }
-  };
-
-  const updateWilayaHomePrice = async (wilaya: string, price: number) => {
-  try {
-    const { error } = await supabase
-      .from('shipping_data')
-      .update({
-        shipping_home_price: price,
-        updated_at: new Date().toISOString()
-      })
-      .eq('wilaya', wilaya);
-
-    if (error) throw error;
-    await loadShippingData();
-    return true;
-  } catch (error) {
-    console.error('Error updating home price:', error);
-    throw error;
-  }
-};
-  const updateWilayaCommunes = async (wilaya: string, communes: string[]) => {
-    try {
-      const { error } = await supabase
-        .from('shipping_data')
-        .update({ 
-          communes, 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('wilaya', wilaya);
-
-      if (error) {
-        console.error('Error updating communes:', error);
-        throw error;
-      }
-
-      await loadShippingData();
-      return true;
-    } catch (error) {
-      console.error('Error updating communes:', error);
+      console.error('Error updating wilaya:', error);
       throw error;
     }
   };
@@ -187,9 +153,7 @@ const addWilaya = async (wilaya: string, price: number, communes: string[] = [],
     shippingData,
     loading,
     error,
-    updateWilayaPrice,
-    updateWilayaHomePrice,
-    updateWilayaCommunes,
+    updateWilaya,
     addWilaya,
     removeWilaya,
     refreshData: loadShippingData

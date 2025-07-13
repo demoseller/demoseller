@@ -16,7 +16,7 @@ const ConfirmationPage = () => {
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  const { reviews, loading: reviewsLoading, addReview } = useReviews(productId || '');
+  const { reviews,  addReview } = useReviews(productId || '');
 
   const averageRating = reviews.length > 0 
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
@@ -72,7 +72,7 @@ const ConfirmationPage = () => {
       >
         {/* Success Icon */}
         <motion.div
-          className="relative mb-6 sm:mb-8"
+          className="relative mt-10 sm:mt-12   mb-6 sm:mb-8"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 200 }}
@@ -161,7 +161,7 @@ const ConfirmationPage = () => {
 
                 <form onSubmit={handleSubmitReview} className="space-y-3 sm:space-y-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">اسمك (اختياري)</label>
+                    
                     <input
                       type="text"
                       value={reviewerName}
@@ -171,7 +171,7 @@ const ConfirmationPage = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">تقييمك</label>
+                    <label className="block text-xs sm:text-sm font-bold mb-1 sm:mb-2">تقييمك</label>
                     <div className="flex justify-center">
                       <StarRating
                         rating={rating}
@@ -182,7 +182,7 @@ const ConfirmationPage = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">تعليق (اختياري)</label>
+                    
                     <textarea
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
@@ -226,50 +226,7 @@ const ConfirmationPage = () => {
               </motion.div>
             )}
 
-            {/* Display Existing Reviews */}
-            {!reviewsLoading && reviews.length > 0 && (
-              <motion.div
-                className="glass-effect rounded-xl sm:rounded-2xl p-4 sm:p-6"
-                initial={{ y: 30, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: reviewSubmitted ? 0.5 : 1.4 }}
-              >
-                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className="text-base sm:text-lg md:text-xl font-semibold">تقييمات العملاء</h3>
-                  <div className="flex items-center space-x-1 sm:space-x-2">
-                    <StarRating rating={averageRating} readonly size="sm" />
-                    <span className="text-xs sm:text-sm text-muted-foreground">
-                      ({reviews.length} تقييمات)
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-3 sm:space-y-4 max-h-48 sm:max-h-64 overflow-y-auto">
-                  {reviews.slice(0, 5).map((review) => (
-                    <div key={review.id} className="p-3 sm:p-4 bg-muted/10 rounded-lg">
-                      <div className="flex items-center justify-between mb-1 sm:mb-2">
-                        <div className="flex items-center space-x-1 sm:space-x-2">
-                          <span className="font-medium text-sm sm:text-base">{review.reviewer_name || 'مجهول'}</span>
-                          <StarRating rating={review.rating} readonly size="sm" />
-                        </div>
-                        <span className="text-xs sm:text-sm text-muted-foreground">
-                          {new Date(review.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      {review.comment && (
-                        <p className="text-muted-foreground text-xs sm:text-sm">{review.comment}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                
-                {reviews.length > 5 && (
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4 text-center">
-                    عرض 5 من {reviews.length} تقييمات
-                  </p>
-                )}
-              </motion.div>
-            )}
+            
           </div>
         )}
 

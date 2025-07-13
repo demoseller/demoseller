@@ -2,13 +2,18 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { X, Filter } from 'lucide-react';
 import { useProductTypes, useProducts } from '../../hooks/useSupabaseStore';
+import { FilterOptions, OrderStatus } from './OrdersTab'; // <-- Import the types
 
-interface FilterOptions {
-  status: 'all' | 'pending' | 'confirmed';
-  product: string;
-  productType: string;
-  wilaya: string;
-}
+const statusOptions: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
+const statusTranslations: Record<OrderStatus, string> = {
+    pending: 'قيد الانتظار',
+    confirmed: 'مؤكد',
+    processing: 'جاري التجهيز',
+    shipped: 'تم الشحن',
+    delivered: 'تم التوصيل',
+    cancelled: 'ملغاة',
+    returned: 'مسترجع',
+};
 
 interface OrderFilterModalProps {
   isOpen: boolean;
@@ -23,18 +28,18 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
   const [filters, setFilters] = useState<FilterOptions>(currentFilters);
 
   const wilayas = [
-  'Adrar', 'Chlef', 'Laghouat', 'Oum El Bouaghi', 'Batna', 'Béjaïa',
-  'Biskra', 'Béchar', 'Blida', 'Bouira', 'Tamanrasset', 'Tébessa',
-  'Tlemcen', 'Tiaret', 'Tizi Ouzou', 'Alger', 'Djelfa', 'Jijel',
-  'Sétif', 'Saïda', 'Skikda', 'Sidi Bel Abbès', 'Annaba', 'Guelma',
-  'Constantine', 'Médéa', 'Mostaganem', 'M\'Sila', 'Mascara',
-  'Ouargla', 'Oran', 'El Bayadh', 'Illizi', 'Bordj Bou Arreridj',
-  'Boumerdès', 'El Tarf', 'Tindouf', 'Tissemsilt', 'El Oued',
-  'Khenchela', 'Souk Ahras', 'Tipaza', 'Mila', 'Ain Defla', 'Naâma',
-  'Ain Témouchent', 'Ghardaïa', 'Relizane', 'Timimoun',
-  'Bordj Badji Mokhtar', 'Ouled Djellal', 'Béni Abbès', 'In Salah',
-  'In Guezzam', 'Touggourt', 'Djanet', 'El M\'ghair', 'El Meniaa'
-];
+    'Adrar', 'Chlef', 'Laghouat', 'Oum El Bouaghi', 'Batna', 'Béjaïa',
+    'Biskra', 'Béchar', 'Blida', 'Bouira', 'Tamanrasset', 'Tébessa',
+    'Tlemcen', 'Tiaret', 'Tizi Ouzou', 'Alger', 'Djelfa', 'Jijel',
+    'Sétif', 'Saïda', 'Skikda', 'Sidi Bel Abbès', 'Annaba', 'Guelma',
+    'Constantine', 'Médéa', 'Mostaganem', 'M\'Sila', 'Mascara',
+    'Ouargla', 'Oran', 'El Bayadh', 'Illizi', 'Bordj Bou Arreridj',
+    'Boumerdès', 'El Tarf', 'Tindouf', 'Tissemsilt', 'El Oued',
+    'Khenchela', 'Souk Ahras', 'Tipaza', 'Mila', 'Ain Defla', 'Naâma',
+    'Ain Témouchent', 'Ghardaïa', 'Relizane', 'Timimoun',
+    'Bordj Badji Mokhtar', 'Ouled Djellal', 'Béni Abbès', 'In Salah',
+    'In Guezzam', 'Touggourt', 'Djanet', 'El M\'ghair', 'El Meniaa'
+  ];
 
   const handleApply = () => {
     onApplyFilters(filters);
@@ -42,7 +47,7 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
   };
 
   const handleReset = () => {
-    const resetFilters = { status: 'all' as const, product: '', productType: '', wilaya: '' };
+    const resetFilters: FilterOptions = { product: '', productType: '', wilaya: '' };
     setFilters(resetFilters);
     onApplyFilters(resetFilters);
     onClose();
@@ -78,14 +83,14 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
           <div>
             <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">الحالة</label>
             <select
-              value={filters.status}
-              onChange={(e) => setFilters({...filters, status: e.target.value as FilterOptions['status']})}
+              value={filters.status || ''}
+              onChange={(e) => setFilters({...filters, status: e.target.value as OrderStatus || undefined})}
               className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
             >
-              <option value="all">كل الحالات</option>
-              <option value="pending">قيد الانتظار</option>
-              <option value="confirmed">مؤكد</option>
-              
+              <option value="">كل الحالات</option>
+              {statusOptions.map(status => (
+                  <option key={status} value={status}>{statusTranslations[status]}</option>
+              ))}
             </select>
           </div>
 

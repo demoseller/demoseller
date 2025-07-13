@@ -132,7 +132,7 @@ const EditModal = React.memo(({ showEditModal, handleCancel, ...props }: EditMod
 // --- MAIN COMPONENT ---
 
 const ShippingTab = () => {
-  const { shippingData, loading, error, updateWilayaPrice, updateWilayaHomePrice, addWilaya, removeWilaya, updateWilayaCommunes } = useShippingData();
+  const { shippingData, loading, error, updateWilaya, addWilaya, removeWilaya } = useShippingData();
   const [editingWilaya, setEditingWilaya] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState<string>('');
   const [editingHomePrice, setEditingHomePrice] = useState<string>('');
@@ -168,9 +168,8 @@ const ShippingTab = () => {
       }
       const communes = editingCommunes.split(',').map(c => c.trim()).filter(c => c.length > 0);
       
-      await updateWilayaPrice(editingWilaya, price);
-      await updateWilayaHomePrice(editingWilaya, homePrice);
-      await updateWilayaCommunes(editingWilaya, communes);
+      await updateWilaya(editingWilaya, price, homePrice, communes);
+
       
       handleModalCancel();
       toast.success('تم تحديث معلومات الشحن بنجاح');

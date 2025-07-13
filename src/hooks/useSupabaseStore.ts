@@ -15,7 +15,7 @@ export interface Order {
   ip_address?: string;
   color: string;
   total_price: number;
-  status: 'pending' | 'confirmed';
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned';
   created_at: string;
 }
 
@@ -56,7 +56,7 @@ export const useOrders = () => {
       // Transform the data to match our Order interface
       const transformedOrders: Order[] = (data || []).map(order => ({
         ...order,
-        status: (order.status as 'pending' | 'confirmed') || 'pending',
+        status: (order.status as   'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned') || 'pending',
         product_id: (order as any).product_id || '', // Add default value for missing product_id
         quantity: (order as any).quantity || 1 // Add default value for quantity
       }));
@@ -65,7 +65,7 @@ export const useOrders = () => {
     setLoading(false);
   };
 
-  const updateOrderStatus = async (orderId: string, status: 'pending' | 'confirmed') => {
+  const updateOrderStatus = async (orderId: string, status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned') => {
     const { error } = await supabase
       .from('orders')
       .update({ status })
