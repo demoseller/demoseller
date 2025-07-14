@@ -23,6 +23,7 @@ export interface Product {
   id: string;
   name: string;
   description: string;
+  detailed_description?: string;
   base_price: number;
   price_before_discount?: number | null;
   images: string[];
@@ -228,9 +229,9 @@ export const useProducts = (typeId: string) => {
       .insert([{
         name: product.name,
         description: product.description,
+        detailed_description: product.detailed_description,
         base_price: product.base_price,
-        price_before_discount: product.price_before_discount, // <-- THIS LINE WAS MISSING
-
+        price_before_discount: product.price_before_discount,
         images: product.images,
         product_type_id: product.product_type_id,
         options: product.options

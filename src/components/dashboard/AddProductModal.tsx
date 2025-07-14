@@ -25,6 +25,7 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
   
   const [productName, setProductName] = useState('');
   const [description, setDescription] = useState('');
+  const [detailedDescription, setDetailedDescription] = useState('');
   const [basePrice, setBasePrice] = useState('');
   const [priceBeforeDiscount, setPriceBeforeDiscount] = useState('');
   const [productTypeId, setProductTypeId] = useState(selectedTypeId);
@@ -41,6 +42,7 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
     if (editingProduct) {
       setProductName(editingProduct.name || '');
       setDescription(editingProduct.description || '');
+      setDetailedDescription(editingProduct.detailed_description || '');
       setBasePrice(editingProduct.base_price?.toString() || '');
       setPriceBeforeDiscount(editingProduct.price_before_discount?.toString() || '');
       setProductTypeId(editingProduct.product_type_id || selectedTypeId);
@@ -56,6 +58,7 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
   const resetForm = () => {
     setProductName('');
     setDescription('');
+    setDetailedDescription('');
     setBasePrice('');
     setPriceBeforeDiscount('');
     setProductTypeId(selectedTypeId);
@@ -120,6 +123,7 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
       const productData = {
         name: productName.trim(),
         description: description.trim(),
+        detailed_description: detailedDescription.trim(),
         base_price: parseFloat(basePrice),
         price_before_discount: finalPriceBeforeDiscount,
         product_type_id: productTypeId,
@@ -211,6 +215,12 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
               <label className="block text-sm font-medium mb-2">الوصف</label>
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="وصف المنتج..." rows={3} />
           </div>
+          
+          <div>
+              <label className="block text-sm font-medium mb-2">وصف تفصيلي للمنتج</label>
+              <textarea value={detailedDescription} onChange={(e) => setDetailedDescription(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="وصف تفصيلي للمنتج يظهر في صفحة المنتج..." rows={5} />
+          </div>
+          
           <div>
               <label className="block text-sm font-medium mb-2">صور المنتج</label>
               <div className="space-y-3">

@@ -47,7 +47,12 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
   };
 
   const handleReset = () => {
-    const resetFilters: FilterOptions = { product: '', productType: '', wilaya: '' };
+    const resetFilters: FilterOptions = { 
+      product: '', 
+      productType: '', 
+      wilaya: '',
+      dateRange: 'all'
+    };
     setFilters(resetFilters);
     onApplyFilters(resetFilters);
     onClose();
@@ -133,6 +138,25 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
               {wilayas.map(wilaya => (
                 <option key={wilaya} value={wilaya}>{wilaya}</option>
               ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">الفترة الزمنية</label>
+            <select
+              value={filters.dateRange || 'all'}
+              onChange={(e) => setFilters({...filters, dateRange: e.target.value as FilterOptions['dateRange']})}
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm sm:text-base"
+            >
+              <option value="all">جميع الفترات</option>
+              <option value="last24hours">آخر 24 ساعة</option>
+              <option value="lastWeek">الأسبوع الماضي</option>
+              <option value="last2Weeks">آخر أسبوعين</option>
+              <option value="last3Weeks">آخر 3 أسابيع</option>
+              <option value="lastMonth">الشهر الماضي</option>
+              <option value="last3Months">آخر 3 أشهر</option>
+              <option value="last6Months">آخر 6 أشهر</option>
+              <option value="lastYear">السنة الماضية</option>
             </select>
           </div>
         </div>

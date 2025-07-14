@@ -16,7 +16,9 @@ export interface Product {
   id: string;
   name: string;
   description: string;
+  detailed_description?: string;
   base_price: number;
+  price_before_discount?: number | null;
   image_url?: string;
   images: string[];
   product_type_id: string;

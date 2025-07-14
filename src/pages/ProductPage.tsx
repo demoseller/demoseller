@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
-import { useProductById, useReviews, useOrders } from '../hooks/useProductData';
+import { useProductById, useReviews, useOrders, Product } from '../hooks/useProductData';
 import { useShippingData } from '../hooks/useShippingData';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StarRating from '../components/StarRating';
@@ -36,7 +36,7 @@ const ImageSlide = ({ imageUrl, alt, onImageClick }: { imageUrl: string, alt: st
 
 
 // Helper Component for Product Header, now receives dynamic price
-const ProductHeader = ({ product, averageRating, reviewsCount, dynamicPrice }: { product: any; averageRating: number; reviewsCount: number; dynamicPrice: number; }) => (
+const ProductHeader = ({ product, averageRating, reviewsCount, dynamicPrice }: { product: Product; averageRating: number; reviewsCount: number; dynamicPrice: number; }) => (
   <div>
     <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">{product.name}</h1>
     <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-3">
@@ -201,10 +201,10 @@ const ProductPage = () => {
         base_price: dynamicProductPrice, // Use the dynamic price
         total_price: calculateTotalPrice(),
         customer_name: customerName,
-        customer_phone: customerPhone,
+        customer_phone: customerPhone, 
         wilaya,
-        commune: shipToHome ? commune : 'استلام',
-        full_address: shipToHome ? `${commune}, ${wilaya}` : `استلام من ${wilaya}`,
+        commune: shipToHome ? commune : ' استلام من المكتب',
+        full_address: shipToHome ? `${commune}, ${wilaya}` : `${wilaya} إستلام من `,
         status: 'pending' as const,
       };
       const newOrder = await addOrder(orderData);
@@ -327,6 +327,20 @@ const ProductPage = () => {
             )}
           </motion.div>
             <ProductHeader product={product} averageRating={averageRating} reviewsCount={reviews.length} dynamicPrice={dynamicProductPrice} />
+            
+            {product.detailed_description && (
+              <div className="mt-6">
+                <h3 className="text-lg font-bold mb-2">تفاصيل المنتج</h3>
+                <div className="relative p-[2px] w-full">
+                  <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+                  <div className="p-4 glass-effect rounded-lg relative z-10">
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                      {product.detailed_description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
         
             <div className="relative p-[0px] w-full">
               <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>

@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Eye, Phone, MapPin, Package, Calendar, Filter, Trash2, ChevronDown } from 'lucide-react';
+import { Eye, Phone, MapPin, Package, Calendar, Filter, Trash2, ChevronDown, DollarSign, X } from 'lucide-react';
 import { useOrders } from '../../hooks/useSupabaseStore';
 import OrderFilterModal from './OrderFilterModal';
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { format } from 'date-fns'; // <-- Import the format function
+
 
 
 // This is now the single source of truth for this type.
@@ -16,7 +17,93 @@ export interface FilterOptions {
   product: string;
   productType: string;
   wilaya: string;
+  dateRange?: DateRangeOption; // Add this new property
+
 }
+export type DateRangeOption = 
+  | 'all'
+  | 'last24hours' 
+  | 'lastWeek' 
+  | 'last2Weeks' 
+  | 'last3Weeks' 
+  | 'lastMonth' 
+  | 'last3Months' 
+  | 'last6Months' 
+  | 'lastYear';
+
+const dateRangeTranslations: Record<DateRangeOption, string> = {
+  all: 'جميع الفترات',
+  last24hours: 'آخر 24 ساعة',
+  lastWeek: 'الأسبوع الماضي',
+  last2Weeks: 'آخر أسبوعين',
+  last3Weeks: 'آخر 3 أسابيع',
+  lastMonth: 'الشهر الماضي',
+  last3Months: 'آخر 3 أشهر',
+  last6Months: 'آخر 6 أشهر',
+  lastYear: 'السنة الماضية'
+};
+
+// Filters will be defined inside the component
+
+const isWithinDateRange = (dateString: string, range: DateRangeOption): boolean => {
+  if (range === 'all') return true;
+  
+  const orderDate = new Date(dateString);
+  const now = new Date();
+  
+  switch (range) {
+    case 'last24hours': {
+      const yesterday = new Date(now);
+      yesterday.setHours(now.getHours() - 24);
+      return orderDate >= yesterday;
+    }
+      
+    case 'lastWeek': {
+      const lastWeek = new Date(now);
+      lastWeek.setDate(now.getDate() - 7);
+      return orderDate >= lastWeek;
+    }
+      
+    case 'last2Weeks': {
+      const last2Weeks = new Date(now);
+      last2Weeks.setDate(now.getDate() - 14);
+      return orderDate >= last2Weeks;
+    }
+      
+    case 'last3Weeks': {
+      const last3Weeks = new Date(now);
+      last3Weeks.setDate(now.getDate() - 21);
+      return orderDate >= last3Weeks;
+    }
+      
+    case 'lastMonth': {
+      const lastMonth = new Date(now);
+      lastMonth.setMonth(now.getMonth() - 1);
+      return orderDate >= lastMonth;
+    }
+      
+    case 'last3Months': {
+      const last3Months = new Date(now);
+      last3Months.setMonth(now.getMonth() - 3);
+      return orderDate >= last3Months;
+    }
+      
+    case 'last6Months': {
+      const last6Months = new Date(now);
+      last6Months.setMonth(now.getMonth() - 6);
+      return orderDate >= last6Months;
+    }
+      
+    case 'lastYear': {
+      const lastYear = new Date(now);
+      lastYear.setFullYear(now.getFullYear() - 1);
+      return orderDate >= lastYear;
+    }
+      
+    default:
+      return true;
+  }
+};
 
 const statusOptions: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
 const statusColors: Record<OrderStatus, string> = {
@@ -39,23 +126,34 @@ const statusTranslations: Record<OrderStatus, string> = {
 };
 
 
+
 const OrdersTab = () => {
   const { orders, loading, updateOrderStatus, deleteOrder } = useOrders();
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     product: '',
     productType: '',
-    wilaya: ''
+    wilaya: '',
+    dateRange: 'all' // Default to show all dates
   });
-
-  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
-    await updateOrderStatus(orderId, newStatus);
-    toast.success('تم تحديث حالة الطلب بنجاح');
-  };
 
   const formatDate = (dateString: string) => {
     // Use the format function for consistent output
     return format(new Date(dateString), 'dd/MM/yyyy HH:mm');
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+    try {
+      const success = await updateOrderStatus(orderId, newStatus);
+      if (success) {
+        toast.success(`تم تحديث حالة الطلب إلى ${statusTranslations[newStatus]}`);
+      } else {
+        toast.error('فشل تحديث حالة الطلب');
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast.error('حدث خطأ أثناء تحديث حالة الطلب');
+    }
   };
 
   const handleDeleteOrder = async (orderId: string, customerName: string) => {
@@ -75,13 +173,18 @@ const OrdersTab = () => {
   };
 
   const filteredOrders = orders.filter(order => {
-    if (filters.status && order.status !== filters.status) return false;
-    if (filters.product && order.product_name !== filters.product) return false;
-    if (filters.wilaya && order.wilaya !== filters.wilaya) return false;
-    return true;
-  });
+  if (filters.status && order.status !== filters.status) return false;
+  if (filters.product && order.product_name !== filters.product) return false;
+  if (filters.wilaya && order.wilaya !== filters.wilaya) return false;
+  if (filters.dateRange && filters.dateRange !== 'all' && !isWithinDateRange(order.created_at, filters.dateRange)) return false;
+  return true;
+});
 
-  const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
+    // Only count dateRange as active if it's not 'all'
+    if (key === 'dateRange') return value !== 'all';
+    return Boolean(value);
+  }).length;
 
   const renderContent = () => {
     if (filteredOrders.length > 0) {
@@ -207,7 +310,7 @@ const OrdersTab = () => {
             <h3 className="text-lg font-semibold mb-2">لا توجد طلبات تطابق فلاتر البحث</h3>
             <p className="text-muted-foreground mb-4">حاول تعديل معايير التصفية الخاصة بك.</p>
             <button
-              onClick={() => setFilters({ product: '', productType: '', wilaya: '' })}
+              onClick={() => setFilters({ product: '', productType: '', wilaya: '', dateRange: 'all' })}
               className="btn-gradient px-6 py-2 rounded-lg"
             >
               مسح الفلاتر
@@ -216,6 +319,8 @@ const OrdersTab = () => {
         </div>
       );
     }
+
+    
 
     return (
       <div className="relative p-[3px] max-w-lg mx-auto">
@@ -237,12 +342,24 @@ const OrdersTab = () => {
       </div>
     );
   }
+const calculateTotalProfit = () => {
+    return filteredOrders.reduce((total, order) => {
+      // Make sure total_price is treated as a number
+      const orderPrice = typeof order.total_price === 'string' 
+        ? parseFloat(order.total_price) || 0
+        : order.total_price || 0;
+      return total + orderPrice;
+    }, 0).toFixed(2);
+  };
 
+  // Calculate this once
+  const totalProfit = calculateTotalProfit();
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <h2 className="text-xl sm:text-2xl font-bold">إدارة الطلبات</h2>
         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+          
           <button
             onClick={() => setShowFilterModal(true)}
             className="flex items-center justify-center space-x-2 px-3 py-2 sm:px-4 sm:py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors relative text-sm"
@@ -260,6 +377,42 @@ const OrdersTab = () => {
           </div>
         </div>
       </div>
+
+       {/* Profit Stats Card - NEW */}
+        <motion.div 
+          className="relative p-[3px] w-full"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+          <div className="glass-effect p-4 sm:p-5 rounded-lg sm:rounded-xl relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center space-x-3 mb-2 sm:mb-0">
+              <div className="p-2 bg-green-500/20 text-green-500 rounded-lg">
+                  <DollarSign className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-semibold">إجمالي الأرباح</h3>
+                <p className="text-xs text-muted-foreground">
+                  {activeFiltersCount > 0 ? 'مصفاة' : 'كل الطلبات'}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <span className="text-xl sm:text-2xl font-bold text-primary ltr:text-left rtl:text-right">{totalProfit} DA</span>
+              {activeFiltersCount > 0 && (
+                <button 
+                  onClick={() => setFilters({ product: '', productType: '', wilaya: '', dateRange: 'all' })}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  عرض الكل
+                </button>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      
       
       {renderContent()}
 

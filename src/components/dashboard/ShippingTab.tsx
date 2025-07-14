@@ -143,6 +143,13 @@ const ShippingTab = () => {
   const [newWilayaCommunes, setNewWilayaCommunes] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+const [searchQuery, setSearchQuery] = useState('');
+
+const shippingEntries = Object.entries(shippingData.shippingPrices);
+const filteredShippingEntries = shippingEntries.filter(([wilaya]) => 
+  wilaya.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
 
   const handleEditStart = (wilaya: string) => {
     setEditingWilaya(wilaya);
@@ -260,9 +267,6 @@ const ShippingTab = () => {
       </div>
     );
   }
-
-  const shippingEntries = Object.entries(shippingData.shippingPrices);
-
   return (
     <div className="space-y-6">
       <motion.div
@@ -363,11 +367,28 @@ const ShippingTab = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="p-4 border-b border-border bg-muted/20">
-            <h3 className="text-lg font-semibold flex items-center space-x-2">
-              <MapPin className="w-5 h-5" />
-              <span>قواعد الشحن ({shippingEntries.length})</span>
-            </h3>
+  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <h3 className="text-lg font-semibold flex items-center space-x-2">
+      <MapPin className="w-5 h-5" />
+      <span>قواعد الشحن ({filteredShippingEntries.length}/{shippingEntries.length})</span>
+    </h3>
+    
+          <div className="relative w-full sm:w-64 md:w-72">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="البحث عن ولاية..."
+              className="w-full pr-10 pl-4 py-2 bg-background/70 border border-border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none"
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
           </div>
+        </div>
+      </div>
           
           <div className="overflow-x-auto">
             <Table>
@@ -381,7 +402,7 @@ const ShippingTab = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {shippingEntries.map(([wilaya, price]) => (
+                {filteredShippingEntries.map(([wilaya, price]) => (
                   <TableRow key={wilaya}>
                     <TableCell><span className="font-medium">{wilaya}</span></TableCell>
                     <TableCell><span className="font-semibold text-primary">{price} DA</span></TableCell>
@@ -410,6 +431,25 @@ const ShippingTab = () => {
                     </TableCell>
                   </TableRow>
                 ))}
+                              {/* Add this "no results" case */}
+                {filteredShippingEntries.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <MapPin className="w-8 h-8 mb-2" />
+                        <p>لا توجد نتائج للبحث</p>
+                        {searchQuery && (
+                          <button 
+                            onClick={() => setSearchQuery('')}
+                            className="mt-2 text-primary hover:underline"
+                          >
+                            مسح البحث
+                          </button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>

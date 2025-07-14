@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye } from 'lucide-react';
 import ImageLightbox from './ImageLightbox';
-import { Product } from '@/hooks/useSupabaseStore'; // Import the Product type
+import { Product ,useProductTypes} from '@/hooks/useSupabaseStore'; // Import the Product type
+
 
 interface ProductCardProps {
   typeId: string;
@@ -13,8 +14,20 @@ interface ProductCardProps {
 
 const ProductCard = ({ typeId, product }: ProductCardProps) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const { productTypes } = useProductTypes(); // Use the hook to get all product types
+
 
   const mainImageUrl = product.images?.[0] || '/placeholder.svg';
+  const productType = productTypes.find(type => type.id === typeId);
+  const productTypeName = productType?.name || '';
+  
+  // Create a truncated description (limit to 50 characters)
+  let truncatedDescription = '';
+  if (product.description) {
+    truncatedDescription = product.description.length > 100
+      ? `${product.description.substring(0, 100)}...`
+      : product.description;
+  }
 
   const handleViewClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -44,6 +57,13 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
                 className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
               />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
+            {/* Product Type Badge (NEW) */}
+              {productTypeName && (
+                <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10 px-3 py-1 bg-black/60 text-white text-xs font-bold rounded-full">
+                  {productTypeName}
+                </div>
+              )}
             
             {/* View Icon Button */}
             <button
@@ -68,6 +88,12 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
               <p className="text-base sm:text-lg font-semibold text-white">
                 {product.base_price} DA
               </p>
+              {/* Product Description Preview (NEW) */}
+                {truncatedDescription && (
+                <p className="text-xs sm:text-sm text-gray-200 mt-2 line-clamp-3 overflow-hidden">
+                    {truncatedDescription}
+                  </p>
+                )}
             </div>
           </div>
         </Link>

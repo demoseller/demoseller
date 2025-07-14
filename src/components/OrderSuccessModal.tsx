@@ -55,32 +55,53 @@ const OrderSuccessModal = ({ isOpen, onClose, orderDetails }: OrderSuccessModalP
                     <div className="space-y-2">
                         <h3 className="font-semibold flex items-center gap-2"><Package className="w-4 h-4 text-primary"/> تفاصيل المنتج</h3>
                         <div className="  p-2 bg-muted/50 rounded-lg space-y-0">
-                           <div className="flex justify-end">{orderDetails.product_name} <strong>    :المنتج</strong> </div> 
-                            <p><strong>الكمية:</strong> {orderDetails.quantity}</p>
-                            <p><strong>المقاس:</strong> {orderDetails.size}</p>
-                            <p><strong>اللون:</strong> {orderDetails.color}</p>
+                           <div className="flex justify-between items-center">
+                  <span className="font-bold ml-auto">{orderDetails.product_name}</span>
+                  <strong className="ml-2"> : الإسم</strong>
+                    </div> 
+                            <div className="flex justify-between items-center">
+                  <span className="font-bold ml-auto">{orderDetails.quantity}</span>
+                  <strong className="ml-2"> : الكمية</strong>
+                    </div> 
+                            <div className="flex justify-between items-center">
+                  <span className="font-bold ml-auto">{orderDetails.size}</span>
+                  <strong className="ml-2"> : المقاس</strong>
+                    </div> 
+                            <div className="flex justify-between items-center">
+                  <span className="font-bold ml-auto">{orderDetails.color}</span>
+                  <strong className="ml-2"> : اللون</strong>
+                    </div> 
                         </div>
                     </div>
 
                     <div className="space-y-2">
                         <h3 className="font-semibold flex items-center gap-2"><User className="w-4 h-4 text-primary"/> تفاصيل الزبون</h3>
                          <div className="p-2 bg-muted/50 rounded-lg space-y-1">
-                            <p><strong>الاسم:</strong> {orderDetails.customer_name}</p>
-                            <p><strong>الهاتف:</strong> {orderDetails.customer_phone}</p>
+                            <div className="flex justify-between items-center">
+                  <span className="font-bold ml-auto">{orderDetails.customer_name}</span>
+                  <strong className="ml-2"> : الإسم</strong>
+                    </div> 
+                            <div className="flex justify-between items-center">
+                  <span className="font-bold ml-auto">{orderDetails.customer_phone}</span>
+                  <strong className="ml-2"> : الهاتف</strong>
+                    </div> 
                         </div>
                     </div>
                     
                     <div className="space-y-2">
                          <h3 className="font-semibold flex items-center gap-2"><MapPin className="w-4 h-4 text-primary"/> تفاصيل الشحن</h3>
                          <div className="p-2 bg-muted/50 rounded-lg space-y-1">
-                            <div className="flex justify-end"> {orderDetails.full_address} <strong > :العنوان</strong></div>
+                            <div className="flex justify-between items-center">
+                  <span className="font-bold ml-auto">{orderDetails.full_address}</span>
+                  <strong className="ml-2"> : العنوان</strong>
+                    </div> 
                         </div>
                     </div>
 
                     <div className="pt-2 border-t border-border">
                          <div className="flex justify-between items-center text-base font-bold">
                             <span className="flex items-center gap-2"><DollarSign className="w-5 h-5 text-primary" />السعر الإجمالي</span>
-                            <span>{orderDetails.total_price} دج</span>
+                            <span>{orderDetails.total_price} DA</span>
                         </div>
                     </div>
                 </div>
