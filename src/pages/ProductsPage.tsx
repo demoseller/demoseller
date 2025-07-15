@@ -89,7 +89,7 @@ const ProductsPage = () => {
                     >
                         <Link to="/">
                             <div className="sticky top-12 backdrop-blur-sm border-background p-0 sm:p-10 z-40">
-                                <button onClick={() => navigate(-1)} className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
+                                <button onClick={() => navigate('/')} className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
                                     <ArrowLeft className="w-4 h-4" />
                                     <span className="text-sm">الرجوع</span>
                                 </button>

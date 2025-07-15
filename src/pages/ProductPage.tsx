@@ -290,12 +290,12 @@ const ProductPage = () => {
         <Navbar />
         <div className="text-center">
           <h2 className="text-lg sm:text-xl font-bold mb-4">المنتج غير موجود</h2>
-          <button 
-            onClick={() => navigate(-1)} 
+            <button 
+            onClick={() => navigate('/')} 
             className="btn-gradient px-4 py-2 rounded-lg text-sm"
-          >
-            الرجوع
-          </button>
+            >
+            العودة للصفحة الرئيسية
+            </button>
         </div>
       </div>
     );
@@ -305,7 +305,7 @@ const ProductPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="sticky top-12 backdrop-blur-sm border-background p-0 sm:p-10 z-40">
-        <button onClick={() => navigate(-1)} className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
+        <button onClick={() => navigate('/')} className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">الرجوع</span>
         </button>
@@ -370,9 +370,9 @@ const ProductPage = () => {
               <div className="mt-6">
                 <h3 className="text-lg font-bold mb-2">تفاصيل المنتج</h3>
                 <div className="relative p-[2px] w-full">
-                  <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+                    <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
                   <div className="p-4 glass-effect rounded-lg relative z-10">
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                    <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
                       {product.detailed_description}
                     </p>
                   </div>
