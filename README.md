@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Welcome to WebEcom project
 
 ## Project info
 
