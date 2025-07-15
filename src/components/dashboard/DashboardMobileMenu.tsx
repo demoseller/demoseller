@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Home, ShoppingCart, Package, Settings, Key, LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { X, Home, ShoppingCart, Package, Settings, Key, LogOut, Truck } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom'; // Import useLocation
+import { cn } from '@/lib/utils'; // Import the cn utility
 
 interface DashboardMobileMenuProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface DashboardMobileMenuProps {
   onLogout: () => void;
   onPasswordReset: () => void;
   setActiveTab: (tab: string) => void;
+  activeTab: string; // Add this prop
+
 }
 
 const menuVariants = {
@@ -44,30 +47,36 @@ const menuItemVariants = {
 };
 
 const menuItems = [
-    {
-        icon: Home,
-        label: 'المتجر',
-        path: '/',
-        type: 'link'
-    },
-    {
-        icon: ShoppingCart,
-        label: 'الطلبات',
-        tab: 'orders',
-        type: 'tab'
-    },
-    {
-        icon: Package,
-        label: 'المنتجات',
-        tab: 'products',
-        type: 'tab'
-    },
-    {
-        icon: Settings,
-        label: 'الشحن',
-        tab: 'shipping',
-        type: 'tab'
-    }
+  {
+    icon: Home,
+    label: 'المتجر',
+    path: '/',
+    type: 'link'
+  },
+  {
+    icon: ShoppingCart,
+    label: 'الطلبات',
+    tab: 'orders',
+    type: 'tab'
+  },
+  {
+    icon: Package,
+    label: 'المنتجات',
+    tab: 'products',
+    type: 'tab'
+  },
+  {
+    icon: Truck, // Changed from Settings to Truck for shipping
+    label: 'الشحن',
+    tab: 'shipping',
+    type: 'tab'
+  },
+  {
+    icon: Settings,
+    label: 'إعدادات المتجر',
+    tab: 'settings',
+    type: 'tab'
+  }
 ]
 
 const accountItems = [
@@ -85,7 +94,9 @@ const accountItems = [
     }
 ]
 
-const DashboardMobileMenu = ({ isOpen, setIsOpen, onLogout, onPasswordReset, setActiveTab }: DashboardMobileMenuProps) => {
+const DashboardMobileMenu = ({ isOpen, setIsOpen, onLogout, onPasswordReset, setActiveTab, activeTab }: DashboardMobileMenuProps) => {
+      const location = useLocation(); // Get the current location
+
     const handleTabClick = (tab:string) => {
         setActiveTab(tab);
         setIsOpen(false);
@@ -120,12 +131,25 @@ const DashboardMobileMenu = ({ isOpen, setIsOpen, onLogout, onPasswordReset, set
                 {menuItems.map((item, i) => (
                   <motion.li key={item.label} variants={menuItemVariants} initial="hidden" animate="visible" custom={i}>
                     {item.type === 'link' ? (
-                        <Link to={item.path!} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                        <Link 
+                          to={item.path!} 
+                          className={cn(
+                            "flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors",
+                            location.pathname === item.path && "bg-primary/10 text-primary font-bold" // Active state for link
+                          )} 
+                          onClick={() => setIsOpen(false)}
+                        >
                             <item.icon className="w-5 h-5" />
                             <span>{item.label}</span>
                         </Link>
                     ) : (
-                        <button onClick={() => handleTabClick(item.tab!)} className="w-full flex items-center gap-4 p-1 rounded-lg hover:bg-muted transition-colors">
+                        <button 
+                          onClick={() => handleTabClick(item.tab!)} 
+                          className={cn(
+                            "w-full flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors",
+                            activeTab === item.tab && "bg-primary/10 text-primary font-bold" // Active state for tab
+                          )}
+                        >
                             <item.icon className="w-5 h-5" />
                             <span>{item.label}</span>
                         </button>
@@ -135,6 +159,7 @@ const DashboardMobileMenu = ({ isOpen, setIsOpen, onLogout, onPasswordReset, set
               </ul>
             </nav>
             
+            {/* ... (accountItems section remains the same) */}
             <div className="mt-auto">
                  <ul className="space-y-2">
                     {accountItems.map((item, i) => (

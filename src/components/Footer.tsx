@@ -2,8 +2,12 @@
 
 import { motion } from 'framer-motion';
 import { Facebook, Instagram, Send } from 'lucide-react';
+import { useStoreSettings } from '@/contexts/StoreSettingsContext';
+
 
 const Footer = () => {
+   const { settings } = useStoreSettings();
+
   return (
     <div className="mt-8 sm:mt-12 md:mt-20 relative">
       {/* Gradient border - outer div */}
@@ -21,13 +25,13 @@ const Footer = () => {
       >
         <div className="w-full max-w-7xl mx-auto text-center">
           <div className="flex justify-center items-center space-x-6 mb-6">
-            <a href="https://facebook.com/your-page" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+           <a href={settings?.social_media?.facebook || '#'} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
               <Facebook className="w-6 h-6" />
             </a>
-            <a href="https://www.instagram.com/abdrhmn.baat/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+           <a href={settings?.social_media?.instagram || '#'} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
               <Instagram className="w-6 h-6" />
             </a>
-            <a href="https://t.me/abdrhmn_baat" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+           <a href={settings?.social_media?.telegram || '#'} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
               <Send className="w-6 h-6" />
             </a>
           </div>

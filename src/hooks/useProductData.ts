@@ -28,6 +28,8 @@ export interface Product {
     sizes: Array<{ name: string; priceModifier: number }>;
     colors: Array<{ name: string; priceModifier: number }>;
   };
+  quantity_offers?: Array<{ quantity: number; price: number }>; // Add this line
+
 }
 
 export interface OrderData {
@@ -80,7 +82,11 @@ export const useProductById = (productId: string) => {
         options: {
           sizes: options.sizes || [],
           colors: options.colors || []
-        }
+        },
+        quantity_offers: data.quantity_offers ? 
+          (typeof data.quantity_offers === 'string' ? 
+            JSON.parse(data.quantity_offers) : data.quantity_offers) as Array<{ quantity: number; price: number }> : 
+          undefined
       };
       setProduct(transformedProduct);
     }

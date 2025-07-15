@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, ShoppingCart, Package, Settings } from 'lucide-react';
+import { Menu, ShoppingCart, Package, Settings as SettingsIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import OrdersTab from '../components/dashboard/OrdersTab';
 import ProductsTab from '../components/dashboard/ProductsTab';
 import ShippingTab from '../components/dashboard/ShippingTab';
 import PasswordResetModal from '../components/dashboard/PasswordResetModal';
+import SettingsTab from '../components/dashboard/SettingsTab'; // Import new tab
 import Navbar from '../components/Navbar';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -62,7 +63,7 @@ const Dashboard = () => {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="hidden sm:grid w-full grid-cols-3">
+              <TabsList className="hidden sm:grid w-full grid-cols-4">
                 <TabsTrigger value="orders" className="flex items-center space-x-1 sm:space-x-2">
                   <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="text-xs sm:text-sm">الطلبات</span>
@@ -72,9 +73,13 @@ const Dashboard = () => {
                   <span className="text-xs sm:text-sm">المنتجات</span>
                 </TabsTrigger>
                 <TabsTrigger value="shipping" className="flex items-center space-x-1 sm:space-x-2">
-                  <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <SettingsIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="text-xs sm:text-sm">الشحن</span>
                 </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center space-x-1 sm:space-x-2">
+                 <SettingsIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                 <span className="text-xs sm:text-sm">إعدادات المتجر</span>
+              </TabsTrigger>
               </TabsList>
 
               <TabsContent value="orders" className="mt-4 sm:mt-6">
@@ -88,6 +93,9 @@ const Dashboard = () => {
               <TabsContent value="shipping" className="mt-4 sm:mt-6">
                 <ShippingTab />
               </TabsContent>
+              <TabsContent value="settings" className="mt-4 sm:mt-6">
++               <SettingsTab />
++             </TabsContent>
             </Tabs>
           </motion.div>
         </div>
@@ -107,6 +115,8 @@ const Dashboard = () => {
             setIsPasswordResetOpen(true);
         }}
         setActiveTab={setActiveTab}
+        activeTab={activeTab} // Add this line
+
       />
     </div>
   );

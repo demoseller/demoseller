@@ -100,12 +100,17 @@ const ImageUpload = ({
             className="w-full h-48 object-cover rounded-lg border"
           />
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
+            <div className="opacity-0 opacity-100 transition-opacity duration-200 flex space-x-2">
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={handleClick}
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent any form submission
+                  e.stopPropagation(); // Stop event propagation
+                  handleClick();
+                }}
                 disabled={uploading}
+                type="button" // Explicitly set type to button
               >
                 <Upload className="w-4 h-4 mr-1" />
                 استبدال

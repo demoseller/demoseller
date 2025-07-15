@@ -166,10 +166,30 @@ const ProductPage = () => {
 
   const calculateTotalPrice = () => {
     if (!product) return 0;
-    const priceWithoptions = dynamicProductPrice * quantity;
+    const productsPrice = calculatePriceForQuantity(quantity);
     const shippingCost = calculateShippingCost();
-    return priceWithoptions + shippingCost;
-  };
+    return productsPrice + shippingCost;
+};
+
+  const calculatePriceForQuantity = (qty: number) => {
+    if (!product) return 0;
+
+    const basePrice = dynamicProductPrice;
+    const offers = product.quantity_offers || [];
+
+    // Find the best offer for the current quantity
+    const bestOffer = offers
+        .filter(offer => qty >= offer.quantity)
+        .sort((a, b) => b.quantity - a.quantity)[0];
+
+    if (bestOffer) {
+        const numOfferSets = Math.floor(qty / bestOffer.quantity);
+        const remainingQty = qty % bestOffer.quantity;
+        return numOfferSets * bestOffer.price + remainingQty * basePrice;
+    }
+
+    return qty * basePrice;
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -328,6 +348,24 @@ const ProductPage = () => {
           </motion.div>
             <ProductHeader product={product} averageRating={averageRating} reviewsCount={reviews.length} dynamicPrice={dynamicProductPrice} />
             
+            {product.quantity_offers && product.quantity_offers.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-bold mb-2">عروض خاصة</h3>
+              <div className="space-y-2">
+                {product.quantity_offers.sort((a, b) => a.quantity - b.quantity).map((offer, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg">
+                    <p className="font-semibold text-green-700 dark:text-green-300">
+                      اشتري {offer.quantity} قطع
+                    </p>
+                    <p className="font-bold text-lg text-green-600 dark:text-green-400">
+                      {offer.price} DA
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
             {product.detailed_description && (
               <div className="mt-6">
                 <h3 className="text-lg font-bold mb-2">تفاصيل المنتج</h3>
@@ -424,9 +462,18 @@ const ProductPage = () => {
                     {product && wilaya && (
                       <div className="bg-muted/50 p-3 rounded-lg space-y-2 text-sm">
                         <h4 className="font-semibold">تفاصيل السعر:</h4>
-                        <div className="flex justify-between text-xs"><span>سعر المنتج (x{quantity}):</span><span>{dynamicProductPrice * quantity} دج</span></div>
-                        <div className="flex justify-between text-xs"><span>الشحن{shipToHome ? ' (توصيل منزلي)' : ''}:</span><span>{calculateShippingCost()} دج</span></div>
-                        <div className="flex justify-between font-bold border-t pt-2"><span>المجموع:</span><span>{calculateTotalPrice()} دج</span></div>
+                        <div className="flex justify-between text-xs">
+                          <span>سعر المنتج (x{quantity}):</span>
+                          <span>{calculatePriceForQuantity(quantity)} دج</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span>الشحن{shipToHome ? ' (توصيل منزلي)' : ''}:</span>
+                          <span>{calculateShippingCost()} دج</span>
+                        </div>
+                        <div className="flex justify-between font-bold border-t pt-2">
+                          <span>المجموع:</span>
+                          <span>{calculateTotalPrice()} دج</span>
+                        </div>
                       </div>
                     )}
                     

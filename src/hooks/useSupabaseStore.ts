@@ -32,6 +32,8 @@ export interface Product {
     sizes: Array<{ name: string; priceModifier: number }>;
     colors: Array<{ name: string; priceModifier: number }>;
   };
+  quantity_offers?: Array<{ quantity: number; price: number }>; // Add this line
+
 }
 
 export interface ProductType {
@@ -216,7 +218,10 @@ export const useProducts = (typeId: string) => {
         ...product,
         options: typeof product.options === 'object' && product.options !== null 
           ? product.options as { sizes: Array<{ name: string; priceModifier: number }>; colors: Array<{ name: string; priceModifier: number }> }
-          : { sizes: [], colors: [] }
+          : { sizes: [], colors: [] },
+        quantity_offers: Array.isArray(product.quantity_offers) 
+          ? product.quantity_offers as Array<{ quantity: number; price: number }>
+          : undefined
       }));
       setProducts(transformedProducts);
     }

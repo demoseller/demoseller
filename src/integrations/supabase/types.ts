@@ -24,10 +24,10 @@ export type Database = {
           total_price: number
           updated_at: string | null
           wilaya: string
-          product_id: string // Add this field to link to the product
-          ip_address?: string // Add this field to track the IP address
-          quantity: number // Add this field to track the quantity ordered
-          order_time: string // Add this field to track the order time
+          product_id: string 
+          ip_address?: string 
+          quantity: number 
+          order_time: string 
         }
         Insert: {
           color: string
@@ -36,9 +36,9 @@ export type Database = {
           customer_name: string
           customer_phone: string
           full_address: string
-          product_id: string // Add this field to link to the product
-          ip_address?: string // Add this field to track the IP address
-          quantity: number // Add this field to track the quantity ordered
+          product_id: string 
+          ip_address?: string 
+          quantity: number
           id?: string
           product_name: string
           size: string
@@ -100,6 +100,7 @@ export type Database = {
           options: Json | null
           product_type_id: string | null
           updated_at: string | null
+          quantity_offers: Json | null // Add this line
         }
         Insert: {
           base_price: number
@@ -112,6 +113,7 @@ export type Database = {
           product_type_id?: string | null
           price_before_discount?: number | null
           updated_at?: string | null
+          quantity_offers?: Json | null // Add this line
         }
         Update: {
           base_price?: number
@@ -123,6 +125,7 @@ export type Database = {
           options?: Json | null
           product_type_id?: string | null
           updated_at?: string | null
+          quantity_offers?: Json | null // Add this line
         }
         Relationships: [
           {
@@ -133,6 +136,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      store_settings: { // Add this new table definition
+        Row: {
+          id: number
+          store_name: string
+          logo_url: string
+          hero_images: string[]
+          social_media: Json
+          phone_number: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          store_name: string
+          logo_url: string
+          hero_images: string[]
+          social_media: Json
+          phone_number: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          store_name?: string
+          logo_url?: string
+          hero_images?: string[]
+          social_media?: Json
+          phone_number?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

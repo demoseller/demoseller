@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Edit } from 'lucide-react';
+import { X, Plus, Trash2, Edit,DollarSign } from 'lucide-react';
 import { useProducts, useProductTypes } from '../../hooks/useSupabaseStore';
 import ImageUpload from '../ImageUpload';
 import { toast } from 'sonner';
 import ProductOptionModal from './ProductOptionModal'; // <-- Import the new modal
+
 
 interface ProductOption {
   name: string;
@@ -33,6 +34,9 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
   const [sizes, setSizes] = useState<ProductOption[]>([]);
   const [colors, setColors] = useState<ProductOption[]>([]);
 
+  const [quantityOffers, setQuantityOffers] = useState<Array<{ quantity: string; price: string }>>([]);
+
+
   // State for the new options modal
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
   const [optionType, setOptionType] = useState<'size' | 'color'>('size');
@@ -50,8 +54,16 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
       const options = editingProduct.options;
       setSizes(options?.sizes || []);
       setColors(options?.colors || []);
+      setQuantityOffers(
+    editingProduct.quantity_offers?.map((o: { quantity: number; price: number }) => ({
+      quantity: o.quantity.toString(),
+      price: o.price.toString(),
+    })) || []
+  );
     } else {
       resetForm();
+      setQuantityOffers([]);
+
     }
   }, [editingProduct, selectedTypeId]);
 
@@ -65,7 +77,25 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
     setImages([]);
     setSizes([]);
     setColors([]);
+    setQuantityOffers([]);
+
   };
+
+  const handleOfferChange = (index: number, field: 'quantity' | 'price', value: string) => {
+  const newOffers = [...quantityOffers];
+  newOffers[index][field] = value;
+  setQuantityOffers(newOffers);
+};
+
+const addOffer = () => {
+  setQuantityOffers([...quantityOffers, { quantity: '', price: '' }]);
+};
+
+const removeOffer = (index: number) => {
+  const newOffers = [...quantityOffers];
+  newOffers.splice(index, 1);
+  setQuantityOffers(newOffers);
+};
 
   const handleImageUploaded = (imageUrl: string) => setImages(prev => [...prev, imageUrl]);
   const handleImageRemoved = (index: number) => setImages(prev => prev.filter((_, i) => i !== index));
@@ -128,7 +158,13 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
         price_before_discount: finalPriceBeforeDiscount,
         product_type_id: productTypeId,
         images: images.length > 0 ? images : ['/placeholder.svg'],
-        options: { sizes, colors }
+        options: { sizes, colors },
+        quantity_offers: quantityOffers
+    .filter(o => o.quantity && o.price)
+    .map(o => ({
+      quantity: parseInt(o.quantity, 10),
+      price: parseFloat(o.price),
+    }))
       };
 
 
@@ -209,6 +245,48 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
               <label className="block text-sm font-medium mb-2">السعر قبل الخصم (اختياري)</label>
               <input type="number" value={priceBeforeDiscount} onChange={(e) => setPriceBeforeDiscount(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="3000" min="0" step="0.01" />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">عروض الكمية</label>
+              <div className="space-y-3">
+                {quantityOffers.map((offer, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={offer.quantity}
+                      onChange={(e) => handleOfferChange(index, 'quantity', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      placeholder="الكمية"
+                      min="2"
+                    />
+                    <input
+                      type="number"
+                      value={offer.price}
+                      onChange={(e) => handleOfferChange(index, 'price', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      placeholder="السعر الإجمالي"
+                      step="0.01"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeOffer(index)}
+                      className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addOffer}
+                  className="flex items-center space-x-2 text-primary hover:text-primary/80 text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>إضافة عرض كمية</span>
+                </button>
+              </div>
+            </div>
+
           </div>
 
           <div>

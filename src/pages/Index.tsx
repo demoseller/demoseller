@@ -14,15 +14,14 @@ import { useProductTypes, useProducts } from '../hooks/useSupabaseStore';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
+import { useStoreSettings } from '@/contexts/StoreSettingsContext';
 
-const heroImages = [
-  { id: 1, url: '/bg1.jpg' },
-  { id: 2, url: '/bg2.jpg' },
-  { id: 3, url: '/bg3.jpg' },
-  { id: 4, url: '/bg4.jpg' },
-];
+
+
 
 const Index = () => {
+   const { settings, loading: settingsLoading } = useStoreSettings();
+
   const { productTypes, loading: typesLoading } = useProductTypes();
   const { products, loading: productsLoading } = useProducts('');
   
@@ -35,6 +34,10 @@ const Index = () => {
   const [displayCount, setDisplayCount] = useState(0);
 
   const howToOrderRef = useRef<HTMLElement>(null);
+
+  const heroImages = useMemo(() => {
+   return settings?.hero_images?.map((url, index) => ({ id: index + 1, url })) || [];
+ }, [settings]);
 
   const filteredProductTypes = useMemo(() => {
     if (!productTypeSearchTerm) return productTypes;
@@ -82,7 +85,7 @@ const Index = () => {
     howToOrderRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  if (typesLoading || productsLoading) {
+  if (typesLoading || productsLoading || settingsLoading) {
     return <LoadingSpinner />;
   }
 
@@ -91,7 +94,7 @@ const Index = () => {
       {/* Hero Section */}
       <motion.section className="pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-6 sm:pb-8 md:pb-10 px-2 sm:px-4 space-y-6 md:space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
         <div className="w-full max-w-7xl mx-auto text-center">
-            <motion.h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl xl:text-8xl font-bold mb-3 sm:mb-4 md:mb-6 gradient-text leading-tight" initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.2 }}>إسم المتجر</motion.h1>
+            <motion.h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl xl:text-8xl font-bold mb-3 sm:mb-4 md:mb-6 gradient-text leading-tight" initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.2 }}>{settings?.store_name || 'اسم المتجر'} </motion.h1>
             <motion.p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-6 text-muted-foreground max-w-3xl mx-auto leading-relaxed" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.4 }}>أفضل المنتجات بأفضل الأسعار - التوصيل متوفر 58 ولاية</motion.p>
         </div>
         <div className="w-full">
