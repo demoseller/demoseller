@@ -32,7 +32,14 @@ const Footer = () => {
             </a>
           </div>
           <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-            © 2024 جميع الحقوق محفوظة
+            © 2024 <a 
+              href="https://www.facebook.com/abdrhmn.baat/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="mx-2 font-medium text-primary hover:underline">
+                 WeEcom 
+                 </a>
+             جميع الحقوق محفوظة
           </p>
         </div>
       </motion.footer>
