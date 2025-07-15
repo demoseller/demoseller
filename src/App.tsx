@@ -7,6 +7,8 @@ import { AuthProvider } from './hooks/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/MainLayout'; // <-- Import the new layout
 import { StoreSettingsProvider } from './contexts/StoreSettingsContext'; // Import the new provider
+import { HelmetProvider } from 'react-helmet-async';
+
 
 
 import Index from './pages/Index';
@@ -22,6 +24,8 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
+        <HelmetProvider>
+
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <StoreSettingsProvider>
@@ -52,6 +56,8 @@ function App() {
                     </StoreSettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
+        </HelmetProvider>
+
   );
 }
 

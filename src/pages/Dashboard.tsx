@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, ShoppingCart, Package, Settings as SettingsIcon } from 'lucide-react';
+import { Menu, ShoppingCart, Package, Settings as SettingsIcon, Truck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import OrdersTab from '../components/dashboard/OrdersTab';
 import ProductsTab from '../components/dashboard/ProductsTab';
 import ShippingTab from '../components/dashboard/ShippingTab';
 import PasswordResetModal from '../components/dashboard/PasswordResetModal';
-import SettingsTab from '../components/dashboard/SettingsTab'; // Import new tab
+import SettingsTab from '../components/dashboard/SettingsTab';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/sonner';
 import DashboardMobileMenu from '../components/dashboard/DashboardMobileMenu';
+import { useStoreSettings } from '@/contexts/StoreSettingsContext';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { Helmet } from 'react-helmet-async';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('orders');
@@ -19,6 +22,7 @@ const Dashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const { settings, loading } = useStoreSettings();
 
   const handleLogout = async () => {
     try {
@@ -30,8 +34,29 @@ const Dashboard = () => {
     }
   };
 
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+  <title>{settings?.store_name ? `لوحة تحكم ${settings.store_name}` : 'لوحة التحكم'}</title>
+  {settings?.logo_url && (
+    <>
+      {/* Modern browsers - multiple formats */}
+      <link rel="icon" type="image/png" sizes="32x32" href={settings.logo_url} />
+      <link rel="icon" type="image/png" sizes="16x16" href={settings.logo_url} />
+      <link rel="icon" type="image/jpeg" href={settings.logo_url} />
+      
+      {/* iOS support */}
+      <link rel="apple-touch-icon" href={settings.logo_url} />
+      
+      {/* Force favicon refresh with timestamp */}
+      <link rel="shortcut icon" href={`${settings.logo_url}?v=${Date.now()}`} />
+    </>
+  )}
+</Helmet>
       <Navbar>
         <motion.button
           onClick={() => setIsMenuOpen(true)}
