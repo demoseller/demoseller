@@ -42,6 +42,7 @@ const OrderFilterModal = ({ isOpen, onClose, onApplyFilters, currentFilters }: O
   ];
 
   const handleApply = () => {
+    console.log('Applying filters:', filters);
     onApplyFilters(filters);
     onClose();
   };

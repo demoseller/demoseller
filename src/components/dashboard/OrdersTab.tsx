@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, Phone, MapPin, Package, Calendar, Filter, Trash2, ChevronDown, DollarSign, X } from 'lucide-react';
-import { useOrders } from '../../hooks/useSupabaseStore';
+import { useOrders, useProducts, useProductTypes } from '../../hooks/useSupabaseStore';
 import OrderFilterModal from './OrderFilterModal';
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
@@ -129,6 +129,8 @@ const statusTranslations: Record<OrderStatus, string> = {
 
 const OrdersTab = () => {
   const { orders, loading, updateOrderStatus, deleteOrder } = useOrders();
+  const { products } = useProducts(''); // Get all products
+  const { productTypes } = useProductTypes(); // Get all product types
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     product: '',
@@ -172,13 +174,56 @@ const OrdersTab = () => {
     }
   };
 
+  // Add debug logging when filters change
+  useEffect(() => {
+    if (filters.productType) {
+      console.log('Product type filter active:', filters.productType);
+      console.log('Available product types:', productTypes.map(pt => pt.name));
+      console.log('Products count:', products.length);
+      console.log('Orders count:', orders.length);
+    }
+  }, [filters, productTypes, products, orders]);
+
   const filteredOrders = orders.filter(order => {
-  if (filters.status && order.status !== filters.status) return false;
-  if (filters.product && order.product_name !== filters.product) return false;
-  if (filters.wilaya && order.wilaya !== filters.wilaya) return false;
-  if (filters.dateRange && filters.dateRange !== 'all' && !isWithinDateRange(order.created_at, filters.dateRange)) return false;
-  return true;
-});
+    // Status filter
+    if (filters.status && order.status !== filters.status) return false;
+    
+    // Product name filter
+    if (filters.product && order.product_name !== filters.product) return false;
+    
+    // Product type filter
+    if (filters.productType) {
+      // Find the product using product_id from the order
+      const product = products.find(p => p.id === order.product_id);
+      
+      if (!product) {
+        console.log(`Product not found for order ${order.id} with product_id ${order.product_id}`);
+        return false;
+      }
+      
+      // Find the product type of this product
+      const productType = productTypes.find(pt => pt.id === product.product_type_id);
+      
+      // Check if the product type name matches the filter
+      if (!productType) {
+        console.log(`Product type not found for product ${product.name} with product_type_id ${product.product_type_id}`);
+        return false;
+      }
+      
+      if (productType.name !== filters.productType) {
+        // Product exists but doesn't match the selected product type
+        return false;
+      }
+    }
+    
+    // Wilaya filter
+    if (filters.wilaya && order.wilaya !== filters.wilaya) return false;
+    
+    // Date range filter
+    if (filters.dateRange && filters.dateRange !== 'all' && !isWithinDateRange(order.created_at, filters.dateRange)) return false;
+    
+    return true;
+  });
 
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     // Only count dateRange as active if it's not 'all'
@@ -231,7 +276,21 @@ const OrdersTab = () => {
                     <Package className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
                     <span className="font-semibold text-sm sm:text-base">تفاصيل المنتج</span>
                   </div>
+                  
                   <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                    <div className="flex justify-between items-center">
+                  <span className="font-bold ml-auto">
+                    {(() => {
+                      // Find the product using product_id
+                      const product = products.find(p => p.id === order.product_id);
+                      // Find the product type using product_type_id
+                      const productType = product ? productTypes.find(pt => pt.id === product.product_type_id) : null;
+                      // Return the product type name, or a placeholder if not found
+                      return productType ? productType.name : 'غير محدد';
+                    })()}
+                  </span>
+                  <strong className="ml-2"> : نوع المنتج </strong>
+                    </div>
                     <div className="flex justify-between items-center">
                   <span className="font-bold ml-auto">{order.product_name}</span>
                   <strong className="ml-2"> : المنتج</strong>
