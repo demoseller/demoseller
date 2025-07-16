@@ -119,7 +119,7 @@ const Index = () => {
                 <Popover><PopoverTrigger asChild><Button variant="outline" size="icon"><Search className="h-4 w-4" /></Button></PopoverTrigger><PopoverContent className="w-80"><div className="grid gap-4"><div className="space-y-2"><h4 className="font-medium leading-none">بحث متقدم</h4><p className="text-sm text-muted-foreground">ابحث عن منتجاتك بمعايير محددة.</p></div><div className="grid gap-2"><Input placeholder="اسم المنتج..." value={productSearchTerm} onChange={(e) => setProductSearchTerm(e.target.value)} /><Input type="number" placeholder="السعر الأقصى..." value={searchPrice} onChange={(e) => setSearchPrice(e.target.value)} /><Input placeholder="اللون..." value={searchColor} onChange={(e) => setSearchColor(e.target.value)} /><Input placeholder="المقاس..." value={searchSize} onChange={(e) => setSearchSize(e.target.value)} /><div className="relative"><Input type="number" placeholder="أدنى نسبة خصم..." value={searchDiscount} onChange={(e) => setSearchDiscount(e.target.value)} className="pl-8"/><Percent className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /></div></div></div></PopoverContent></Popover>
             </div>
             {filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                     {filteredProducts.slice(0, displayCount).map((product) => (<ProductCard key={product.id} product={product} typeId={product.product_type_id} />))}
                 </div>
             ) : (
