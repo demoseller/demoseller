@@ -81,10 +81,13 @@ const AddProductModal = ({ isOpen, onClose, selectedTypeId, editingProduct }: Ad
 
   };
 
-  const handleOfferChange = (index: number, field: 'quantity' | 'price', value: string) => {
-  const newOffers = [...quantityOffers];
-  newOffers[index][field] = value;
-  setQuantityOffers(newOffers);
+  // Locate this function
+const handleOfferChange = (index: number, field: 'quantity' | 'price', value: string) => {
+    const newOffers = [...quantityOffers];
+    // Simply store the string value from the input directly.
+    // We'll handle numerical conversion and precision on submission.
+    newOffers[index][field] = value;
+    setQuantityOffers(newOffers);
 };
 
 const addOffer = () => {
@@ -136,55 +139,81 @@ const removeOffer = (index: number) => {
   };
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Find the handleSubmit function in your AddProductModal component
+// Fix the handleSubmit function
+// Locate this function
+// Locate this function
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!productName.trim() || !basePrice || !productTypeId) {
-      toast.error('الرجاء ملء جميع الحقول المطلوبة');
-      return;
+        toast.error('الرجاء ملء جميع الحقول المطلوبة');
+        return;
     }
     setLoading(true);
 
     try {
-      const finalPriceBeforeDiscount =
-        priceBeforeDiscount && priceBeforeDiscount.trim() !== ''
-          ? parseFloat(priceBeforeDiscount)
-          : null;
+        // Helper function to safely parse and fix precision for prices
+         const formatPriceForDb = (priceString: string | null): number | null => {
+               if (priceString === null || priceString.trim() === '') {
+                   return null;
+               }
+               // Remove any thousands separators (like commas)
+               const cleanedString = priceString.replace(/,/g, '');
 
-      const productData = {
-        name: productName.trim(),
-        description: description.trim(),
-        detailed_description: detailedDescription.trim(),
-        base_price: parseFloat(basePrice),
-        price_before_discount: finalPriceBeforeDiscount,
-        product_type_id: productTypeId,
-        images: images.length > 0 ? images : ['/placeholder.svg'],
-        options: { sizes, colors },
-        quantity_offers: quantityOffers
-    .filter(o => o.quantity && o.price)
-    .map(o => ({
-      quantity: parseInt(o.quantity, 10),
-      price: parseFloat(o.price),
-    }))
-      };
+               // Check if the cleaned string contains an explicit decimal point
+               const hasExplicitDecimal = cleanedString.includes('.');
 
+               if (!hasExplicitDecimal) {
+                   // If no decimal point, or only "X.0", "X.00" etc., parse as an integer.
+                   // This is more robust for whole numbers.
+                   const intValue = parseInt(cleanedString, 10);
+                   return isNaN(intValue) ? null : intValue;
+               } else {
+                   // If an explicit decimal point is present, parse as a float.
+                   // Then, round to 2 decimal places to handle precision consistently.
+                   const floatValue = parseFloat(cleanedString);
+                   return isNaN(floatValue) ? null : parseFloat(floatValue.toFixed(2));
+               }
+           };
 
-      if (editingProduct) {
-        await updateProduct(editingProduct.id, productData);
-        toast.success('تم تحديث المنتج بنجاح!');
-      } else {
-        await addProduct(productData as any);
-        toast.success('تمت إضافة المنتج بنجاح!');
-      }
-      resetForm();
-      onClose();
+        const formattedQuantityOffers = quantityOffers
+            .filter(o => o.quantity && o.price)
+            .map(o => ({
+                quantity: parseInt(o.quantity, 10), // Quantity is always an integer
+                price: formatPriceForDb(o.price) || 0 // Use the helper for price
+            }));
+
+        const productData = {
+            name: productName.trim(),
+            description: description.trim(),
+            detailed_description: detailedDescription.trim(),
+            base_price: formatPriceForDb(basePrice) || 0, // Apply helper
+            price_before_discount: formatPriceForDb(priceBeforeDiscount), // Apply helper
+            product_type_id: productTypeId,
+            images: images.length > 0 ? images : ['/placeholder.svg'],
+            options: { sizes, colors },
+            quantity_offers: formattedQuantityOffers
+        };
+
+        console.log("Submitting product data:", productData); // Debug log
+
+        if (editingProduct) {
+            await updateProduct(editingProduct.id, productData);
+            toast.success('تم تحديث المنتج بنجاح!');
+        } else {
+            await addProduct(productData as any);
+            toast.success('تمت إضافة المنتج بنجاح!');
+        }
+
+        resetForm();
+        onClose();
     } catch (error) {
-      console.error('Error saving product:', error);
-      toast.error('فشل حفظ المنتج. يرجى المحاولة مرة أخرى.');
+        console.error("Error saving product:", error);
+        toast.error('فشل حفظ المنتج. يرجى المحاولة مرة أخرى.');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
-
+};
   if (!isOpen) return null;
 
   const renderOptionsList = (type: 'size' | 'color', options: ProductOption[]) => (

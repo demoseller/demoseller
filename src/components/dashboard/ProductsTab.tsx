@@ -5,12 +5,14 @@ import { useProductTypes, useProducts } from '../../hooks/useSupabaseStore';
 import AddProductModal from './AddProductModal';
 import ImageUpload from '../ImageUpload';
 import { toast } from 'sonner';
+import { supabase } from '../../integrations/supabase/client';
 
 const ProductsTab = () => {
   const { productTypes, loading: typesLoading, addProductType, updateProductType, deleteProductType } = useProductTypes();
   const { products, loading: productsLoading, deleteProduct } = useProducts('');
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showEditTypeModal, setShowEditTypeModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -34,23 +36,76 @@ const ProductsTab = () => {
     return products.filter(product => product.product_type_id === typeId);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (deleteTarget) {
-      try {
-        if (deleteTarget.type === 'productType') {
-          await deleteProductType(deleteTarget.id);
-          toast.success('تم حذف نوع المنتج بنجاح!');
-        } else {
-          await deleteProduct(deleteTarget.id);
-          toast.success('تم حذف المنتج بنجاح!');
-        }
-      } catch (error) {
-        toast.error('فشل الحذف. يرجى المحاولة مرة أخرى.');
+// Update the handleDeleteConfirm function
+// Fix the handleDeleteConfirm function
+const handleDeleteConfirm = async () => {
+  if (!deleteTarget) return;
+
+  try {
+    setLoading(true);
+    
+    if (deleteTarget.type === 'productType') {
+      // First check if type has products
+      const { count, error: countError } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('product_type_id', deleteTarget.id);
+      
+      if (countError) {
+        console.error('Error checking for related products:', countError);
+        toast.error('حدث خطأ أثناء التحقق من المنتجات المرتبطة.');
+        setLoading(false);
+        return;
       }
-      setDeleteTarget(null);
-      setShowDeleteConfirm(false);
+      
+      if (count && count > 0) {
+        // Show warning about deleting associated products
+        if (!window.confirm(`سيؤدي حذف هذا النوع إلى حذف ${count} منتج مرتبط به. هل أنت متأكد؟`)) {
+          setLoading(false);
+          return;
+        }
+        
+        // Delete associated products first
+        const { error: deleteProductsError } = await supabase
+          .from('products')
+          .delete()
+          .eq('product_type_id', deleteTarget.id);
+          
+        if (deleteProductsError) {
+          console.error('Error deleting associated products:', deleteProductsError);
+          toast.error('فشل حذف المنتجات المرتبطة.');
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Now delete the product type
+      try {
+        await deleteProductType(deleteTarget.id);
+        toast.success('تم حذف نوع المنتج بنجاح!');
+      } catch (error: any) {
+        console.error('Error deleting product type:', error);
+        toast.error(`فشل الحذف: ${error.message || 'خطأ غير معروف'}`);
+      }
+    } else {
+      // Delete product
+      try {
+        await deleteProduct(deleteTarget.id);
+        toast.success('تم حذف المنتج بنجاح!');
+      } catch (error: any) {
+        console.error('Error deleting product:', error);
+        toast.error(`فشل الحذف: ${error.message || 'خطأ غير معروف'}`);
+      }
     }
-  };
+  } catch (error: any) {
+    console.error('Deletion error:', error);
+    toast.error(`حدث خطأ أثناء الحذف: ${error.message || 'خطأ غير معروف'}`);
+  } finally {
+    setLoading(false);
+    setDeleteTarget(null);
+    setShowDeleteConfirm(false);
+  }
+};
 
   const AddProductTypeModal = () => {
     const [typeName, setTypeName] = useState(editingType?.name || '');
@@ -162,42 +217,45 @@ const ProductsTab = () => {
     );
   };
 
-  const DeleteConfirmModal = () => (
+// Update the DeleteConfirmModal component
+const DeleteConfirmModal = () => (
+  <motion.div
+    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+  >
     <motion.div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      className="bg-background rounded-2xl p-6 w-full max-w-md"
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
     >
-      <motion.div
-        className="bg-background rounded-2xl p-6 w-full max-w-md"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-      >
-        <h3 className="text-xl font-bold mb-4 text-red-500">تأكيد الحذف</h3>
-        <p className="text-muted-foreground mb-6">
-          هل أنت متأكد أنك تريد حذف هذا {deleteTarget?.type === 'productType' ? 'نوع المنتج' : 'المنتج'}? 
-          لا يمكن التراجع عن هذا الإجراء.
-        </p>
-        <div className="flex space-x-3">
-          <button
-            onClick={() => {
-              setShowDeleteConfirm(false);
-              setDeleteTarget(null);
-            }}
-            className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
-          >
-            إلغاء
-          </button>
-          <button
-            onClick={handleDeleteConfirm}
-            className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-          >
-            حذف
-          </button>
-        </div>
-      </motion.div>
+      <h3 className="text-xl font-bold mb-4 text-red-500">تأكيد الحذف</h3>
+      <p className="text-muted-foreground mb-6">
+        هل أنت متأكد أنك تريد حذف هذا {deleteTarget?.type === 'productType' ? 'نوع المنتج' : 'المنتج'}? 
+        لا يمكن التراجع عن هذا الإجراء.
+      </p>
+      <div className="flex space-x-3">
+        <button
+          onClick={() => {
+            setShowDeleteConfirm(false);
+            setDeleteTarget(null);
+          }}
+          className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
+          disabled={loading}
+        >
+          إلغاء
+        </button>
+        <button
+          onClick={handleDeleteConfirm}
+          className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:hover:bg-red-500"
+          disabled={loading}
+        >
+          {loading ? 'جاري الحذف...' : 'حذف'}
+        </button>
+      </div>
     </motion.div>
-  );
+  </motion.div>
+);
 
   if (typesLoading || productsLoading) {
     return (

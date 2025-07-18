@@ -239,7 +239,10 @@ export const useProducts = (typeId: string) => {
         price_before_discount: product.price_before_discount,
         images: product.images,
         product_type_id: product.product_type_id,
-        options: product.options
+        options: product.options,
+        quantity_offers: product.quantity_offers // ADDED THIS LINE
+
+
       }])
       .select()
       .single();
