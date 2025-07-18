@@ -1,4 +1,3 @@
-// src/components/MainLayout.tsx
 
 import { Phone } from 'lucide-react';
 import Navbar from './Navbar';
@@ -6,6 +5,10 @@ import Footer from './Footer';
 import { useStoreSettings } from '@/contexts/StoreSettingsContext';
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+
+// Use a Set to keep track of pixel IDs that have been initialized
+// This prevents multiple 'fbq("init")' calls for the same pixel ID across renders or components.
+const initializedPixels = new Set<string>();
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -20,28 +23,19 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     }
   }, [settings]);
 
-  // Inject Facebook Pixel base code
+  // Inject Facebook Pixel base code and initialize it
   useEffect(() => {
     if (settings?.facebook_pixel_id) {
       const pixelId = settings.facebook_pixel_id;
 
-      // Check if the script already exists to prevent re-injection
-      if (document.getElementById('facebook-pixel-script')) {
-        // If it exists and pixelId has changed, reinitialize or reload
-        if ((window as any).fbq) {
-          (window as any).fbq('init', pixelId);
-          (window as any).fbq('track', 'PageView'); // إعادة تتبع PageView عند التحديث أو إعادة التحميل
-        }
-        return;
-      }
-
-      // Standard Facebook Pixel Base Code - Corrected to fix ESLint/TypeScript errors
+      // Ensure the fbq script is loaded into the window only once
+      // The IIFE (Immediately Invoked Function Expression) pattern provided by Facebook handles this internally with `if (f.fbq) return;`
       void (function (f: any, b, e, v, n, t, s) {
-        if (f.fbq) return;
+        if (f.fbq) return; // If fbq is already defined, don't load the script again
         n = f.fbq = function () {
-          void (n.callMethod // Use void to ignore return value and satisfy ESLint/TypeScript
+          void (n.callMethod
             ? n.callMethod.apply(n, arguments)
-            : n.queue.push(arguments)); // Use void to ignore return value and satisfy ESLint/TypeScript
+            : n.queue.push(arguments));
         };
         if (!f._fbq) f._fbq = n;
         n.push = n;
@@ -51,7 +45,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         t = b.createElement(e);
         t.async = !0;
         t.src = v;
-        t.id = 'facebook-pixel-script'; // Add an ID to easily check its existence
+        t.id = 'facebook-pixel-script'; // Add an ID to the script tag
         s = b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t, s);
       })(
@@ -61,22 +55,18 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         'https://connect.facebook.net/en_US/fbevents.js'
       );
 
-      (window as any).fbq('init', pixelId);
-      (window as any).fbq('track', 'PageView'); // تتبع حدث مشاهدة الصفحة
+      // Initialize the pixel only if it hasn't been initialized for this specific ID in this session
+      if (!initializedPixels.has(pixelId)) {
+        (window as any).fbq('init', pixelId);
+        initializedPixels.add(pixelId); // Mark this pixel ID as initialized
+        // Facebook's base pixel code automatically tracks 'PageView' after 'init'.
+        // Explicitly calling fbq('track', 'PageView') here often leads to duplicates.
+      }
     }
-  }, [settings?.facebook_pixel_id]);
+  }, [settings?.facebook_pixel_id]); // Re-run effect if pixel ID changes
 
   const handlePhoneCallClick = () => {
-    if ((window as any).fbq) {
-      // Trigger a standard 'Contact' event
-      (window as any).fbq('track', 'Contact', { // تتبع حدث "اتصال"
-        content_name: 'Phone Call via WhatsApp button',
-        content_category: 'Contact',
-        value: 0, // You can set a value if this contact leads to a sale
-        currency: 'DZD',
-        phone_number: settings?.phone_number || 'N/A' // Include phone number for context
-      });
-    }
+    // No hardcoded pixel events here. Seller can define 'Contact' event via Facebook Event Setup Tool.
   };
 
   return (
@@ -90,12 +80,12 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       </main>
       <Footer />
 
-      {/* Sticky WhatsApp Button (now tracking clicks) */}
+      {/* Sticky WhatsApp Button */}
       <a
        href={`tel:${settings?.phone_number || ''}`}
         className="fixed bottom-3 right-3 z-50 p-3 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-colors"
         aria-label="Contact us via phone"
-        onClick={handlePhoneCallClick} // Added onClick event handler
+        onClick={handlePhoneCallClick} // Keeping onClick, but it doesn't track pixel events directly anymore
       >
         <Phone className="w-6 h-6 text-white" />
       </a>

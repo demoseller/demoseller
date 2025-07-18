@@ -1,4 +1,3 @@
-// src/pages/ConfirmationPage.tsx
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, ShoppingBag } from 'lucide-react';
@@ -37,17 +36,17 @@ const ConfirmationPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Facebook Pixel Purchase Event
-  useEffect(() => {
-    if (orderValue && (window as any).fbq) {
-      (window as any).fbq('track', 'Purchase', {
-        value: orderValue,
-        currency: orderCurrency,
-        content_ids: orderContentIds,
-        num_items: orderNumItems
-      });
-    }
-  }, [orderValue, orderCurrency, orderContentIds, orderNumItems]);
+  // REMOVED explicit Purchase Event tracking
+  // useEffect(() => {
+  //   if (orderValue && (window as any).fbq) {
+  //     (window as any).fbq('track', 'Purchase', {
+  //       value: orderValue,
+  //       currency: orderCurrency,
+  //       content_ids: orderContentIds,
+  //       num_items: orderNumItems
+  //     });
+  //   }
+  // }, [orderValue, orderCurrency, orderContentIds, orderNumItems]);
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,15 +73,15 @@ const ConfirmationPage = () => {
       setReviewerName('');
       toast.success('تم إرسال التقييم بنجاح!');
 
-      // Facebook Pixel Custom Review Event
-      if ((window as any).fbq) {
-        (window as any).fbq('trackCustom', 'Review', {
-          product_id: productId,
-          rating: rating,
-          comment_length: comment.length,
-          reviewer_name_provided: !!reviewerName
-        });
-      }
+      // REMOVED explicit Custom Review Event tracking
+      // if ((window as any).fbq) {
+      //   (window as any).fbq('trackCustom', 'Review', {
+      //     product_id: productId,
+      //     rating: rating,
+      //     comment_length: comment.length,
+      //     reviewer_name_provided: !!reviewerName
+      //   });
+      // }
 
     } catch (error) {
       toast.error('فشل في إرسال التقييم');

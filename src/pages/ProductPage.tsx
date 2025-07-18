@@ -1,4 +1,3 @@
-// src/pages/ProductPage.tsx
 import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -124,18 +123,18 @@ const ProductPage = () => {
     }
   }, [size, color, product]);
 
-  // Facebook Pixel ViewContent Event
-  useEffect(() => {
-    if (product && (window as any).fbq) {
-      (window as any).fbq('track', 'ViewContent', {
-        content_name: product.name,
-        content_category: product.product_type_id, // Assuming product_type_id can be used as category
-        content_ids: [product.id],
-        value: product.base_price,
-        currency: 'DZD' // Algerian Dinar
-      });
-    }
-  }, [product]);
+  // REMOVED explicit ViewContent Event tracking
+  // useEffect(() => {
+  //   if (product && (window as any).fbq) {
+  //     (window as any).fbq('track', 'ViewContent', {
+  //       content_name: product.name,
+  //       content_category: product.product_type_id,
+  //       content_ids: [product.id],
+  //       value: product.base_price,
+  //       currency: 'DZD'
+  //     });
+  //   }
+  // }, [product]);
 
   const scrollToOrder = () => {
     OrderRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -221,15 +220,8 @@ const ProductPage = () => {
 };
 
   const handleInitiateCheckout = () => {
-    if (product && (window as any).fbq) {
-      (window as any).fbq('track', 'InitiateCheckout', {
-        content_ids: [product.id],
-        content_name: product.name,
-        value: calculateTotalPrice(),
-        currency: 'DZD',
-        num_items: quantity
-      });
-    }
+    // REMOVED explicit InitiateCheckout Event tracking
+    // The seller can define this event themselves using Facebook's Event Setup Tool.
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -297,11 +289,7 @@ const ProductPage = () => {
               productId: product.id,
               productName: product.name,
               productImage: product.images?.[0] || product.image_url,
-              // Pass order details for Purchase event on confirmation page
-              orderValue: calculateTotalPrice(),
-              orderCurrency: 'DZD',
-              orderContentIds: [product.id],
-              orderNumItems: quantity
+              // REMOVED pixel tracking data from state as it's not needed for ConfirmationPage's fbq call.
             },
         });
     }
