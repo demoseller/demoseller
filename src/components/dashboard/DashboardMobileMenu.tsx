@@ -1,7 +1,8 @@
+// src/components/dashboard/DashboardMobileMenu.tsx
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Home, ShoppingCart, Package, Settings, Key, LogOut, Truck } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom'; // Import useLocation
-import { cn } from '@/lib/utils'; // Import the cn utility
+import { X, Home, ShoppingCart, Package, Settings, Key, LogOut, Truck, Webhook } from 'lucide-react'; // Using Webhook instead of Pixel
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 interface DashboardMobileMenuProps {
   isOpen: boolean;
@@ -9,13 +10,13 @@ interface DashboardMobileMenuProps {
   onLogout: () => void;
   onPasswordReset: () => void;
   setActiveTab: (tab: string) => void;
-  activeTab: string; // Add this prop
+  activeTab: string;
 
 }
 
 const menuVariants = {
   hidden: {
-    x: '100%',
+    x: '-100%',
     transition: {
       type: "spring" as const,
       stiffness: 300,
@@ -33,7 +34,7 @@ const menuVariants = {
 };
 
 const menuItemVariants = {
-  hidden: { opacity: 0, x: 20 },
+  hidden: { opacity: 0, x: -20 },
   visible: (i: number) => ({
     opacity: 1,
     x: 0,
@@ -66,7 +67,7 @@ const menuItems = [
     type: 'tab'
   },
   {
-    icon: Truck, // Changed from Settings to Truck for shipping
+    icon: Truck,
     label: 'الشحن',
     tab: 'shipping',
     type: 'tab'
@@ -75,6 +76,12 @@ const menuItems = [
     icon: Settings,
     label: 'إعدادات المتجر',
     tab: 'settings',
+    type: 'tab'
+  },
+  {
+    icon: Webhook, // New menu item using Webhook icon instead
+    label: 'تتبع البيكسل',
+    tab: 'facebook-pixel',
     type: 'tab'
   }
 ]
@@ -95,7 +102,7 @@ const accountItems = [
 ]
 
 const DashboardMobileMenu = ({ isOpen, setIsOpen, onLogout, onPasswordReset, setActiveTab, activeTab }: DashboardMobileMenuProps) => {
-      const location = useLocation(); // Get the current location
+      const location = useLocation();
 
     const handleTabClick = (tab:string) => {
         setActiveTab(tab);
@@ -112,7 +119,7 @@ const DashboardMobileMenu = ({ isOpen, setIsOpen, onLogout, onPasswordReset, set
           onClick={() => setIsOpen(false)}
         >
           <motion.div
-            className="fixed top-0 right-0 h-full w-46 bg-background/95 backdrop-blur-lg shadow-2xl p-6 flex flex-col"
+            className="fixed top-0 left-0 h-full w-46 bg-background/95 backdrop-blur-lg shadow-2xl p-6 flex flex-col"
             variants={menuVariants}
             initial="hidden"
             animate="visible"
@@ -131,23 +138,23 @@ const DashboardMobileMenu = ({ isOpen, setIsOpen, onLogout, onPasswordReset, set
                 {menuItems.map((item, i) => (
                   <motion.li key={item.label} variants={menuItemVariants} initial="hidden" animate="visible" custom={i}>
                     {item.type === 'link' ? (
-                        <Link 
-                          to={item.path!} 
+                        <Link
+                          to={item.path!}
                           className={cn(
                             "flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors",
-                            location.pathname === item.path && "bg-primary/10 text-primary font-bold" // Active state for link
-                          )} 
+                            location.pathname === item.path && "bg-primary/10 text-primary font-bold"
+                          )}
                           onClick={() => setIsOpen(false)}
                         >
                             <item.icon className="w-5 h-5" />
                             <span>{item.label}</span>
                         </Link>
                     ) : (
-                        <button 
-                          onClick={() => handleTabClick(item.tab!)} 
+                        <button
+                          onClick={() => handleTabClick(item.tab!)}
                           className={cn(
                             "w-full flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors",
-                            activeTab === item.tab && "bg-primary/10 text-primary font-bold" // Active state for tab
+                            activeTab === item.tab && "bg-primary/10 text-primary font-bold"
                           )}
                         >
                             <item.icon className="w-5 h-5" />
@@ -158,7 +165,7 @@ const DashboardMobileMenu = ({ isOpen, setIsOpen, onLogout, onPasswordReset, set
                 ))}
               </ul>
             </nav>
-            
+
             {/* ... (accountItems section remains the same) */}
             <div className="mt-auto">
                  <ul className="space-y-2">

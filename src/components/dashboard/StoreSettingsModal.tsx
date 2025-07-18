@@ -1,3 +1,4 @@
+// src/components/dashboard/StoreSettingsModal.tsx
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Facebook, Instagram, Send } from 'lucide-react';
@@ -22,7 +23,7 @@ const StoreSettingsModal = ({ isOpen, onClose }: StoreSettingsModalProps) => {
   useEffect(() => {
     if (settings && isOpen) {
       setFormData(settings);
-      setPhoneError(null); 
+      setPhoneError(null);
     }
   }, [settings, isOpen]);
 
@@ -68,7 +69,7 @@ const StoreSettingsModal = ({ isOpen, onClose }: StoreSettingsModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.phone_number && !validateAlgerianPhone(formData.phone_number)) {
       toast.error('الرجاء إدخال رقم هاتف صحيح.');
       return;
@@ -113,21 +114,21 @@ const StoreSettingsModal = ({ isOpen, onClose }: StoreSettingsModalProps) => {
                   </div>
                   <div>
                       <Label htmlFor="phone_number">رقم الهاتف</Label>
-                      <Input 
-                        id="phone_number" 
-                        value={formData.phone_number || ''} 
-                        onChange={e => handleInputChange('phone_number', e.target.value)} 
+                      <Input
+                        id="phone_number"
+                        value={formData.phone_number || ''}
+                        onChange={e => handleInputChange('phone_number', e.target.value)}
                         className={phoneError ? 'border-red-500' : ''}
                       />
                       {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
                   </div>
                 </div>
-                
+
                 <div>
                   <Label>شعار المتجر</Label>
                   <ImageUpload onImageUploaded={handleLogoUpload} currentImage={formData.logo_url} onImageRemoved={() => handleInputChange('logo_url', '')} />
                 </div>
-                
+
                 <div>
                   <Label>صور الواجهة</Label>
                   <div className="space-y-3">
@@ -142,40 +143,40 @@ const StoreSettingsModal = ({ isOpen, onClose }: StoreSettingsModalProps) => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <Label>حسابات التواصل</Label>
                   <div className="space-y-2">
                     <div className="relative">
                       <Facebook className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                      <Input 
-                        placeholder="Facebook URL" 
-                        value={formData.social_media?.facebook || ''} 
+                      <Input
+                        placeholder="Facebook URL"
+                        value={formData.social_media?.facebook || ''}
                         onChange={e => handleSocialChange('facebook', e.target.value)}
-                        className="pl-10" 
+                        className="pl-10"
                       />
                     </div>
                     <div className="relative">
                       <Instagram className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                      <Input 
-                        placeholder="Instagram URL" 
-                        value={formData.social_media?.instagram || ''} 
+                      <Input
+                        placeholder="Instagram URL"
+                        value={formData.social_media?.instagram || ''}
                         onChange={e => handleSocialChange('instagram', e.target.value)}
                         className="pl-10"
                       />
                     </div>
                     <div className="relative">
                       <Send className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                      <Input 
-                        placeholder="Telegram URL" 
-                        value={formData.social_media?.telegram || ''} 
+                      <Input
+                        placeholder="Telegram URL"
+                        value={formData.social_media?.telegram || ''}
                         onChange={e => handleSocialChange('telegram', e.target.value)}
                         className="pl-10"
                       />
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex space-x-3 pt-4">
                   <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>إلغاء</Button>
                   <Button type="submit" disabled={isSaving || !!phoneError}>{isSaving ? 'جارٍ الحفظ...' : 'حفظ التغييرات'}</Button>

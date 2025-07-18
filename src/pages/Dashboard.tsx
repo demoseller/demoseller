@@ -1,12 +1,14 @@
+// src/pages/Dashboard.tsx
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, ShoppingCart, Package, Settings as SettingsIcon, Truck } from 'lucide-react';
+import { Menu, ShoppingCart, Package, Settings as SettingsIcon, Truck, BarChart } from 'lucide-react'; // Using BarChart instead of Pixel
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import OrdersTab from '../components/dashboard/OrdersTab';
 import ProductsTab from '../components/dashboard/ProductsTab';
 import ShippingTab from '../components/dashboard/ShippingTab';
 import PasswordResetModal from '../components/dashboard/PasswordResetModal';
 import SettingsTab from '../components/dashboard/SettingsTab';
+import FacebookPixelSettingsTab from '../components/dashboard/FacebookPixelSettingsTab'; // Import new component
 import Navbar from '../components/Navbar';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -48,10 +50,10 @@ const Dashboard = () => {
       <link rel="icon" type="image/png" sizes="32x32" href={settings.logo_url} />
       <link rel="icon" type="image/png" sizes="16x16" href={settings.logo_url} />
       <link rel="icon" type="image/jpeg" href={settings.logo_url} />
-      
+
       {/* iOS support */}
       <link rel="apple-touch-icon" href={settings.logo_url} />
-      
+
       {/* Force favicon refresh with timestamp */}
       <link rel="shortcut icon" href={`${settings.logo_url}?v=${Date.now()}`} />
     </>
@@ -68,7 +70,7 @@ const Dashboard = () => {
           <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
         </motion.button>
       </Navbar>
-      
+
       <div className="pt-16">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 md:py-8">
           <motion.div
@@ -88,7 +90,7 @@ const Dashboard = () => {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="hidden sm:grid w-full grid-cols-4">
+              <TabsList className="hidden sm:grid w-full grid-cols-5"> {/* Changed to grid-cols-5 */}
                 <TabsTrigger value="orders" className="flex items-center space-x-1 sm:space-x-2">
                   <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="text-xs sm:text-sm">الطلبات</span>
@@ -98,13 +100,17 @@ const Dashboard = () => {
                   <span className="text-xs sm:text-sm">المنتجات</span>
                 </TabsTrigger>
                 <TabsTrigger value="shipping" className="flex items-center space-x-1 sm:space-x-2">
-                  <SettingsIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <Truck className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="text-xs sm:text-sm">الشحن</span>
                 </TabsTrigger>
                 <TabsTrigger value="settings" className="flex items-center space-x-1 sm:space-x-2">
                  <SettingsIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                  <span className="text-xs sm:text-sm">إعدادات المتجر</span>
-              </TabsTrigger>
+                </TabsTrigger>
+                <TabsTrigger value="facebook-pixel" className="flex items-center space-x-1 sm:space-x-2"> {/* New tab */}
+                 <BarChart className="w-3 h-3 sm:w-4 sm:h-4" />
+                 <span className="text-xs sm:text-sm">تتبع البيكسل</span>
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="orders" className="mt-4 sm:mt-6">
@@ -119,8 +125,11 @@ const Dashboard = () => {
                 <ShippingTab />
               </TabsContent>
               <TabsContent value="settings" className="mt-4 sm:mt-6">
-+               <SettingsTab />
-+             </TabsContent>
+                <SettingsTab />
+              </TabsContent>
+              <TabsContent value="facebook-pixel" className="mt-4 sm:mt-6"> {/* New content */}
+                <FacebookPixelSettingsTab />
+              </TabsContent>
             </Tabs>
           </motion.div>
         </div>
@@ -131,7 +140,7 @@ const Dashboard = () => {
         onClose={() => setIsPasswordResetOpen(false)}
       />
 
-      <DashboardMobileMenu 
+      <DashboardMobileMenu
         isOpen={isMenuOpen}
         setIsOpen={setIsMenuOpen}
         onLogout={handleLogout}
@@ -140,7 +149,7 @@ const Dashboard = () => {
             setIsPasswordResetOpen(true);
         }}
         setActiveTab={setActiveTab}
-        activeTab={activeTab} // Add this line
+        activeTab={activeTab}
 
       />
     </div>

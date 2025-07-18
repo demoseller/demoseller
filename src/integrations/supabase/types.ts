@@ -1,3 +1,5 @@
+// src/integrations/supabase/types.ts
+
 export type Json =
   | string
   | number
@@ -24,10 +26,10 @@ export type Database = {
           total_price: number
           updated_at: string | null
           wilaya: string
-          product_id: string 
-          ip_address?: string 
-          quantity: number 
-          order_time: string 
+          product_id: string
+          ip_address?: string
+          quantity: number
+          order_time: string
         }
         Insert: {
           color: string
@@ -36,8 +38,8 @@ export type Database = {
           customer_name: string
           customer_phone: string
           full_address: string
-          product_id: string 
-          ip_address?: string 
+          product_id: string
+          ip_address?: string
           quantity: number
           id?: string
           product_name: string
@@ -94,18 +96,20 @@ export type Database = {
           created_at: string | null
           price_before_discount: number | null
           description: string | null
+          detailed_description?: string
           id: string
           images: string[] | null
           name: string
           options: Json | null
           product_type_id: string | null
           updated_at: string | null
-          quantity_offers: Json | null // Add this line
+          quantity_offers: Json | null
         }
         Insert: {
           base_price: number
           created_at?: string | null
           description?: string | null
+          detailed_description?: string
           id?: string
           images?: string[] | null
           name: string
@@ -113,19 +117,20 @@ export type Database = {
           product_type_id?: string | null
           price_before_discount?: number | null
           updated_at?: string | null
-          quantity_offers?: Json | null // Add this line
+          quantity_offers?: Json | null
         }
         Update: {
           base_price?: number
           created_at?: string | null
           description?: string | null
+          detailed_description?: string
           id?: string
           images?: string[] | null
           name?: string
           options?: Json | null
           product_type_id?: string | null
           updated_at?: string | null
-          quantity_offers?: Json | null // Add this line
+          quantity_offers?: Json | null
         }
         Relationships: [
           {
@@ -145,6 +150,7 @@ export type Database = {
           hero_images: string[]
           social_media: Json
           phone_number: string
+          facebook_pixel_id: string | null // Added
           created_at: string
           updated_at: string
         }
@@ -155,6 +161,7 @@ export type Database = {
           hero_images: string[]
           social_media: Json
           phone_number: string
+          facebook_pixel_id?: string | null // Added
           created_at?: string
           updated_at?: string
         }
@@ -165,6 +172,7 @@ export type Database = {
           hero_images?: string[]
           social_media?: Json
           phone_number?: string
+          facebook_pixel_id?: string | null // Added
           created_at?: string
           updated_at?: string
         }

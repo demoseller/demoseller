@@ -1,5 +1,6 @@
+// src/components/dashboard/SettingsTab.tsx
 import { motion } from 'framer-motion';
-import { Settings } from 'lucide-react';
+import { Settings as SettingsIcon, Facebook, Instagram, Send } from 'lucide-react'; // Renamed Settings to SettingsIcon to avoid conflict
 import { Button } from '../ui/button';
 import { useStoreSettings } from '@/contexts/StoreSettingsContext';
 import { useState } from 'react';
@@ -19,7 +20,7 @@ const SettingsTab = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">إعدادات المتجر</h2>
         <Button onClick={() => setIsModalOpen(true)}>
-          <Settings className="w-4 h-4 mr-2" />
+          <SettingsIcon className="w-4 h-4 mr-2" /> {/* Used SettingsIcon */}
           تعديل الإعدادات
         </Button>
       </div>
@@ -45,9 +46,24 @@ const SettingsTab = () => {
           <div>
             <h3 className="font-semibold text-lg mb-2">حسابات التواصل</h3>
             <div className="flex flex-col space-y-2">
-              <a href={settings?.social_media?.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Facebook</a>
-              <a href={settings?.social_media?.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:underline">Instagram</a>
-              <a href={settings?.social_media?.telegram} target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">Telegram</a>
+              {settings?.social_media?.facebook && (
+                <a href={settings.social_media.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center space-x-2">
+                  <Facebook className="w-4 h-4" /> <span>Facebook</span>
+                </a>
+              )}
+              {settings?.social_media?.instagram && (
+                <a href={settings.social_media.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:underline flex items-center space-x-2">
+                  <Instagram className="w-4 h-4" /> <span>Instagram</span>
+                </a>
+              )}
+              {settings?.social_media?.telegram && (
+                <a href={settings.social_media.telegram} target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline flex items-center space-x-2">
+                  <Send className="w-4 h-4" /> <span>Telegram</span>
+                </a>
+              )}
+              {(!settings?.social_media?.facebook && !settings?.social_media?.instagram && !settings?.social_media?.telegram) && (
+                <p className="text-muted-foreground">لا توجد حسابات تواصل اجتماعي محددة.</p>
+              )}
             </div>
           </div>
           <div className="md:col-span-2">

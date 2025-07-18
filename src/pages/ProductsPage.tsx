@@ -114,8 +114,7 @@ const ProductsPage = () => {
                                     <div className="grid gap-2">
                                         <Input placeholder="اسم المنتج..." value={productSearchTerm} onChange={(e) => setProductSearchTerm(e.target.value)} />
                                         <Input type="number" placeholder="السعر الأقصى..." value={searchPrice} onChange={(e) => setSearchPrice(e.target.value)} />
-                                        <Input placeholder="اللون..." value={searchColor} onChange={(e) => setSearchColor(e.target.value)} />
-                                        <Input placeholder="المقاس..." value={searchSize} onChange={(e) => setSearchSize(e.target.value)} />
+                                        
                                         <div className="relative">
                                             <Input type="number" placeholder="أدنى نسبة خصم..." value={searchDiscount} onChange={(e) => setSearchDiscount(e.target.value)} className="pl-8"/>
                                             <Percent className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

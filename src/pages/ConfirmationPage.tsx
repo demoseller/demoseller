@@ -1,3 +1,4 @@
+// src/pages/ConfirmationPage.tsx
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, ShoppingBag } from 'lucide-react';
@@ -8,35 +9,57 @@ import { toast } from 'sonner';
 
 const ConfirmationPage = () => {
   const location = useLocation();
-  const { fromProductType, fromProductTypeId, productId, productName, productImage } = location.state || {};
-  
+  const {
+    fromProductType,
+    fromProductTypeId,
+    productId,
+    productName,
+    productImage,
+    orderValue, // Passed from ProductPage
+    orderCurrency, // Passed from ProductPage
+    orderContentIds, // Passed from ProductPage
+    orderNumItems // Passed from ProductPage
+  } = location.state || {};
+
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [reviewerName, setReviewerName] = useState('');
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  const { reviews,  addReview } = useReviews(productId || '');
+  const { reviews, addReview } = useReviews(productId || '');
 
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  // Facebook Pixel Purchase Event
+  useEffect(() => {
+    if (orderValue && (window as any).fbq) {
+      (window as any).fbq('track', 'Purchase', {
+        value: orderValue,
+        currency: orderCurrency,
+        content_ids: orderContentIds,
+        num_items: orderNumItems
+      });
+    }
+  }, [orderValue, orderCurrency, orderContentIds, orderNumItems]);
+
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Submit review called with rating:', rating);
-    
+
     if (rating === 0) {
       toast.error('يرجى اختيار تقييم');
       return;
     }
-    
+
     setIsSubmittingReview(true);
-    
+
     try {
       await addReview({
         product_id: productId,
@@ -44,12 +67,23 @@ const ConfirmationPage = () => {
         comment: comment,
         reviewer_name: reviewerName || 'مجهول'
       });
-      
+
       setReviewSubmitted(true);
       setRating(0);
       setComment('');
       setReviewerName('');
       toast.success('تم إرسال التقييم بنجاح!');
+
+      // Facebook Pixel Custom Review Event
+      if ((window as any).fbq) {
+        (window as any).fbq('trackCustom', 'Review', {
+          product_id: productId,
+          rating: rating,
+          comment_length: comment.length,
+          reviewer_name_provided: !!reviewerName
+        });
+      }
+
     } catch (error) {
       toast.error('فشل في إرسال التقييم');
     } finally {
@@ -142,7 +176,7 @@ const ConfirmationPage = () => {
                 <h3 className="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6 gradient-text">
                   كيف تقيّم منتجك الجديد؟
                 </h3>
-                
+
                 {productImage && (
                   <motion.div
                     className="mb-4 sm:mb-6"
@@ -161,7 +195,7 @@ const ConfirmationPage = () => {
 
                 <form onSubmit={handleSubmitReview} className="space-y-3 sm:space-y-4">
                   <div>
-                    
+
                     <input
                       type="text"
                       value={reviewerName}
@@ -182,7 +216,7 @@ const ConfirmationPage = () => {
                     </div>
                   </div>
                   <div>
-                    
+
                     <textarea
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
@@ -191,7 +225,7 @@ const ConfirmationPage = () => {
                       placeholder="شارك تجربتك مع هذا المنتج..."
                     />
                   </div>
-                  
+
                   <motion.button
                     type="submit"
                     disabled={rating === 0 || isSubmittingReview}
@@ -226,7 +260,7 @@ const ConfirmationPage = () => {
               </motion.div>
             )}
 
-            
+
           </div>
         )}
 

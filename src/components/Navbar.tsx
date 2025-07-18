@@ -21,14 +21,13 @@ const Navbar = ({children}: NavbarProps) => {
         
         
         <div className="flex items-center space-x-2 sm:space-x-4 px-0  mx-0 sm:mr-2">
-          <ThemeToggle />
-          
           
             {children}
+            <ThemeToggle />
         </div>
 
         <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
-         <img src={settings?.logo_url || '/favicon.ico'} alt="Store Logo" className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 rounded-full" />
+         
           <motion.div className="text-lg sm:text-xl md:text-2xl font-bold gradient-text" whileHover={{
           scale: 1.05
         }} whileTap={{
@@ -36,6 +35,7 @@ const Navbar = ({children}: NavbarProps) => {
         }}>
            {settings?.store_name || 'اسم المتجر'}
           </motion.div>
+          <img src={settings?.logo_url || '/favicon.ico'} alt="Store Logo" className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 rounded-full" />
         </Link>
         
       </div>

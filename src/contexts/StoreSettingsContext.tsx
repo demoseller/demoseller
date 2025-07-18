@@ -1,3 +1,4 @@
+// src/contexts/StoreSettingsContext.tsx
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../integrations/supabase/client';
 
@@ -11,6 +12,7 @@ export interface StoreSettings {
     telegram?: string;
   };
   phone_number: string;
+  facebook_pixel_id: string; // Added
 }
 
 interface StoreSettingsContextType {
@@ -35,7 +37,7 @@ export const StoreSettingsProvider = ({ children }: { children: ReactNode }) => 
       if (error) {
         console.error('Error fetching store settings:', error);
       } else if (data) {
-        // Correctly cast the social_media field
+        // Correctly cast the social_media and ensure facebook_pixel_id is present
         const formattedSettings: StoreSettings = {
           ...data,
           social_media: data.social_media as {
@@ -43,6 +45,7 @@ export const StoreSettingsProvider = ({ children }: { children: ReactNode }) => 
             instagram?: string;
             telegram?: string;
           },
+          facebook_pixel_id: data.facebook_pixel_id || '', // Ensure it's a string, default to empty
         };
         setSettings(formattedSettings);
       }
@@ -72,6 +75,7 @@ export const StoreSettingsProvider = ({ children }: { children: ReactNode }) => 
                 instagram?: string;
                 telegram?: string;
             },
+            facebook_pixel_id: data.facebook_pixel_id || '', // Ensure it's a string, default to empty
         };
         setSettings(formattedSettings);
     }

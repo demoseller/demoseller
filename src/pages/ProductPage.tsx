@@ -1,3 +1,4 @@
+// src/pages/ProductPage.tsx
 import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -21,7 +22,7 @@ const ImageSlide = ({ imageUrl, alt, onImageClick }: { imageUrl: string, alt: st
     <div className="relative p-[2px]">
         {/* Gradient border wrapper */}
         <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
-        
+
         {/* Image content */}
         <div className="aspect-square bg-background rounded-lg overflow-hidden relative cursor-zoom-in z-10" onClick={onImageClick}>
             <img
@@ -32,7 +33,23 @@ const ImageSlide = ({ imageUrl, alt, onImageClick }: { imageUrl: string, alt: st
         </div>
     </div>
 );
-// Helper Component for Image Gallery
+
+// src/pages/ProductPage.tsx (add this section)
+
+// Official list of all 58 Algerian Wilayas in order
+const ALGERIAN_WILAYAS_ORDERED_58 = [
+    'Adrar', 'Chlef', 'Laghouat', 'Oum El Bouaghi', 'Batna', 'Béjaïa',
+    'Biskra', 'Béchar', 'Blida', 'Bouira', 'Tamanrasset', 'Tébessa',
+    'Tlemcen', 'Tiaret', 'Tizi Ouzou', 'Alger', 'Djelfa', 'Jijel',
+    'Sétif', 'Saïda', 'Skikda', 'Sidi Bel Abbès', 'Annaba', 'Guelma',
+    'Constantine', 'Médéa', 'Mostaganem', 'M\'Sila', 'Mascara',
+    'Ouargla', 'Oran', 'El Bayadh', 'Illizi', 'Bordj Bou Arreridj',
+    'Boumerdès', 'El Tarf', 'Tindouf', 'Tissemsilt', 'El Oued',
+    'Khenchela', 'Souk Ahras', 'Tipaza', 'Mila', 'Ain Defla', 'Naâma',
+    'Ain Témouchent', 'Ghardaïa', 'Relizane', 'Timimoun',
+    'Bordj Badji Mokhtar', 'Ouled Djellal', 'Béni Abbès', 'In Salah',
+    'In Guezzam', 'Touggourt', 'Djanet', 'El M\'ghair', 'El Meniaa'
+  ];
 
 
 // Helper Component for Product Header, now receives dynamic price
@@ -92,7 +109,7 @@ const ProductPage = () => {
   useEffect(() => {
     if (product) {
         let currentPrice = product.base_price;
-        
+
         const selectedSize = product.options?.sizes?.find(s => s.name === size);
         if (selectedSize) {
             currentPrice += selectedSize.priceModifier;
@@ -107,6 +124,18 @@ const ProductPage = () => {
     }
   }, [size, color, product]);
 
+  // Facebook Pixel ViewContent Event
+  useEffect(() => {
+    if (product && (window as any).fbq) {
+      (window as any).fbq('track', 'ViewContent', {
+        content_name: product.name,
+        content_category: product.product_type_id, // Assuming product_type_id can be used as category
+        content_ids: [product.id],
+        value: product.base_price,
+        currency: 'DZD' // Algerian Dinar
+      });
+    }
+  }, [product]);
 
   const scrollToOrder = () => {
     OrderRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -120,7 +149,7 @@ const ProductPage = () => {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const phoneValue = e.target.value;
     setCustomerPhone(phoneValue);
-    
+
     if (phoneValue.trim() === '') {
       setPhoneError(null);
     } else if (!validateAlgerianPhone(phoneValue)) {
@@ -154,7 +183,7 @@ const ProductPage = () => {
 
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => setSize(e.target.value);
   const handleColorChange = (e: React.ChangeEvent<HTMLSelectElement>) => setColor(e.target.value);
-  
+
   const calculateShippingCost = () => {
     if (!wilaya || !shippingData.shippingPrices[wilaya]) return 0;
 
@@ -191,6 +220,18 @@ const ProductPage = () => {
     return qty * basePrice;
 };
 
+  const handleInitiateCheckout = () => {
+    if (product && (window as any).fbq) {
+      (window as any).fbq('track', 'InitiateCheckout', {
+        content_ids: [product.id],
+        content_name: product.name,
+        value: calculateTotalPrice(),
+        currency: 'DZD',
+        num_items: quantity
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim()) return toast.error('الرجاء إدخال الاسم الكامل');
@@ -198,13 +239,13 @@ const ProductPage = () => {
     if (!validateAlgerianPhone(customerPhone)) return toast.error('رقم الهاتف غير صحيح، يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام');
     if (!wilaya.trim()) return toast.error('الرجاء اختيار الولاية');
     if (shipToHome && !commune.trim()) return toast.error('الرجاء اختيار البلدية للتوصيل المنزلي');
-    
+
     const hasSizeOptions = product?.options?.sizes && product.options.sizes.length > 0;
     const hasColorOptions = product?.options?.colors && product.options.colors.length > 0;
-    
+
     if (hasSizeOptions && !size) return toast.error('الرجاء اختيار المقاس');
     if (hasColorOptions && !color) return toast.error('الرجاء اختيار اللون');
-    
+
     if (!product) return toast.error('تفاصيل المنتج غير متوفرة');
 
     setIsPlacingOrder(true);
@@ -221,7 +262,7 @@ const ProductPage = () => {
         base_price: dynamicProductPrice, // Use the dynamic price
         total_price: calculateTotalPrice(),
         customer_name: customerName,
-        customer_phone: customerPhone, 
+        customer_phone: customerPhone,
         wilaya,
         commune: shipToHome ? commune : ' استلام من المكتب',
         full_address: shipToHome ? `${commune}, ${wilaya}` : `${wilaya} إستلام من `,
@@ -245,7 +286,7 @@ const ProductPage = () => {
     setIsPlacingOrder(false);
   }
   };
-  
+
   const handleConfirmAndRedirect = () => {
     setIsSuccessModalOpen(false);
     if (product) {
@@ -256,16 +297,22 @@ const ProductPage = () => {
               productId: product.id,
               productName: product.name,
               productImage: product.images?.[0] || product.image_url,
+              // Pass order details for Purchase event on confirmation page
+              orderValue: calculateTotalPrice(),
+              orderCurrency: 'DZD',
+              orderContentIds: [product.id],
+              orderNumItems: quantity
             },
         });
     }
   };
 
-  const availableWilayas = Object.keys(shippingData.shippingPrices || {});
-  const availableCommunes = wilaya ? shippingData.communes[wilaya] || [] : [];
+const orderedAvailableWilayas = ALGERIAN_WILAYAS_ORDERED_58.filter(wilayaName =>
+  Object.keys(shippingData.shippingPrices).includes(wilayaName)
+);  const availableCommunes = wilaya ? shippingData.communes[wilaya] || [] : [];
 
   if (loading || shippingLoading || reviewsLoading) return <LoadingSpinner />;
-  
+
   if (shippingError) {
     return (
       <div className="min-h-screen flex items-center justify-center px-3 sm:px-4">
@@ -273,8 +320,8 @@ const ProductPage = () => {
         <div className="text-center">
           <h2 className="text-lg sm:text-xl font-bold mb-4">خطأ في تحميل بيانات الشحن</h2>
           <p className="text-muted-foreground mb-4">{shippingError}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="btn-gradient px-4 py-2 rounded-lg text-sm"
           >
             إعادة المحاولة
@@ -290,8 +337,8 @@ const ProductPage = () => {
         <Navbar />
         <div className="text-center">
           <h2 className="text-lg sm:text-xl font-bold mb-4">المنتج غير موجود</h2>
-            <button 
-            onClick={() => navigate('/')} 
+            <button
+            onClick={() => navigate('/')}
             className="btn-gradient px-4 py-2 rounded-lg text-sm"
             >
             العودة للصفحة الرئيسية
@@ -313,7 +360,7 @@ const ProductPage = () => {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-16 py-12 sm:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          
+
           <motion.div className="space-y-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
             <motion.h1
@@ -328,7 +375,7 @@ const ProductPage = () => {
               <div className="flex">
                 {product.images?.map((image, index) => (
                   <div key={`main-image-${index}`} className="flex-0 flex-grow-0 shrink-0 w-full">
-                    <ImageSlide 
+                    <ImageSlide
                       imageUrl={image}
                       alt={product.name}
                       onImageClick={() => setIsLightboxOpen(true)}
@@ -347,7 +394,7 @@ const ProductPage = () => {
             )}
           </motion.div>
             <ProductHeader product={product} averageRating={averageRating} reviewsCount={reviews.length} dynamicPrice={dynamicProductPrice} />
-            
+
             {product.quantity_offers && product.quantity_offers.length > 0 && (
             <div className="mt-6">
               <h3 className="text-lg font-bold mb-2">عروض خاصة</h3>
@@ -379,37 +426,39 @@ const ProductPage = () => {
                 </div>
               </div>
             )}
-        
+
             <div className="relative p-[0px] w-full">
               <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
               <form onSubmit={handleSubmit} className="w-full space-y-4 p-4 glass-effect rounded-lg relative z-10">
                 <motion.section ref={OrderRef}>
                   <h3 className="text-lg font-bold">قدم طلبك</h3>
                 </motion.section>
-                  <div className="space-y-3">
+                  <div className="space-y-3" onChange={handleInitiateCheckout}> {/* Trigger InitiateCheckout here */}
                       <div>
-                        
+
                         <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" placeholder="أدخل اسمك الكامل" required />
                       </div>
                       <div>
-                        
-                        <input 
-                          type="tel" 
-                          value={customerPhone} 
-                          onChange={handlePhoneChange} 
-                          className={`w-full px-3 py-2 rounded-lg border ${phoneError ? 'border-red-500' : 'border-border'} bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm`} 
-                          placeholder="رقم الهاتف مثال: 0599123456" 
-                          required 
+
+                        <input
+                          type="tel"
+                          value={customerPhone}
+                          onChange={handlePhoneChange}
+                          className={`w-full px-3 py-2 rounded-lg border ${phoneError ? 'border-red-500' : 'border-border'} bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm`}
+                          placeholder="رقم الهاتف مثال: 0599123456"
+                          required
                         />
                         {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
                       </div>
                       <div>
-                        <select value={wilaya} onChange={(e) => { setWilaya(e.target.value); setCommune(''); }} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required>
-                          <option value="">اختر الولاية</option>
-                          {availableWilayas.map((wilayaName) => (
-                            <option key={wilayaName} value={wilayaName}>{wilayaName} ({shippingData.shippingPrices[wilayaName]} دج)</option>
-                          ))}
-                        </select>
+                      <select value={wilaya} onChange={(e) => { setWilaya(e.target.value); setCommune(''); }} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required>
+          <option value="">اختر الولاية</option>
+          {orderedAvailableWilayas.map((wilayaName, index) => ( // <--- Updated line: use orderedAvailableWilayas and get index
+            <option key={wilayaName} value={wilayaName}>
+              {`${index + 1} - ${wilayaName} (${shippingData.shippingPrices[wilayaName]} دج)`}
+            </option>
+          ))}
+        </select>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Checkbox id="shipToHome" checked={shipToHome} onCheckedChange={(checked) => { setShipToHome(checked as boolean); if (!checked) setCommune(''); }} />
@@ -417,7 +466,7 @@ const ProductPage = () => {
                       </div>
                       {shipToHome && (
                         <div>
-                          
+
                           <select value={commune} onChange={(e) => setCommune(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required disabled={!wilaya}>
                             <option value="">اختر البلدية</option>
                             {availableCommunes.map((communeName) => (
@@ -430,7 +479,7 @@ const ProductPage = () => {
                     <div className="grid grid-cols-2 gap-4">
                       {product.options?.sizes && product.options.sizes.length > 0 && (
                         <div>
-                          
+
                           <select value={size} onChange={handleSizeChange} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required={product.options.sizes.length > 0}>
                             <option value="">اختر المقاس</option>
                             {product.options.sizes.map((s, index) => (
@@ -441,7 +490,7 @@ const ProductPage = () => {
                       )}
                       {product.options?.colors && product.options.colors.length > 0 && (
                         <div>
-                          
+
                           <select value={color} onChange={handleColorChange} className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" required={product.options.colors.length > 0}>
                             <option value="">اختر اللون</option>
                             {product.options.colors.map((c, index) => (
@@ -476,28 +525,28 @@ const ProductPage = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <button  type="submit" disabled={isPlacingOrder} className="w-full btn-gradient py-3 rounded-lg font-semibold text-sm disabled:opacity-50 flex items-center justify-center space-x-2">
-                      
+
                       {isPlacingOrder ? (<><div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div><span>جاري تقديم الطلب...</span></>) : (<><ShoppingCart  className="w-4 h-4" /><span>تقديم الطلب</span></>)}
-                      
+
                     </button>
-                    
+
                 </form>
                 </div>
           </motion.div>
         </div>
-        <motion.button 
-          onClick={scrollToOrder} 
-          className="fixed bottom-4 left-0 right-0 mx-auto z-50 p-2 btn-gradient rounded-full shadow bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-0 w-38 max-w-[120px]" 
-          aria-label="كيفية الطلب" 
-          initial={{ scale: 0 }} 
-          animate={{ 
+        <motion.button
+          onClick={scrollToOrder}
+          className="fixed bottom-4 left-0 right-0 mx-auto z-50 p-2 btn-gradient rounded-full shadow bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-0 w-38 max-w-[120px]"
+          aria-label="كيفية الطلب"
+          initial={{ scale: 0 }}
+          animate={{
             scale: [1, 1.1, 1],
             y: [0, -10, 0]
-          }} 
-          transition={{ 
-            delay: 1, 
+          }}
+          transition={{
+            delay: 1,
             duration: 2,
             repeat: Infinity,
             repeatType: "reverse"
@@ -514,7 +563,7 @@ const ProductPage = () => {
               {reviews.map((review) => (
               <div key={review.id} className="relative p-[0px]">
                 <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
-                
+
                 <div className="p-2 glass-effect rounded-lg relative z-10">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
                     <div className="flex flex-wrap items-center mb-1 sm:mb-0">
@@ -533,7 +582,7 @@ const ProductPage = () => {
           </motion.div>
         )}
       </main>
-        
+
       <ImageLightbox
         src={product.images?.[currentImageIndex] || '/placeholder.svg'}
         alt={product.name}

@@ -60,7 +60,7 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
 
             {/* Product Type Badge (NEW) */}
               {productTypeName && (
-                <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10 px-3 py-1 bg-black/60 text-white text-xs font-bold rounded-full">
+                <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10 px-3 py-1 bg-black/60 text-white text-xs font-bold rounded-full">
                   {productTypeName}
                 </div>
               )}
