@@ -109,7 +109,7 @@ const Dashboard = () => {
                 </TabsTrigger>
                 <TabsTrigger value="facebook-pixel" className="flex items-center space-x-1 sm:space-x-2"> {/* New tab */}
                  <BarChart className="w-3 h-3 sm:w-4 sm:h-4" />
-                 <span className="text-xs sm:text-sm">تتبع البيكسل</span>
+                 <span className="text-xs sm:text-sm">تتبع لبيكسل فيسبوك</span>
                 </TabsTrigger>
               </TabsList>
 

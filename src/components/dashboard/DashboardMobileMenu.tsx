@@ -80,7 +80,7 @@ const menuItems = [
   },
   {
     icon: Webhook, // New menu item using Webhook icon instead
-    label: 'تتبع البيكسل',
+    label: ' تتبع لبيكسل فيسبوك',
     tab: 'facebook-pixel',
     type: 'tab'
   }
