@@ -270,7 +270,7 @@ const ProductPage = () => {
     } catch (error) {
       console.error('Order submission error:', error);
       if (error instanceof Error && error.message === 'duplicate_order') {
-      toast.error('لقد قمت بطلب هذا المنتج مسبقاً خلال الـ 24 ساعة الماضية');
+      toast.error('لقد قمت بطلب هذا المنتج مسبقاً خلال الـ 6 ساعات الماضية');
     } else {
       toast.error('حدث خطأ أثناء تقديم الطلب');
     }

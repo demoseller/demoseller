@@ -151,7 +151,7 @@ export const useOrders = () => {
   const checkDuplicateOrder = async (productId: string, ipAddress: string): Promise<boolean> => {
     // Calculate time 24 hours ago
     const oneDayAgo = new Date();
-    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+    oneDayAgo.setHours(oneDayAgo.getHours() - 6);
     
     const { data, error } = await supabase
       .from('orders')
