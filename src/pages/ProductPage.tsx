@@ -401,19 +401,7 @@ const orderedAvailableWilayas = ALGERIAN_WILAYAS_ORDERED_58.filter(wilayaName =>
             </div>
           )}
 
-            {product.detailed_description && (
-              <div className="mt-6">
-                <h3 className="text-lg font-bold mb-2">تفاصيل المنتج</h3>
-                <div className="relative p-[2px] w-full">
-                    <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
-                  <div className="p-4 glass-effect rounded-lg relative z-10">
-                    <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
-                      {product.detailed_description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+            
 
             <div className="relative p-[0px] w-full">
               <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
@@ -543,6 +531,20 @@ const orderedAvailableWilayas = ALGERIAN_WILAYAS_ORDERED_58.filter(wilayaName =>
           <ShoppingCart className="w-5 h-5 m-1" />
           <span className="font-medium">اطلب الآن</span>
         </motion.button>
+
+        {product.detailed_description && (
+              <div className="mt-6">
+                <h3 className="text-lg font-bold mb-2">تفاصيل المنتج</h3>
+                <div className="relative p-[2px] w-full">
+                    <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
+                  <div className="p-4 glass-effect rounded-lg relative z-10">
+                    <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
+                      {product.detailed_description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
         {reviews.length > 0 && (
           <motion.div className="mt-8 lg:mt-12" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
