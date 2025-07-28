@@ -27,7 +27,7 @@ const ImageSlide = ({ imageUrl, alt, onImageClick }: { imageUrl: string, alt: st
             <img
                 src={imageUrl}
                 alt={alt}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
             />
         </div>
     </div>
@@ -55,7 +55,7 @@ const ALGERIAN_WILAYAS_ORDERED_58 = [
 const ProductHeader = ({ product, averageRating, reviewsCount, dynamicPrice }: { product: Product; averageRating: number; reviewsCount: number; dynamicPrice: number; }) => (
   <div>
     <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">{product.name}</h1>
-    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-3">
+    <p className="text-xl text-green-500 sm:text-2xl md:text-3xl font-bold mb-3">
        {dynamicPrice} DA
     </p>
     {product.price_before_discount && product.price_before_discount > product.base_price && (
@@ -538,7 +538,7 @@ const orderedAvailableWilayas = ALGERIAN_WILAYAS_ORDERED_58.filter(wilayaName =>
                 <div className="relative p-[2px] w-full">
                     <div className="absolute inset-0 rounded-lg bg-gradient-primary dark:bg-gradient-primary-dark"></div>
                   <div className="p-4 glass-effect rounded-lg relative z-10">
-                    <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
+                    <p className="text-base sm:text-lg text-muted leading-relaxed whitespace-pre-line">
                       {product.detailed_description}
                     </p>
                   </div>

@@ -251,6 +251,15 @@ const OrdersTab = () => {
         // Convert ReactNode to string safely
         const stringValue = String(value);
         // If the string contains a comma, double quote, or newline, enclose it in double quotes
+         // Force phone numbers to be treated as text by prefixing with ="
+        if (
+          // Check if this is the phone number column (index 8 in your array)
+          // OR check if the string looks like a phone number
+          stringValue.match(/^0\d+$/) || 
+          stringValue.match(/^\+?\d+$/)
+        ) {
+          return `="${stringValue}"`;  // Add a single quote to preserve the leading zero
+        }
         // and escape any existing double quotes by doubling them
         if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
           return `"${stringValue.replace(/"/g, '""')}"`;

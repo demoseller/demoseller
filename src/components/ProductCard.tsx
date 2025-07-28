@@ -24,8 +24,8 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
   // Create a truncated description (limit to 50 characters)
   let truncatedDescription = '';
   if (product.description) {
-    truncatedDescription = product.description.length > 100
-      ? `${product.description.substring(0, 100)}...`
+    truncatedDescription = product.description.length > 40
+      ? `${product.description.substring(0, 40)}...`
       : product.description;
   }
 
@@ -54,13 +54,13 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
               <img
                 src={mainImageUrl}
                 alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110"
               />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
             {/* Product Type Badge (NEW) */}
               {productTypeName && (
-                <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10 px-3 py-1 bg-black/60 text-white text-xs font-bold rounded-full">
+                <div className="absolute top-10 left-1/2 transform -translate-x-1/2 z-10 px-3 py-1 bg-black/60 text-white text-xs font-bold rounded-full">
                   {productTypeName}
                 </div>
               )}
@@ -81,16 +81,16 @@ const ProductCard = ({ typeId, product }: ProductCardProps) => {
               </div>
             )}
 
-            <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 right-4 md:right-6 text-white">
+            <div className="absolute bottom-2 md:bottom-6 left-4 md:left-6 right-4 md:right-6 text-white">
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 leading-tight">
                 {product.name}
               </h3>
-              <p className="text-base sm:text-lg font-semibold text-white">
+                <p className="text-base sm:text-lg font-bold text-green-500">
                 {product.base_price} DA
-              </p>
+                </p>
               {/* Product Description Preview (NEW) */}
                 {truncatedDescription && (
-                <p className="text-xs sm:text-sm text-gray-200 mt-2 line-clamp-3 overflow-hidden">
+                <p className="text-xs sm:text-sm text-gray-200 mt-0 line-clamp-3 overflow-hidden">
                     {truncatedDescription}
                   </p>
                 )}

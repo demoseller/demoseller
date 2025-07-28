@@ -332,7 +332,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <label className="block text-sm font-medium mb-2">صور المنتج</label>
               <div className="space-y-3">
                   <ImageUpload onImageUploaded={handleImageUploaded} className="w-full" />
-                  {images.length > 0 && (<div className="grid grid-cols-3 gap-2">{images.map((image, index) => (<div key={index} className="relative group"><img src={image} alt={`Product ${index + 1}`} className="w-full h-24 object-cover rounded-lg border" /><button type="button" onClick={() => handleImageRemoved(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button></div>))}</div>)}
+                  {images.length > 0 && (<div className="grid grid-cols-3 gap-2">{images.map((image, index) => (<div key={index} className="relative group"><img src={image} alt={`Product ${index + 1}`} className="w-full h-24 object-cover rounded-lg border" /><button type="button" onClick={() => handleImageRemoved(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button></div>))}</div>)}
               </div>
           </div>
           

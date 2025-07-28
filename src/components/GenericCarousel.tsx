@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils'; // Make sure cn is imported from your utils
+import Autoplay from 'embla-carousel-autoplay'; // Import Autoplay plugin
+
 
 // Define the shape of your props
 interface GenericCarouselProps<T> {
@@ -11,15 +13,22 @@ interface GenericCarouselProps<T> {
   renderSlide: (item: T) => React.ReactNode;
   // This new optional prop will control the slide width
   slideClassName?: string; 
+  // Optional prop to enable/disable autoplay and customize delay
+  autoplay?: boolean;
+  autoplayDelay?: number;
 }
 
 const GenericCarousel = <T extends { id: string | number }>({ 
   items, 
   renderSlide, 
   // Set a default value for the new prop
-  slideClassName = "w-3/4 sm:w-1/2 md:w-2/5 lg:w-1/3" 
+  slideClassName = "w-3/4 sm:w-1/2 md:w-2/5 lg:w-1/3" ,
+  autoplay = true, // Default to true for hero images
+  autoplayDelay = 7000 // Default to 5 seconds
 }: GenericCarouselProps<T>) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' },
+    // Add Autoplay plugin if autoplay is enabled
+    autoplay ? [Autoplay({ delay: autoplayDelay, stopOnInteraction: false })] : []);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [slideStyles, setSlideStyles] = useState<(React.CSSProperties | undefined)[]>([]);
 

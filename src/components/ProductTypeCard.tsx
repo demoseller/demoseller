@@ -21,7 +21,7 @@ const ProductTypeCard = ({ id, name, imageUrl }: ProductTypeCardProps) => {
             <img
               src={imageUrl}
               alt={name}
-              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+              className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
             <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 right-4 md:right-6 text-white">
